@@ -4,7 +4,13 @@ import { RepositorioPersonas } from '../../dominio/puertos/repositorios';
 export class ObtenerPersonaConsulta {
   constructor(private readonly personas: RepositorioPersonas) {}
 
-  ejecutar(personaId: string): Promise<Persona | null> {
-    return this.personas.buscarPorId(personaId);
+  ejecutar(
+    personaId: string,
+    institucionEducativaId: string,
+  ): Promise<Persona | null> {
+    return this.personas.buscarPorIdEnInstitucion(
+      personaId,
+      institucionEducativaId,
+    );
   }
 }
