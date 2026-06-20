@@ -2,10 +2,10 @@ import {
   EstadoIncompatibleError,
   RecursoNoEncontradoError,
 } from '../../../../compartido/dominio/errores-dominio';
-import { SedeTypeormRepositorio } from '../../infraestructura/persistencia/typeorm/repositorios/sede.typeorm-repositorio';
+import { RepositorioSedes } from '../../dominio/sedes/repositorio-sedes.puerto';
 
 export class EstablecerSedePrincipalCasoUso {
-  constructor(private readonly repositorio: SedeTypeormRepositorio) {}
+  constructor(private readonly repositorio: RepositorioSedes) {}
 
   async ejecutar(institucionId: string, sedeId: string): Promise<void> {
     const sede = await this.repositorio.buscarPorInstitucionYId(

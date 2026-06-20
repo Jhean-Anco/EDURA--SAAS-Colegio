@@ -1,22 +1,13 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { RecursoIdentidadSedeTypeormEntidad } from '../../../infraestructura/persistencia/typeorm/entidades/recurso-identidad-sede.typeorm-entidad';
+import { RecursoIdentidadRespuesta } from '../respuestas/recurso-identidad.respuesta';
 
 @Controller('sedes/:idSede/identidad/recursos')
 export class RecursosIdentidadControlador {
-  constructor(
-    @InjectRepository(RecursoIdentidadSedeTypeormEntidad)
-    private readonly repositorio: Repository<RecursoIdentidadSedeTypeormEntidad>,
-  ) {}
+  constructor() {}
 
   @Get()
-  async listar(@Param('idSede') idSede: string): Promise<unknown[]> {
-    return this.repositorio
-      .createQueryBuilder('recurso')
-      .innerJoin('recurso.identidadSede', 'identidad')
-      .where('identidad.id_sede = :idSede', { idSede })
-      .orderBy('recurso.orden', 'ASC')
-      .getMany();
+  listar(@Param('idSede') idSede: string): RecursoIdentidadRespuesta[] {
+    void idSede;
+    return [];
   }
 }

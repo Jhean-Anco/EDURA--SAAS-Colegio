@@ -1,5 +1,5 @@
 import { RecursoNoEncontradoError } from '../../../../compartido/dominio/errores-dominio';
-import { InstitucionTypeormRepositorio } from '../../infraestructura/persistencia/typeorm/repositorios/institucion.typeorm-repositorio';
+import { RepositorioInstituciones } from '../../dominio/instituciones/repositorio-instituciones.puerto';
 
 export interface ActualizarInstitucionEntrada {
   id: string;
@@ -9,7 +9,7 @@ export interface ActualizarInstitucionEntrada {
 }
 
 export class ActualizarInstitucionCasoUso {
-  constructor(private readonly repositorio: InstitucionTypeormRepositorio) {}
+  constructor(private readonly repositorio: RepositorioInstituciones) {}
 
   async ejecutar(entrada: ActualizarInstitucionEntrada): Promise<void> {
     const institucion = await this.repositorio.buscarPorId(entrada.id);

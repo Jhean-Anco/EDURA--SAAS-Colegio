@@ -1,6 +1,6 @@
 import { CodigoDuplicadoError } from '../../../../compartido/dominio/errores-dominio';
 import { InstitucionEducativa } from '../../dominio/instituciones/institucion-educativa.entidad';
-import { InstitucionTypeormRepositorio } from '../../infraestructura/persistencia/typeorm/repositorios/institucion.typeorm-repositorio';
+import { RepositorioInstituciones } from '../../dominio/instituciones/repositorio-instituciones.puerto';
 
 export interface CrearInstitucionEntrada {
   id: string;
@@ -15,7 +15,7 @@ export interface CrearInstitucionSalida {
 }
 
 export class CrearInstitucionCasoUso {
-  constructor(private readonly repositorio: InstitucionTypeormRepositorio) {}
+  constructor(private readonly repositorio: RepositorioInstituciones) {}
 
   async ejecutar(
     entrada: CrearInstitucionEntrada,

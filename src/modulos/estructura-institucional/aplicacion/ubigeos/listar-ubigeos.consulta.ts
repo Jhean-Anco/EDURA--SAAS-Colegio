@@ -1,16 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { UbigeoTypeormEntidad } from '../../infraestructura/persistencia/typeorm/entidades/ubigeo.typeorm-entidad';
+import { ConsultadorUbigeos } from '../../dominio/ubigeos/consultador-ubigeos.puerto';
 
-@Injectable()
 export class ListarUbigeosConsulta {
-  constructor(
-    @InjectRepository(UbigeoTypeormEntidad)
-    private readonly repositorio: Repository<UbigeoTypeormEntidad>,
-  ) {}
+  constructor(private readonly consultador: ConsultadorUbigeos) {}
 
   async ejecutar() {
-    return this.repositorio.find({ order: { codigo: 'ASC' } });
+    return this.consultador.listar();
   }
 }

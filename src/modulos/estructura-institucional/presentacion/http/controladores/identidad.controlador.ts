@@ -1,6 +1,6 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { IdentidadTypeormConsulta } from '../../../infraestructura/persistencia/typeorm/repositorios/identidad.typeorm-consulta';
-import { IdentidadSedeTypeormEntidad } from '../../../infraestructura/persistencia/typeorm/entidades/identidad-sede.typeorm-entidad';
+import { IdentidadRespuesta } from '../respuestas/identidad.respuesta';
 
 @Controller('sedes/:idSede/identidad')
 export class IdentidadControlador {
@@ -9,7 +9,7 @@ export class IdentidadControlador {
   @Get()
   async obtener(
     @Param('idSede') idSede: string,
-  ): Promise<IdentidadSedeTypeormEntidad | null> {
+  ): Promise<IdentidadRespuesta | null> {
     return this.consulta.obtenerPorSede(idSede);
   }
 }
