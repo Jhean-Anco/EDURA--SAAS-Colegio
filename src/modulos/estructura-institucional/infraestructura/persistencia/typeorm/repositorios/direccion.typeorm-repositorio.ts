@@ -2,10 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DireccionSede } from '../../../../dominio/direcciones-sede/direccion-sede.entidad';
+import { RepositorioDirecciones } from '../../../../dominio/direcciones-sede/repositorio-direcciones.puerto';
 import { DireccionSedeTypeormEntidad } from '../entidades/direccion-sede.typeorm-entidad';
 
 @Injectable()
-export class DireccionTypeormRepositorio {
+export class DireccionTypeormRepositorio implements RepositorioDirecciones {
   constructor(
     @InjectRepository(DireccionSedeTypeormEntidad)
     private readonly repositorio: Repository<DireccionSedeTypeormEntidad>,
@@ -32,6 +33,11 @@ export class DireccionTypeormRepositorio {
       id: direccion.id,
       sedeId: direccion.sedeId,
       direccionLinea: direccion.direccionLinea,
+      referencia: direccion.referencia,
+      idUbigeo: direccion.idUbigeo,
+      latitud: direccion.latitud,
+      longitud: direccion.longitud,
+      codigoPostal: direccion.codigoPostal,
     });
   }
 }

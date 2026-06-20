@@ -4,8 +4,8 @@ import {
   RecursoNoEncontradoError,
 } from '../../../../compartido/dominio/errores-dominio';
 import { Sede } from '../../dominio/sedes/sede.entidad';
-import { InstitucionTypeormRepositorio } from '../../infraestructura/persistencia/typeorm/repositorios/institucion.typeorm-repositorio';
-import { SedeTypeormRepositorio } from '../../infraestructura/persistencia/typeorm/repositorios/sede.typeorm-repositorio';
+import { RepositorioInstituciones } from '../../dominio/instituciones/repositorio-instituciones.puerto';
+import { RepositorioSedes } from '../../dominio/sedes/repositorio-sedes.puerto';
 
 export interface CrearSedeEntrada {
   id: string;
@@ -25,8 +25,8 @@ export interface CrearSedeSalida {
 
 export class CrearSedeCasoUso {
   constructor(
-    private readonly instituciones: InstitucionTypeormRepositorio,
-    private readonly repositorio: SedeTypeormRepositorio,
+    private readonly instituciones: RepositorioInstituciones,
+    private readonly repositorio: RepositorioSedes,
   ) {}
 
   async ejecutar(entrada: CrearSedeEntrada): Promise<CrearSedeSalida> {

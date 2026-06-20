@@ -13,7 +13,23 @@ import { ListarSedesInstitucionConsulta } from './aplicacion/sedes/listar-sedes-
 import { ObtenerSedeConsulta } from './aplicacion/sedes/obtener-sede.consulta';
 import { RegistrarDireccionSedeCasoUso } from './aplicacion/direcciones-sede/registrar-direccion-sede.caso-uso';
 import { ListarUbigeosConsulta } from './aplicacion/ubigeos/listar-ubigeos.consulta';
+import {
+  RepositorioInstituciones,
+  REPOSITORIO_INSTITUCIONES,
+} from './dominio/instituciones/repositorio-instituciones.puerto';
+import {
+  RepositorioSedes,
+  REPOSITORIO_SEDES,
+} from './dominio/sedes/repositorio-sedes.puerto';
 import { CONSULTADOR_SEDES } from './dominio/sedes/consultador-sedes.puerto';
+import {
+  CONSULTADOR_UBIGEOS,
+  ConsultadorUbigeos,
+} from './dominio/ubigeos/consultador-ubigeos.puerto';
+import {
+  REPOSITORIO_DIRECCIONES,
+  RepositorioDirecciones,
+} from './dominio/direcciones-sede/repositorio-direcciones.puerto';
 import { CanalContactoSedeTypeormEntidad } from './infraestructura/persistencia/typeorm/entidades/canal-contacto-sede.typeorm-entidad';
 import { HorarioAtencionSedeTypeormEntidad } from './infraestructura/persistencia/typeorm/entidades/horario-atencion-sede.typeorm-entidad';
 import { IdentidadSedeTypeormEntidad } from './infraestructura/persistencia/typeorm/entidades/identidad-sede.typeorm-entidad';
@@ -25,14 +41,13 @@ import { SeccionPaginaSedeTypeormEntidad } from './infraestructura/persistencia/
 import { SedeTypeormEntidad } from './infraestructura/persistencia/typeorm/entidades/sede.typeorm-entidad';
 import { UbigeoTypeormEntidad } from './infraestructura/persistencia/typeorm/entidades/ubigeo.typeorm-entidad';
 import { ConsultadorSedesTypeormConsulta } from './infraestructura/persistencia/typeorm/consultas/consultador-sedes.typeorm-consulta';
+import { UbigeoTypeormConsulta } from './infraestructura/persistencia/typeorm/consultas/ubigeo.typeorm-consulta';
 import { DireccionTypeormRepositorio } from './infraestructura/persistencia/typeorm/repositorios/direccion.typeorm-repositorio';
 import { ContactoTypeormConsulta } from './infraestructura/persistencia/typeorm/repositorios/contacto.typeorm-consulta';
 import { HorarioTypeormConsulta } from './infraestructura/persistencia/typeorm/repositorios/horario.typeorm-consulta';
 import { IdentidadTypeormConsulta } from './infraestructura/persistencia/typeorm/repositorios/identidad.typeorm-consulta';
 import { InstitucionTypeormRepositorio } from './infraestructura/persistencia/typeorm/repositorios/institucion.typeorm-repositorio';
 import { SedeTypeormRepositorio } from './infraestructura/persistencia/typeorm/repositorios/sede.typeorm-repositorio';
-import { REPOSITORIO_INSTITUCIONES } from './dominio/instituciones/repositorio-instituciones.puerto';
-import { REPOSITORIO_SEDES } from './dominio/sedes/repositorio-sedes.puerto';
 import { InstitucionesControlador } from './presentacion/http/controladores/instituciones.controlador';
 import { DireccionesControlador } from './presentacion/http/controladores/direcciones.controlador';
 import { IdentidadControlador } from './presentacion/http/controladores/identidad.controlador';
@@ -61,19 +76,6 @@ import { PaginaTypeormRepositorio } from './infraestructura/persistencia/typeorm
     ]),
   ],
   providers: [
-    CrearInstitucionCasoUso,
-    ActualizarInstitucionCasoUso,
-    CambiarEstadoInstitucionCasoUso,
-    CrearSedeCasoUso,
-    ActualizarSedeCasoUso,
-    EstablecerSedePrincipalCasoUso,
-    CambiarEstadoSedeCasoUso,
-    ListarInstitucionesConsulta,
-    ObtenerInstitucionConsulta,
-    ListarSedesInstitucionConsulta,
-    ObtenerSedeConsulta,
-    RegistrarDireccionSedeCasoUso,
-    ListarUbigeosConsulta,
     InstitucionTypeormRepositorio,
     SedeTypeormRepositorio,
     DireccionTypeormRepositorio,
@@ -82,6 +84,7 @@ import { PaginaTypeormRepositorio } from './infraestructura/persistencia/typeorm
     IdentidadTypeormConsulta,
     PaginaTypeormConsulta,
     PaginaTypeormRepositorio,
+    UbigeoTypeormConsulta,
     ConsultadorSedesTypeormConsulta,
     {
       provide: REPOSITORIO_INSTITUCIONES,
@@ -90,6 +93,96 @@ import { PaginaTypeormRepositorio } from './infraestructura/persistencia/typeorm
     {
       provide: REPOSITORIO_SEDES,
       useExisting: SedeTypeormRepositorio,
+    },
+    {
+      provide: REPOSITORIO_DIRECCIONES,
+      useExisting: DireccionTypeormRepositorio,
+    },
+    {
+      provide: CONSULTADOR_UBIGEOS,
+      useExisting: UbigeoTypeormConsulta,
+    },
+    {
+      provide: CrearInstitucionCasoUso,
+      useFactory: (repositorio: RepositorioInstituciones) =>
+        new CrearInstitucionCasoUso(repositorio),
+      inject: [REPOSITORIO_INSTITUCIONES],
+    },
+    {
+      provide: ActualizarInstitucionCasoUso,
+      useFactory: (repositorio: RepositorioInstituciones) =>
+        new ActualizarInstitucionCasoUso(repositorio),
+      inject: [REPOSITORIO_INSTITUCIONES],
+    },
+    {
+      provide: CambiarEstadoInstitucionCasoUso,
+      useFactory: (repositorio: RepositorioInstituciones) =>
+        new CambiarEstadoInstitucionCasoUso(repositorio),
+      inject: [REPOSITORIO_INSTITUCIONES],
+    },
+    {
+      provide: ListarInstitucionesConsulta,
+      useFactory: (repositorio: RepositorioInstituciones) =>
+        new ListarInstitucionesConsulta(repositorio),
+      inject: [REPOSITORIO_INSTITUCIONES],
+    },
+    {
+      provide: ObtenerInstitucionConsulta,
+      useFactory: (repositorio: RepositorioInstituciones) =>
+        new ObtenerInstitucionConsulta(repositorio),
+      inject: [REPOSITORIO_INSTITUCIONES],
+    },
+    {
+      provide: CrearSedeCasoUso,
+      useFactory: (
+        instituciones: RepositorioInstituciones,
+        sedes: RepositorioSedes,
+      ) => new CrearSedeCasoUso(instituciones, sedes),
+      inject: [REPOSITORIO_INSTITUCIONES, REPOSITORIO_SEDES],
+    },
+    {
+      provide: ActualizarSedeCasoUso,
+      useFactory: (repositorio: RepositorioSedes) =>
+        new ActualizarSedeCasoUso(repositorio),
+      inject: [REPOSITORIO_SEDES],
+    },
+    {
+      provide: EstablecerSedePrincipalCasoUso,
+      useFactory: (repositorio: RepositorioSedes) =>
+        new EstablecerSedePrincipalCasoUso(repositorio),
+      inject: [REPOSITORIO_SEDES],
+    },
+    {
+      provide: CambiarEstadoSedeCasoUso,
+      useFactory: (repositorio: RepositorioSedes) =>
+        new CambiarEstadoSedeCasoUso(repositorio),
+      inject: [REPOSITORIO_SEDES],
+    },
+    {
+      provide: ListarSedesInstitucionConsulta,
+      useFactory: (repositorio: RepositorioSedes) =>
+        new ListarSedesInstitucionConsulta(repositorio),
+      inject: [REPOSITORIO_SEDES],
+    },
+    {
+      provide: ObtenerSedeConsulta,
+      useFactory: (repositorio: RepositorioSedes) =>
+        new ObtenerSedeConsulta(repositorio),
+      inject: [REPOSITORIO_SEDES],
+    },
+    {
+      provide: RegistrarDireccionSedeCasoUso,
+      useFactory: (
+        sedes: RepositorioSedes,
+        direcciones: RepositorioDirecciones,
+      ) => new RegistrarDireccionSedeCasoUso(sedes, direcciones),
+      inject: [REPOSITORIO_SEDES, REPOSITORIO_DIRECCIONES],
+    },
+    {
+      provide: ListarUbigeosConsulta,
+      useFactory: (consultador: ConsultadorUbigeos) =>
+        new ListarUbigeosConsulta(consultador),
+      inject: [CONSULTADOR_UBIGEOS],
     },
     {
       provide: CONSULTADOR_SEDES,
@@ -107,6 +200,12 @@ import { PaginaTypeormRepositorio } from './infraestructura/persistencia/typeorm
     RecursosIdentidadControlador,
     UbigeosControlador,
   ],
-  exports: [CONSULTADOR_SEDES],
+  exports: [
+    CONSULTADOR_SEDES,
+    CONSULTADOR_UBIGEOS,
+    REPOSITORIO_INSTITUCIONES,
+    REPOSITORIO_SEDES,
+    REPOSITORIO_DIRECCIONES,
+  ],
 })
 export class EstructuraInstitucionalModule {}

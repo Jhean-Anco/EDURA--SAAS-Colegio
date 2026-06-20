@@ -50,4 +50,20 @@ export class DireccionSede {
   get referencia(): string | null {
     return this.props.referencia;
   }
+
+  get idUbigeo(): string | null {
+    return this.props.idUbigeo;
+  }
+
+  get latitud(): string | null {
+    return this.props.latitud;
+  }
+
+  get longitud(): string | null {
+    return this.props.longitud;
+  }
+
+  get codigoPostal(): string | null {
+    return this.props.codigoPostal;
+  }
 }

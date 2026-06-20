@@ -1,8 +1,8 @@
 import { RecursoNoEncontradoError } from '../../../../compartido/dominio/errores-dominio';
-import { SedeTypeormRepositorio } from '../../infraestructura/persistencia/typeorm/repositorios/sede.typeorm-repositorio';
+import { RepositorioSedes } from '../../dominio/sedes/repositorio-sedes.puerto';
 
 export class ObtenerSedeConsulta {
-  constructor(private readonly repositorio: SedeTypeormRepositorio) {}
+  constructor(private readonly repositorio: RepositorioSedes) {}
 
   async ejecutar(institucionId: string, id: string) {
     const sede = await this.repositorio.buscarPorInstitucionYId(

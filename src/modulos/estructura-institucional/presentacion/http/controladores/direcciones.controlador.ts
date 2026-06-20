@@ -18,6 +18,10 @@ export class DireccionesControlador {
       sedeId: idSede,
       direccionLinea: solicitud.direccionLinea,
       referencia: solicitud.referencia ?? null,
+      idUbigeo: solicitud.idUbigeo ?? null,
+      latitud: solicitud.latitud ?? null,
+      longitud: solicitud.longitud ?? null,
+      codigoPostal: solicitud.codigoPostal ?? null,
     });
   }
 }

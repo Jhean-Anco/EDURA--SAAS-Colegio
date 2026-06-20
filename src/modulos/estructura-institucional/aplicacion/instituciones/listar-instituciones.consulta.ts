@@ -1,7 +1,7 @@
-import { InstitucionTypeormRepositorio } from '../../infraestructura/persistencia/typeorm/repositorios/institucion.typeorm-repositorio';
+import { RepositorioInstituciones } from '../../dominio/instituciones/repositorio-instituciones.puerto';
 
 export class ListarInstitucionesConsulta {
-  constructor(private readonly repositorio: InstitucionTypeormRepositorio) {}
+  constructor(private readonly repositorio: RepositorioInstituciones) {}
 
   async ejecutar() {
     return this.repositorio.listarPaginado();

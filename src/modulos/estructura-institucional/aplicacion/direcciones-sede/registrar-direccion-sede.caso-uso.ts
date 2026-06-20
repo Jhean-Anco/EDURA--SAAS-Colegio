@@ -1,7 +1,7 @@
 import { RecursoNoEncontradoError } from '../../../../compartido/dominio/errores-dominio';
 import { DireccionSede } from '../../dominio/direcciones-sede/direccion-sede.entidad';
-import { DireccionTypeormRepositorio } from '../../infraestructura/persistencia/typeorm/repositorios/direccion.typeorm-repositorio';
-import { SedeTypeormRepositorio } from '../../infraestructura/persistencia/typeorm/repositorios/sede.typeorm-repositorio';
+import { RepositorioDirecciones } from '../../dominio/direcciones-sede/repositorio-direcciones.puerto';
+import { RepositorioSedes } from '../../dominio/sedes/repositorio-sedes.puerto';
 
 export interface RegistrarDireccionSedeEntrada {
   id: string;
@@ -17,8 +17,8 @@ export interface RegistrarDireccionSedeEntrada {
 
 export class RegistrarDireccionSedeCasoUso {
   constructor(
-    private readonly sedes: SedeTypeormRepositorio,
-    private readonly direcciones: DireccionTypeormRepositorio,
+    private readonly sedes: RepositorioSedes,
+    private readonly direcciones: RepositorioDirecciones,
   ) {}
 
   async ejecutar(entrada: RegistrarDireccionSedeEntrada): Promise<void> {
