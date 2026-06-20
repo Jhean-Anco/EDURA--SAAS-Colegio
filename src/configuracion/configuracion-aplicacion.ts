@@ -22,6 +22,18 @@ export class ConfiguracionAplicacion {
 
   readonly bdRegistroConsultas: boolean;
 
+  readonly jwtSecreto: string;
+
+  readonly jwtEmisor: string;
+
+  readonly jwtAudiencia: string;
+
+  readonly hashTokenSecreto: string;
+
+  readonly jwtAccesoTtlSegundos: number;
+
+  readonly tokenRefreshTtlSegundos: number;
+
   constructor() {
     this.entorno = process.env.ENTORNO ?? 'desarrollo';
     this.puertoApi = Number(process.env.PUERTO_API ?? 3000);
@@ -37,5 +49,15 @@ export class ConfiguracionAplicacion {
     this.bdSsl = (process.env.BD_SSL ?? 'false') === 'true';
     this.bdRegistroConsultas =
       (process.env.BD_REGISTRO_CONSULTAS ?? 'false') === 'true';
+    this.jwtSecreto = process.env.JWT_SECRETO ?? 'dev-secret';
+    this.jwtEmisor = process.env.JWT_EMISOR ?? 'EDURA';
+    this.jwtAudiencia = process.env.JWT_AUDIENCIA ?? 'EDURA_WEB';
+    this.hashTokenSecreto = process.env.HASH_TOKEN_SECRETO ?? 'dev-secret';
+    this.jwtAccesoTtlSegundos = Number(
+      process.env.JWT_ACCESO_TTL_SEGUNDOS ?? 900,
+    );
+    this.tokenRefreshTtlSegundos = Number(
+      process.env.TOKEN_REFRESH_TTL_SEGUNDOS ?? 2592000,
+    );
   }
 }

@@ -2,115 +2,90 @@ import {
   Body,
   Controller,
   Get,
-  Headers,
   Post,
+  Req,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { Request } from 'express';
 import { CerrarSesionCasoUso } from '../../../aplicacion/autenticacion/cerrar-sesion.caso-uso';
 import { CerrarTodasSesionesCasoUso } from '../../../aplicacion/autenticacion/cerrar-todas-sesiones.caso-uso';
 import { IniciarSesionCasoUso } from '../../../aplicacion/autenticacion/iniciar-sesion.caso-uso';
 import { RenovarSesionCasoUso } from '../../../aplicacion/autenticacion/renovar-sesion.caso-uso';
+import { SeleccionarContextoCasoUso } from '../../../aplicacion/autenticacion/seleccionar-contexto.caso-uso';
 import { ListarContextosUsuarioConsulta } from '../../../aplicacion/consultas/contexto-acceso';
+import { PayloadAcceso } from '../../../dominio/valores/payload-acceso';
+import { Publico } from '../../../../../compartido/presentacion/http/decoradores/publico.decorador';
 import { IniciarSesionSolicitud } from '../solicitudes/iniciar-sesion.solicitud';
 import { RenovarSesionSolicitud } from '../solicitudes/renovar-sesion.solicitud';
-import {
-  AutenticacionRespuesta,
-  RenovacionSesionRespuesta,
-} from '../respuestas/autenticacion.respuesta';
-import { ContextoAccesoRespuesta } from '../respuestas/contexto-acceso.respuesta';
+import { SeleccionarContextoSolicitud } from '../solicitudes/seleccionar-contexto.solicitud';
+import { GuardiaJwt } from '../guardias/guardia-jwt';
+import { UseGuards } from '@nestjs/common';
 
-@Controller('api/v1/autenticacion')
+@UseGuards(GuardiaJwt)
+@Controller('autenticacion')
 export class AutenticacionControlador {
   constructor(
     private readonly iniciarSesion: IniciarSesionCasoUso,
     private readonly renovarSesion: RenovarSesionCasoUso,
     private readonly cerrarSesion: CerrarSesionCasoUso,
     private readonly cerrarTodas: CerrarTodasSesionesCasoUso,
+    private readonly seleccionarContexto: SeleccionarContextoCasoUso,
     private readonly listarContextos: ListarContextosUsuarioConsulta,
-    private readonly jwt: JwtService,
   ) {}
 
+  private obtenerUsuario(request: Request): PayloadAcceso {
+    const usuario = (request as Request & { usuario?: PayloadAcceso }).usuario;
+    if (!usuario) {
+      throw new UnauthorizedException('SESION_INVALIDA');
+    }
+    return usuario;
+  }
+
+  @Publico()
   @Post('iniciar-sesion')
-  async iniciar(
-    @Body() solicitud: IniciarSesionSolicitud,
-  ): Promise<AutenticacionRespuesta> {
+  iniciar(@Body() solicitud: IniciarSesionSolicitud) {
     return this.iniciarSesion.ejecutar(solicitud);
   }
 
+  @Publico()
   @Post('renovar')
-  async renovar(
-    @Body() solicitud: RenovarSesionSolicitud,
-  ): Promise<RenovacionSesionRespuesta> {
+  renovar(@Body() solicitud: RenovarSesionSolicitud) {
     return this.renovarSesion.ejecutar(solicitud);
   }
 
   @Post('cerrar-sesion')
-  async cerrar(
-    @Headers('authorization') authorization?: string,
-  ): Promise<void> {
-    const token = authorization?.startsWith('Bearer ')
-      ? authorization.slice(7)
-      : null;
-    if (!token) {
-      throw new UnauthorizedException('Sin autenticacion.');
-    }
-    const payload = await this.jwt.verifyAsync<{
-      sub: string;
-      sesionId?: string;
-    }>(token, {
-      secret: process.env.JWT_SECRETO ?? 'dev-secret',
-      issuer: process.env.JWT_EMISOR ?? 'EDURA',
-      audience: process.env.JWT_AUDIENCIA ?? 'EDURA_WEB',
-    });
-    await this.cerrarSesion.ejecutar({
-      usuarioId: payload.sub,
-      sesionId: payload.sesionId ?? payload.sub,
+  cerrar(@Req() request: Request) {
+    const usuario = this.obtenerUsuario(request);
+    return this.cerrarSesion.ejecutar({
+      usuarioId: usuario.sub,
+      sesionId: usuario.sid,
     });
   }
 
   @Post('cerrar-todas-las-sesiones')
-  async cerrarTodasLasSesiones(
-    @Headers('authorization') authorization?: string,
-  ): Promise<void> {
-    const token = authorization?.startsWith('Bearer ')
-      ? authorization.slice(7)
-      : null;
-    if (!token) {
-      throw new UnauthorizedException('Sin autenticacion.');
-    }
-    const payload = await this.jwt.verifyAsync<{ sub: string }>(token, {
-      secret: process.env.JWT_SECRETO ?? 'dev-secret',
-      issuer: process.env.JWT_EMISOR ?? 'EDURA',
-      audience: process.env.JWT_AUDIENCIA ?? 'EDURA_WEB',
+  cerrarTodasLasSesiones(@Req() request: Request) {
+    const usuario = this.obtenerUsuario(request);
+    return this.cerrarTodas.ejecutar({
+      usuarioId: usuario.sub,
     });
-    await this.cerrarTodas.ejecutar({ usuarioId: payload.sub });
   }
 
   @Get('contextos')
-  async contextos(
-    @Headers('authorization') authorization?: string,
-  ): Promise<ContextoAccesoRespuesta[]> {
-    const token = authorization?.startsWith('Bearer ')
-      ? authorization.slice(7)
-      : null;
-    if (!token) {
-      throw new UnauthorizedException('Sin autenticacion.');
-    }
-    const payload = await this.jwt.verifyAsync<{ sub: string }>(token, {
-      secret: process.env.JWT_SECRETO ?? 'dev-secret',
-      issuer: process.env.JWT_EMISOR ?? 'EDURA',
-      audience: process.env.JWT_AUDIENCIA ?? 'EDURA_WEB',
+  contextos(@Req() request: Request) {
+    return this.listarContextos.ejecutar(this.obtenerUsuario(request).sub);
+  }
+
+  @Post('seleccionar-contexto')
+  seleccionar(
+    @Req() request: Request,
+    @Body() solicitud: SeleccionarContextoSolicitud,
+  ) {
+    const usuario = this.obtenerUsuario(request);
+    return this.seleccionarContexto.ejecutar({
+      usuarioId: usuario.sub,
+      sesionId: usuario.sid,
+      contexto: solicitud,
+      versionSeguridad: usuario.versionSeguridad,
     });
-    const contextos = await this.listarContextos.ejecutar(payload.sub);
-    return contextos.map((contexto) => ({
-      ambito: contexto.ambito,
-      rolId: contexto.rolId,
-      rolCodigo: contexto.rolCodigo,
-      institucionId: contexto.institucionId,
-      institucionNombre: contexto.institucionNombre,
-      sedeId: contexto.sedeId,
-      sedeNombre: contexto.sedeNombre,
-    }));
   }
 }

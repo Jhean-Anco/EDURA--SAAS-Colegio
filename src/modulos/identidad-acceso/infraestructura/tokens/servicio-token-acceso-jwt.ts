@@ -1,4 +1,5 @@
 import { JwtService } from '@nestjs/jwt';
+import { PayloadAcceso } from '../../dominio/valores/payload-acceso';
 
 export class ServicioTokenAccesoJwt {
   constructor(
@@ -7,18 +8,18 @@ export class ServicioTokenAccesoJwt {
     private readonly audiencia: string,
   ) {}
 
-  firmar(entrada: {
-    usuarioId: string;
-    sesionId: string;
-    versionSeguridad: number;
-    ambito: 'PLATAFORMA' | 'INSTITUCION' | 'SEDE';
-    institucionId: string | null;
-    sedeId: string | null;
-  }): string {
+  firmar(entrada: PayloadAcceso, ttlSegundos: number): string {
     return this.jwt.sign(entrada, {
       issuer: this.emisor,
       audience: this.audiencia,
-      expiresIn: '15m',
+      expiresIn: ttlSegundos,
+    });
+  }
+
+  verificar(token: string): Promise<PayloadAcceso> {
+    return this.jwt.verifyAsync<PayloadAcceso>(token, {
+      issuer: this.emisor,
+      audience: this.audiencia,
     });
   }
 }
