@@ -6,6 +6,7 @@ import { EstructuraInstitucionalModule } from './modulos/estructura-instituciona
 import { InfraestructuraFisicaModule } from './modulos/infraestructura-fisica/infraestructura-fisica.module';
 import { IdentidadAccesoModule } from './modulos/identidad-acceso/identidad-acceso.module';
 import { PersonasModule } from './modulos/personas/personas.module';
+import { IntegracionesExternasModule } from './modulos/integraciones-externas/integraciones-externas.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { PersonasModule } from './modulos/personas/personas.module';
     InfraestructuraFisicaModule,
     IdentidadAccesoModule,
     PersonasModule,
+    IntegracionesExternasModule,
   ],
 })
 export class AppModule {}
