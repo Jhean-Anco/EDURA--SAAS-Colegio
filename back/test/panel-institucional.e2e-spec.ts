@@ -244,7 +244,7 @@ describeE2E('Panel institucional E2E (requiere BD)', () => {
         totalSedesActivas: 1,
         totalUsuariosActivos: 1,
         totalEspaciosFisicosActivos: 0,
-        totalEstudiantesActivos: null,
+        totalEstudiantesActivos: 0,
         totalDocentesActivos: null,
         matriculasPorEstado: [],
         asistenciaDelDia: null,

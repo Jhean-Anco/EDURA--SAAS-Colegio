@@ -19,7 +19,9 @@ export class PanelInstitucionalTypeormConsulta implements PanelInstitucionalCons
     >(
       `SELECT mi.estado, aru.id_sede AS "sedeId"
        FROM membresias_institucion mi
-       LEFT JOIN asignaciones_rol_usuario aru ON aru.id_membresia_institucion = mi.id AND aru.estado = 'ACTIVA'
+       LEFT JOIN asignaciones_rol_usuario aru
+         ON aru.id_membresia_institucion = mi.id
+        AND aru.estado = 'ACTIVA'
        WHERE mi.id_usuario = $1
          AND mi.id_institucion_educativa = $2
          AND mi.estado = 'ACTIVA'
@@ -44,7 +46,8 @@ export class PanelInstitucionalTypeormConsulta implements PanelInstitucionalCons
     >(
       `SELECT id, codigo, nombre_legal AS "nombre"
          FROM instituciones_educativas
-        WHERE id = $1 AND estado = 'ACTIVA'
+        WHERE id = $1
+          AND estado = 'ACTIVA'
         LIMIT 1`,
       [entrada.institucionId],
     );
@@ -58,7 +61,9 @@ export class PanelInstitucionalTypeormConsulta implements PanelInstitucionalCons
         >(
           `SELECT id, codigo, nombre
              FROM sedes
-            WHERE id = $1 AND id_institucion_educativa = $2 AND estado = 'ACTIVA'
+            WHERE id = $1
+              AND id_institucion_educativa = $2
+              AND estado = 'ACTIVA'
             LIMIT 1`,
           [entrada.sedeId, entrada.institucionId],
         )
@@ -68,6 +73,21 @@ export class PanelInstitucionalTypeormConsulta implements PanelInstitucionalCons
     }
 
     const sedeId = sede?.id ?? null;
+
+    const tieneTablaEstudiantes = await this.dataSource.query<
+      Array<{ existe: boolean }>
+    >(`SELECT to_regclass('public.estudiantes') IS NOT NULL AS existe`);
+    const totalEstudiantes = tieneTablaEstudiantes[0]?.existe
+      ? await this.dataSource.query<Array<{ total: string }>>(
+          `SELECT COUNT(*)::int AS total
+             FROM estudiantes e
+            WHERE e.id_institucion_educativa = $1
+              AND e.estado = 'ACTIVO'
+              AND ($2::uuid IS NULL OR e.id_sede = $2)`,
+          [entrada.institucionId, sedeId],
+        )
+      : [{ total: '0' }];
+
     const [totales] = await this.dataSource.query<
       Array<{
         totalSedesActivas: string;
@@ -76,13 +96,20 @@ export class PanelInstitucionalTypeormConsulta implements PanelInstitucionalCons
       }>
     >(
       `SELECT
-         (SELECT COUNT(*)::int FROM sedes s WHERE s.id_institucion_educativa = $1 AND s.estado = 'ACTIVA') AS "totalSedesActivas",
-         (SELECT COUNT(DISTINCT mi.id_usuario)::int FROM membresias_institucion mi WHERE mi.id_institucion_educativa = $1 AND mi.estado = 'ACTIVA') AS "totalUsuariosActivos",
+         (SELECT COUNT(*)::int
+            FROM sedes s
+           WHERE s.id_institucion_educativa = $1
+             AND s.estado = 'ACTIVA') AS "totalSedesActivas",
+         (SELECT COUNT(DISTINCT mi.id_usuario)::int
+            FROM membresias_institucion mi
+           WHERE mi.id_institucion_educativa = $1
+             AND mi.estado = 'ACTIVA') AS "totalUsuariosActivos",
          (SELECT COUNT(*)::int
             FROM espacios_fisicos ef
             INNER JOIN elementos_infraestructura ei ON ei.id = ef.id_elemento_infraestructura
             INNER JOIN sedes s ON s.id = ei.id_sede
-            WHERE s.id_institucion_educativa = $1 AND ei.estado = 'ACTIVO') AS "totalEspaciosFisicosActivos"`,
+           WHERE s.id_institucion_educativa = $1
+             AND ei.estado = 'ACTIVO') AS "totalEspaciosFisicosActivos"`,
       [entrada.institucionId],
     );
 
@@ -110,12 +137,23 @@ export class PanelInstitucionalTypeormConsulta implements PanelInstitucionalCons
         fechaGeneracion: Date;
       }>
     >(
-      `SELECT id, tipo, titulo, prioridad, estado, modulo_origen AS "moduloOrigen", fecha_generacion AS "fechaGeneracion"
+      `SELECT id,
+              tipo,
+              titulo,
+              prioridad,
+              estado,
+              modulo_origen AS "moduloOrigen",
+              fecha_generacion AS "fechaGeneracion"
          FROM alertas_institucionales
         WHERE id_institucion_educativa = $1
           AND estado IN ('PENDIENTE', 'EN_REVISION')
           AND ($2::uuid IS NULL OR id_sede = $2)
-        ORDER BY CASE prioridad WHEN 'CRITICA' THEN 1 WHEN 'ALTA' THEN 2 WHEN 'MEDIA' THEN 3 ELSE 4 END,
+        ORDER BY CASE prioridad
+                   WHEN 'CRITICA' THEN 1
+                   WHEN 'ALTA' THEN 2
+                   WHEN 'MEDIA' THEN 3
+                   ELSE 4
+                 END,
                  fecha_generacion DESC
         LIMIT 10`,
       [entrada.institucionId, sedeId],
@@ -131,7 +169,12 @@ export class PanelInstitucionalTypeormConsulta implements PanelInstitucionalCons
         fechaPublicacion: Date | null;
       }>
     >(
-      `SELECT id, titulo, tipo, prioridad, estado, fecha_publicacion AS "fechaPublicacion"
+      `SELECT id,
+              titulo,
+              tipo,
+              prioridad,
+              estado,
+              fecha_publicacion AS "fechaPublicacion"
          FROM comunicados_institucionales
         WHERE id_institucion_educativa = $1
           AND estado = 'PUBLICADO'
@@ -179,7 +222,7 @@ export class PanelInstitucionalTypeormConsulta implements PanelInstitucionalCons
             ? new Date(comunicado.fechaPublicacion).toISOString()
             : null,
         })),
-        totalEstudiantesActivos: null,
+        totalEstudiantesActivos: Number(totalEstudiantes[0]?.total ?? 0),
         totalDocentesActivos: null,
         matriculasPorEstado: [],
         asistenciaDelDia: null,

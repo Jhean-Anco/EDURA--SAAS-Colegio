@@ -51,6 +51,11 @@ import {
   AlertaInstitucionalTypeormEntidad,
   ComunicadoInstitucionalTypeormEntidad,
 } from '../../modulos/panel-institucional/infraestructura/persistencia/typeorm/entidades/panel-institucional.typeorm-entidades';
+import {
+  ApoderadoEstudianteTypeormEntidad,
+  DocumentoEstudianteTypeormEntidad,
+  EstudianteTypeormEntidad,
+} from '../../modulos/estudiantes/infraestructura/persistencia/typeorm/entidades/estudiantes.typeorm-entidades';
 
 export const entidadesTypeOrm = [
   InstitucionEducativaTypeormEntidad,
@@ -100,5 +105,8 @@ export const entidadesTypeOrm = [
   DireccionPersonaTypeormEntidad,
   AlertaInstitucionalTypeormEntidad,
   ComunicadoInstitucionalTypeormEntidad,
+  EstudianteTypeormEntidad,
+  ApoderadoEstudianteTypeormEntidad,
+  DocumentoEstudianteTypeormEntidad,
 ] as unknown as ConstructorEntidad[];
 type ConstructorEntidad = new (...argumentos: never[]) => unknown;

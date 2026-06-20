@@ -149,6 +149,60 @@ async function ejecutarDemo(): Promise<void> {
       [randomUUID(), personaId, institucionId],
     );
 
+    const personaEstudiante1 = randomUUID();
+    const personaEstudiante2 = randomUUID();
+    const personaApoderado1 = randomUUID();
+    await manager.query(
+      `INSERT INTO personas
+         (id, id_institucion_educativa, nombres, apellido_paterno, apellido_materno, fecha_nacimiento, sexo, estado, fecha_creacion, fecha_actualizacion)
+       VALUES
+         ($1, $2, 'Ana', 'Perez', 'Lopez', '2010-02-01', 'FEMENINO', 'ACTIVA', now(), now()),
+         ($3, $2, 'Bruno', 'Diaz', 'Ruiz', '2011-03-01', 'MASCULINO', 'ACTIVA', now(), now()),
+         ($4, $2, 'Carlos', 'Gomez', 'Soto', '1985-04-01', 'MASCULINO', 'ACTIVA', now(), now())
+       ON CONFLICT DO NOTHING`,
+      [
+        personaEstudiante1,
+        institucionId,
+        personaEstudiante2,
+        personaApoderado1,
+      ],
+    );
+    await manager.query(
+      `INSERT INTO estudiantes
+         (id, id_institucion_educativa, id_sede, id_persona, codigo, estado, fecha_ingreso, observacion, fecha_creacion, fecha_modificacion)
+       VALUES
+         ($1, $2, $3, $4, 'EST-001', 'ACTIVO', CURRENT_DATE, NULL, now(), now()),
+         ($5, $2, $3, $6, 'EST-002', 'ACTIVO', CURRENT_DATE, NULL, now(), now())`,
+      [
+        randomUUID(),
+        institucionId,
+        sedeId,
+        personaEstudiante1,
+        randomUUID(),
+        personaEstudiante2,
+      ],
+    );
+    const [estudiantesDemo] = await manager.query<{ id: string }[]>(
+      `SELECT id FROM estudiantes WHERE id_institucion_educativa = $1 ORDER BY fecha_creacion ASC LIMIT 1`,
+      [institucionId],
+    );
+    if (estudiantesDemo) {
+      await manager.query(
+        `INSERT INTO apoderados_estudiante
+           (id, id_institucion_educativa, id_estudiante, id_persona, parentesco, es_principal, puede_recoger, recibe_comunicaciones, estado, fecha_creacion, fecha_modificacion)
+         VALUES ($1, $2, $3, $4, 'MADRE', true, true, true, 'ACTIVO', now(), now())
+         ON CONFLICT DO NOTHING`,
+        [randomUUID(), institucionId, estudiantesDemo.id, personaApoderado1],
+      );
+      await manager.query(
+        `INSERT INTO documentos_estudiante
+           (id, id_institucion_educativa, id_estudiante, tipo_documento, nombre, estado, fecha_creacion, fecha_modificacion)
+         VALUES ($1, $2, $3, 'Ficha de matrícula', 'Ficha de matrícula 2025', 'PENDIENTE', now(), now())
+         ON CONFLICT DO NOTHING`,
+        [randomUUID(), institucionId, estudiantesDemo.id],
+      );
+    }
+
     await manager.query(
       `INSERT INTO alertas_institucionales
          (id, id_institucion_educativa, id_sede, tipo, titulo, descripcion, prioridad, estado, modulo_origen, id_recurso_origen, fecha_generacion, fecha_creacion, fecha_modificacion)

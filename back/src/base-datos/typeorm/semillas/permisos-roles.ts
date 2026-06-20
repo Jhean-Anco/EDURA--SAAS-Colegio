@@ -137,6 +137,42 @@ export const permisosSistema = [
     codigo: 'PANEL_INSTITUCIONAL.RESUMEN.LEER',
     descripcion: 'Ver el resumen del panel institucional',
   },
+  {
+    recurso: 'ESTUDIANTES',
+    accion: 'LEER',
+    codigo: 'ESTUDIANTES.LEER',
+    descripcion: 'Ver estudiantes',
+  },
+  {
+    recurso: 'ESTUDIANTES',
+    accion: 'CREAR',
+    codigo: 'ESTUDIANTES.CREAR',
+    descripcion: 'Crear estudiantes',
+  },
+  {
+    recurso: 'ESTUDIANTES',
+    accion: 'ACTUALIZAR',
+    codigo: 'ESTUDIANTES.ACTUALIZAR',
+    descripcion: 'Actualizar estudiantes',
+  },
+  {
+    recurso: 'ESTUDIANTES',
+    accion: 'CAMBIAR_ESTADO',
+    codigo: 'ESTUDIANTES.CAMBIAR_ESTADO',
+    descripcion: 'Cambiar estado de estudiantes',
+  },
+  {
+    recurso: 'ESTUDIANTES',
+    accion: 'APODERADOS.GESTIONAR',
+    codigo: 'ESTUDIANTES.APODERADOS.GESTIONAR',
+    descripcion: 'Gestionar apoderados de estudiantes',
+  },
+  {
+    recurso: 'ESTUDIANTES',
+    accion: 'DOCUMENTOS.GESTIONAR',
+    codigo: 'ESTUDIANTES.DOCUMENTOS.GESTIONAR',
+    descripcion: 'Gestionar documentos de estudiantes',
+  },
 ] as const;
 
 export const rolesSistema = [
@@ -183,6 +219,12 @@ export const permisosAdministradorInstitucion = [
   'PERSONAS.CONSULTAR_DNI',
   'GEOGRAFIA.CALCULAR_RUTA',
   'PANEL_INSTITUCIONAL.RESUMEN.LEER',
+  'ESTUDIANTES.LEER',
+  'ESTUDIANTES.CREAR',
+  'ESTUDIANTES.ACTUALIZAR',
+  'ESTUDIANTES.CAMBIAR_ESTADO',
+  'ESTUDIANTES.APODERADOS.GESTIONAR',
+  'ESTUDIANTES.DOCUMENTOS.GESTIONAR',
 ] as const;
 
 export const permisosDirectorSede = [
@@ -196,4 +238,10 @@ export const permisosDirectorSede = [
   'PERSONAS.GESTIONAR_DIRECCIONES',
   'PERSONAS.CONSULTAR_DNI',
   'PANEL_INSTITUCIONAL.RESUMEN.LEER',
+  'ESTUDIANTES.LEER',
+  'ESTUDIANTES.CREAR',
+  'ESTUDIANTES.ACTUALIZAR',
+  'ESTUDIANTES.CAMBIAR_ESTADO',
+  'ESTUDIANTES.APODERADOS.GESTIONAR',
+  'ESTUDIANTES.DOCUMENTOS.GESTIONAR',
 ] as const;
