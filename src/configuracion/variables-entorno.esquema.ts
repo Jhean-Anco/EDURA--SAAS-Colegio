@@ -6,6 +6,23 @@ export const variablesEntornoEsquema = Joi.object({
     .default('desarrollo'),
   PUERTO_API: Joi.number().port().default(3000),
   ORIGENES_CORS: Joi.string().default('http://localhost:5173'),
+  JWT_SECRETO: Joi.string().min(32).when('ENTORNO', {
+    is: 'produccion',
+    then: Joi.required(),
+    otherwise: Joi.optional(),
+  }),
+  JWT_EMISOR: Joi.string().default('EDURA'),
+  JWT_AUDIENCIA: Joi.string().default('EDURA_WEB'),
+  HASH_TOKEN_SECRETO: Joi.string().min(32).when('ENTORNO', {
+    is: 'produccion',
+    then: Joi.required(),
+    otherwise: Joi.optional(),
+  }),
+  JWT_ACCESO_TTL_SEGUNDOS: Joi.number().integer().positive().default(900),
+  TOKEN_REFRESH_TTL_SEGUNDOS: Joi.number()
+    .integer()
+    .positive()
+    .default(2592000),
   BD_HOST: Joi.string().required(),
   BD_PUERTO: Joi.number().port().required(),
   BD_USUARIO: Joi.string().required(),
