@@ -21,6 +21,20 @@ jobs:
   lint-build-test:
     name: Lint + Build + Unit Tests
     runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+      BD_HOST: localhost
+      BD_PUERTO: 5432
+      BD_USUARIO: edura
+      BD_CLAVE: edura_ci
+      BD_NOMBRE: edura_test
+      BD_SSL: 'false'
+      JWT_SECRETO: ci-secret-no-produccion
+      JWT_EMISOR: EDURA_CI
+      JWT_AUDIENCIA: EDURA_CI_WEB
+      HASH_TOKEN_SECRETO: ci-hash-secret-no-produccion
+      INTEGRACION_DOCUMENTOS_HABILITADA: 'false'
+      INTEGRACION_RUTAS_HABILITADA: 'false'
     steps:
       - uses: actions/checkout@v4
 
