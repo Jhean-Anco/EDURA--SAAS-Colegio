@@ -131,6 +131,24 @@ export const permisosSistema = [
     codigo: 'GEOGRAFIA.CALCULAR_RUTA',
     descripcion: 'Calcular rutas geográficas',
   },
+  {
+    recurso: 'PERIODOS',
+    accion: 'LEER',
+    codigo: 'PERIODOS.LEER',
+    descripcion: 'Ver años y períodos académicos',
+  },
+  {
+    recurso: 'PERIODOS',
+    accion: 'CREAR',
+    codigo: 'PERIODOS.CREAR',
+    descripcion: 'Crear años y períodos académicos',
+  },
+  {
+    recurso: 'PERIODOS',
+    accion: 'GESTIONAR',
+    codigo: 'PERIODOS.GESTIONAR',
+    descripcion: 'Cambiar estado de años y períodos académicos',
+  },
 ] as const;
 
 export const rolesSistema = [
@@ -176,6 +194,9 @@ export const permisosAdministradorInstitucion = [
   'PERSONAS.VINCULAR_USUARIO',
   'PERSONAS.CONSULTAR_DNI',
   'GEOGRAFIA.CALCULAR_RUTA',
+  'PERIODOS.LEER',
+  'PERIODOS.CREAR',
+  'PERIODOS.GESTIONAR',
 ] as const;
 
 export const permisosDirectorSede = [
@@ -188,4 +209,5 @@ export const permisosDirectorSede = [
   'PERSONAS.GESTIONAR_CONTACTOS',
   'PERSONAS.GESTIONAR_DIRECCIONES',
   'PERSONAS.CONSULTAR_DNI',
+  'PERIODOS.LEER',
 ] as const;
