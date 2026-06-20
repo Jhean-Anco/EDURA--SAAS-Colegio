@@ -25,6 +25,11 @@
     "db:migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/base-datos/typeorm/fuente-datos.ts",
     "db:migration:show": "typeorm-ts-node-commonjs migration:show -d src/base-datos/typeorm/fuente-datos.ts",
     "db:seed": "ts-node -r tsconfig-paths/register src/base-datos/typeorm/semillas/sembrar.ts",
+    "db:seed:catalogos": "ts-node -r tsconfig-paths/register src/base-datos/typeorm/semillas/sembrar.ts catalogos",
+    "db:seed:seguridad": "ts-node -r tsconfig-paths/register src/base-datos/typeorm/semillas/sembrar.ts seguridad",
+    "db:seed:bootstrap": "ts-node -r tsconfig-paths/register src/base-datos/typeorm/semillas/bootstrap-admin.ts",
+    "db:seed:demo": "ts-node -r tsconfig-paths/register src/base-datos/typeorm/semillas/demo.ts",
+    "db:seed:all": "ts-node -r tsconfig-paths/register src/base-datos/typeorm/semillas/sembrar-todo.ts",
     "db:reseed:local": "ts-node -r tsconfig-paths/register src/base-datos/typeorm/semillas/reiniciar-local.ts"
   },
   "dependencies": {
