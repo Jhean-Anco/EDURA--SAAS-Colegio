@@ -14,6 +14,7 @@ export class Usuario {
     readonly nombreMostrado: string,
     private _estado: EstadoUsuario = 'PENDIENTE',
     readonly correoVerificado = false,
+    readonly versionSeguridad = 1,
   ) {}
 
   get estado(): EstadoUsuario {
