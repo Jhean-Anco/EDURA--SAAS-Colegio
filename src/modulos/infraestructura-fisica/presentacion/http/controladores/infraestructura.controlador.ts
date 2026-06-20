@@ -30,7 +30,7 @@ export class InfraestructuraControlador {
     @Param('idSede') idSede: string,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<ElementosInfraestructuraListadoRespuesta> {
-    const sede = await this.sedes.obtenerPorId(idSede);
+    const sede = await this.sedes.obtenerActivaPorId(idSede);
     if (!sede) {
       throw new NotFoundException('RECURSO_NO_ENCONTRADO');
     }

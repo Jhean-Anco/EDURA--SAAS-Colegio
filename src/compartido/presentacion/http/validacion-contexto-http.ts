@@ -15,7 +15,11 @@ export function validarInstitucionDelContexto(
   institucionId: string,
 ): void {
   const ctx = exigirContextoAutenticado(contexto);
-  if (ctx.ambito !== 'PLATAFORMA' && ctx.institucionId !== institucionId) {
+  if (
+    ctx.ambito === 'PLATAFORMA'
+      ? false
+      : !ctx.institucionId || ctx.institucionId !== institucionId
+  ) {
     throw new NotFoundException('RECURSO_NO_ENCONTRADO');
   }
 }
@@ -26,7 +30,7 @@ export function validarSedeDelContexto(
   sedeId: string,
 ): void {
   const ctx = exigirContextoAutenticado(contexto);
-  if (!ctx.institucionId) {
+  if (!ctx.institucionId || (ctx.ambito === 'SEDE' && !ctx.sedeId)) {
     throw new ForbiddenException('CONTEXTO_NO_AUTORIZADO');
   }
   if (ctx.ambito === 'SEDE') {
@@ -38,4 +42,20 @@ export function validarSedeDelContexto(
   if (ctx.ambito === 'INSTITUCION' && ctx.institucionId !== institucionId) {
     throw new NotFoundException('RECURSO_NO_ENCONTRADO');
   }
+}
+
+export function validarPlataformaOContextoInstitucional(
+  contexto: ContextoSolicitudAutenticada | undefined,
+): ContextoSolicitudAutenticada {
+  const ctx = exigirContextoAutenticado(contexto);
+  if (ctx.ambito === 'PLATAFORMA') {
+    return ctx;
+  }
+  if (ctx.ambito === 'INSTITUCION' && ctx.institucionId) {
+    return ctx;
+  }
+  if (ctx.ambito === 'SEDE' && ctx.institucionId && ctx.sedeId) {
+    return ctx;
+  }
+  throw new ForbiddenException('CONTEXTO_NO_AUTORIZADO');
 }

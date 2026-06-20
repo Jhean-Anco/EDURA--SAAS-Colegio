@@ -64,8 +64,12 @@ export class InstitucionesControlador {
   @Get(':idInstitucion')
   async obtener(
     @Param('idInstitucion') idInstitucion: string,
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<InstitucionRespuesta> {
-    const institucion = await this.obtenerInstitucion.ejecutar(idInstitucion);
+    const institucion = await this.obtenerInstitucion.ejecutar(
+      idInstitucion,
+      ctx,
+    );
     return {
       id: institucion.id,
       codigo: institucion.codigo,
@@ -81,13 +85,17 @@ export class InstitucionesControlador {
   async actualizar(
     @Param('idInstitucion') idInstitucion: string,
     @Body() solicitud: CrearInstitucionSolicitud,
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<void> {
-    await this.actualizarInstitucion.ejecutar({
-      id: idInstitucion,
-      nombreLegal: solicitud.nombreLegal,
-      nombreCorto: solicitud.nombreCorto ?? null,
-      tipoGestion: solicitud.tipoGestion ?? null,
-    });
+    await this.actualizarInstitucion.ejecutar(
+      {
+        id: idInstitucion,
+        nombreLegal: solicitud.nombreLegal,
+        nombreCorto: solicitud.nombreCorto ?? null,
+        tipoGestion: solicitud.tipoGestion ?? null,
+      },
+      ctx,
+    );
   }
 
   @Permisos('INSTITUCIONES.ACTUALIZAR')
@@ -95,10 +103,12 @@ export class InstitucionesControlador {
   async cambiarEstado(
     @Param('idInstitucion') idInstitucion: string,
     @Body() solicitud: { estado: 'ACTIVA' | 'INACTIVA' | 'BAJA' },
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<void> {
     await this.cambiarEstadoInstitucion.ejecutar(
       idInstitucion,
       solicitud.estado,
+      ctx,
     );
   }
 }

@@ -1,26 +1,20 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { FiltroHttpGlobal } from '../compartido/presentacion/http/filtros/filtro-http.global';
+import { ConfiguracionAplicacion } from './configuracion-aplicacion';
 
 export function configurarAplicacion(
   app: INestApplication,
-  documentar = true,
+  configuracion: ConfiguracionAplicacion,
 ): void {
   app.setGlobalPrefix('api/v1');
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-      stopAtFirstError: false,
-    }),
-  );
   app.useGlobalFilters(new FiltroHttpGlobal());
 
-  if (documentar) {
+  if (configuracion.swaggerHabilitado) {
     const documentacion = new DocumentBuilder()
       .setTitle('API EDURA')
       .setVersion('1.0')
+      .addBearerAuth()
       .build();
     const swaggerDocument = SwaggerModule.createDocument(app, documentacion);
     SwaggerModule.setup('api/documentacion', app, swaggerDocument);

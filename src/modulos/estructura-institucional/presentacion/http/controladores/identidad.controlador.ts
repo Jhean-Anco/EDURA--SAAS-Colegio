@@ -6,6 +6,9 @@ import {
   Param,
 } from '@nestjs/common';
 import { Permisos } from '../../../../../compartido/presentacion/http/decoradores/permisos.decorador';
+import { ContextoActual } from '../../../../../compartido/presentacion/http/decoradores/contexto-actual.decorador';
+import { ContextoSolicitudAutenticada } from '../../../../../compartido/aplicacion/contexto-solicitud-autenticada';
+import { validarSedeDelContexto } from '../../../../../compartido/presentacion/http/validacion-contexto-http';
 import { ObtenerIdentidadSedeConsulta } from '../../../aplicacion/identidad/obtener-identidad-sede.consulta';
 import { IdentidadRespuesta } from '../respuestas/identidad.respuesta';
 import {
@@ -25,11 +28,13 @@ export class IdentidadControlador {
   @Get()
   async obtener(
     @Param('idSede') idSede: string,
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<IdentidadRespuesta | null> {
-    const sede = await this.sedes.obtenerPorId(idSede);
+    const sede = await this.sedes.obtenerActivaPorId(idSede);
     if (!sede) {
       throw new NotFoundException('RECURSO_NO_ENCONTRADO');
     }
+    validarSedeDelContexto(ctx, sede.institucionId, idSede);
     return this.consulta.ejecutar(idSede);
   }
 }

@@ -55,7 +55,7 @@ export class PaginasControlador {
     @Param('idSede') idSede: string,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<PaginaRespuesta[]> {
-    const sede = await this.sedes.obtenerPorId(idSede);
+    const sede = await this.sedes.obtenerActivaPorId(idSede);
     if (!sede) {
       throw new NotFoundException('RECURSO_NO_ENCONTRADO');
     }
@@ -71,7 +71,7 @@ export class PaginasControlador {
     @Body() solicitud: CrearPaginaSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<PaginaRespuesta> {
-    const sede = await this.sedes.obtenerPorId(idSede);
+    const sede = await this.sedes.obtenerActivaPorId(idSede);
     if (!sede) {
       throw new NotFoundException('RECURSO_NO_ENCONTRADO');
     }
@@ -93,17 +93,21 @@ export class PaginasControlador {
     @Body() solicitud: AgregarSeccionPaginaSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<SeccionPaginaSalida> {
-    const sede = await this.sedes.obtenerPorId(idSede);
+    const sede = await this.sedes.obtenerActivaPorId(idSede);
     if (!sede) {
       throw new NotFoundException('RECURSO_NO_ENCONTRADO');
     }
     validarSedeDelContexto(ctx, sede.institucionId, idSede);
-    return this.agregarSeccion.ejecutar({
-      paginaSedeId: idPagina,
-      tipoSeccion: solicitud.tipoSeccion,
-      contenido: solicitud.contenido ?? {},
-      orden: solicitud.orden ?? 0,
-    });
+    return this.agregarSeccion.ejecutar(
+      {
+        paginaSedeId: idPagina,
+        tipoSeccion: solicitud.tipoSeccion,
+        contenido: solicitud.contenido ?? {},
+        orden: solicitud.orden ?? 0,
+      },
+      idPagina,
+      idSede,
+    );
   }
 
   @Permisos('SEDES.ACTUALIZAR')
@@ -113,7 +117,7 @@ export class PaginasControlador {
     @Param('idPagina') idPagina: string,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<PaginaRespuesta | null> {
-    const sede = await this.sedes.obtenerPorId(idSede);
+    const sede = await this.sedes.obtenerActivaPorId(idSede);
     if (!sede) {
       throw new NotFoundException('RECURSO_NO_ENCONTRADO');
     }
@@ -129,7 +133,7 @@ export class PaginasControlador {
     @Param('idPagina') idPagina: string,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<PaginaRespuesta | null> {
-    const sede = await this.sedes.obtenerPorId(idSede);
+    const sede = await this.sedes.obtenerActivaPorId(idSede);
     if (!sede) {
       throw new NotFoundException('RECURSO_NO_ENCONTRADO');
     }
@@ -145,7 +149,7 @@ export class PaginasControlador {
     @Param('idPagina') idPagina: string,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<PaginaRespuesta | null> {
-    const sede = await this.sedes.obtenerPorId(idSede);
+    const sede = await this.sedes.obtenerActivaPorId(idSede);
     if (!sede) {
       throw new NotFoundException('RECURSO_NO_ENCONTRADO');
     }
@@ -158,15 +162,16 @@ export class PaginasControlador {
   @Patch(':idPagina/secciones/:idSeccion')
   async cambiarSeccion(
     @Param('idSede') idSede: string,
+    @Param('idPagina') idPagina: string,
     @Param('idSeccion') idSeccion: string,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<SeccionPaginaSalida | null> {
-    const sede = await this.sedes.obtenerPorId(idSede);
+    const sede = await this.sedes.obtenerActivaPorId(idSede);
     if (!sede) {
       throw new NotFoundException('RECURSO_NO_ENCONTRADO');
     }
     validarSedeDelContexto(ctx, sede.institucionId, idSede);
-    return this.cambiarEstadoSeccion.ejecutar(idSeccion, idSede);
+    return this.cambiarEstadoSeccion.ejecutar(idSeccion, idPagina, idSede);
   }
 
   @Permisos('SEDES.LEER')
@@ -174,7 +179,13 @@ export class PaginasControlador {
   async obtenerPagina(
     @Param('idSede') idSede: string,
     @Param('slugPagina') slugPagina: string,
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<PaginaRespuesta | null> {
+    const sede = await this.sedes.obtenerActivaPorId(idSede);
+    if (!sede) {
+      throw new NotFoundException('RECURSO_NO_ENCONTRADO');
+    }
+    validarSedeDelContexto(ctx, sede.institucionId, idSede);
     const pagina = await this.obtener.ejecutar(idSede, slugPagina);
     return pagina ? this.mapearPagina(pagina) : null;
   }

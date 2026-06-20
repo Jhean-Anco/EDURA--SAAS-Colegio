@@ -6,6 +6,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { DataSource } from 'typeorm';
 import { AppModule } from '../src/app.module';
+import { ConfiguracionAplicacion } from '../src/configuracion/configuracion-aplicacion';
 import { configurarAplicacion } from '../src/configuracion/configurar-aplicacion';
 
 const SKIP_E2E = !process.env['BD_HOST'];
@@ -21,7 +22,7 @@ describeE2E('Flujo personas E2E (requiere BD)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    configurarAplicacion(app, true);
+    configurarAplicacion(app, app.get(ConfiguracionAplicacion));
     await app.init();
 
     dataSource = moduleFixture.get(DataSource);
@@ -50,8 +51,8 @@ describeE2E('Flujo personas E2E (requiere BD)', () => {
     const membresiaB = randomUUID();
     const personaA = randomUUID();
     const personaB = randomUUID();
-    const correoA = 'persona-flujo-a@test.edura.local';
-    const correoB = 'persona-flujo-b@test.edura.local';
+    const correoA = `persona-flujo-a-${personaA}@test.edura.local`;
+    const correoB = `persona-flujo-b-${personaB}@test.edura.local`;
     const claveA = 'ClaveA@2024!';
     const claveB = 'ClaveB@2024!';
     const codigoInstitucionA = `FLUJO-A-${Date.now().toString(36)}`;
@@ -153,10 +154,33 @@ describeE2E('Flujo personas E2E (requiere BD)', () => {
     const tokenPrecontexto: string = (loginRes.body as { accessToken: string })
       .accessToken;
 
+    const contextosRes = await request(app.getHttpServer())
+      .get('/api/v1/autenticacion/contextos')
+      .set('Authorization', `Bearer ${tokenPrecontexto}`)
+      .expect(200);
+
+    const listaContextos = contextosRes.body as {
+      ambito: string;
+      institucionId: string | null;
+      sedeId: string | null;
+      rolCodigo?: string;
+      rolId?: string;
+    }[];
+    const contextoInstitucional = listaContextos.find(
+      (contexto) =>
+        contexto.ambito === 'INSTITUCION' &&
+        contexto.institucionId === institucionA,
+    );
+    if (!contextoInstitucional) {
+      throw new Error(
+        `No se encontro contexto institucional para la institucion ${institucionA}`,
+      );
+    }
+
     const contextoRes = await request(app.getHttpServer())
       .post('/api/v1/autenticacion/seleccionar-contexto')
       .set('Authorization', `Bearer ${tokenPrecontexto}`)
-      .send({ institucionId: institucionA, ambito: 'INSTITUCION' })
+      .send(contextoInstitucional)
       .expect(201);
 
     const tokenA = (contextoRes.body as { accessToken: string }).accessToken;

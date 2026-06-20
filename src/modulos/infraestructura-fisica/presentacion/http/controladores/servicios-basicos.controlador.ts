@@ -39,7 +39,7 @@ export class ServiciosBasicosControlador {
     @Param('idSede') idSede: string,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<ServicioBasicoSedeRespuesta[]> {
-    const sede = await this.sedes.obtenerPorId(idSede);
+    const sede = await this.sedes.obtenerActivaPorId(idSede);
     if (!sede) {
       throw new NotFoundException('RECURSO_NO_ENCONTRADO');
     }
@@ -54,7 +54,7 @@ export class ServiciosBasicosControlador {
     @Body() solicitud: RegistrarServicioBasicoSedeSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<ServicioBasicoSedeRespuesta> {
-    const sede = await this.sedes.obtenerPorId(idSede);
+    const sede = await this.sedes.obtenerActivaPorId(idSede);
     if (!sede) {
       throw new NotFoundException('RECURSO_NO_ENCONTRADO');
     }
@@ -76,7 +76,7 @@ export class ServiciosBasicosControlador {
     @Body() solicitud: CambiarEstadoServicioBasicoSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<ServicioBasicoSedeRespuesta> {
-    const sede = await this.sedes.obtenerPorId(idSede);
+    const sede = await this.sedes.obtenerActivaPorId(idSede);
     if (!sede) {
       throw new NotFoundException('RECURSO_NO_ENCONTRADO');
     }

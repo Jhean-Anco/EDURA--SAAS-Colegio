@@ -7,11 +7,20 @@ on:
       - 'release/**'
       - 'fix/**'
       - 'feat/**'
+      - 'feature/**'
+      - 'test/**'
+      - 'chore/**'
       - 'ci/**'
   pull_request:
     branches:
       - main
       - 'release/**'
+      - 'fix/**'
+      - 'feat/**'
+      - 'feature/**'
+      - 'test/**'
+      - 'chore/**'
+      - 'ci/**'
 
 env:
   NODE_VERSION: '24'
@@ -19,7 +28,7 @@ env:
 
 jobs:
   lint-build-test:
-    name: Lint + Build + Unit Tests
+    name: Lint + Build + Unit Tests + Coverage
     runs-on: ubuntu-latest
     env:
       NODE_ENV: test
@@ -35,6 +44,7 @@ jobs:
       HASH_TOKEN_SECRETO: ci-hash-secret-no-produccion-32-chars-minimo
       INTEGRACION_DOCUMENTOS_HABILITADA: 'false'
       INTEGRACION_RUTAS_HABILITADA: 'false'
+      SWAGGER_HABILITADO: 'false'
     steps:
       - uses: actions/checkout@v4
 
@@ -54,7 +64,10 @@ jobs:
         run: npm run build
 
       - name: Unit tests
-        run: npm run test:unit -- --coverage
+        run: npm run test:unit
+
+      - name: Coverage
+        run: npm run test:cov -- --runInBand
 
   migraciones-y-semillas:
     name: Migraciones + Semillas (idempotencia)
@@ -90,6 +103,7 @@ jobs:
       HASH_TOKEN_SECRETO: ci-hash-secret-no-produccion-32-chars-minimo
       INTEGRACION_DOCUMENTOS_HABILITADA: 'false'
       INTEGRACION_RUTAS_HABILITADA: 'false'
+      SWAGGER_HABILITADO: 'false'
 
     steps:
       - uses: actions/checkout@v4
@@ -109,7 +123,7 @@ jobs:
       - name: Sembrar catalogo y seguridad (primera vez)
         run: npm run db:seed:catalogos && npm run db:seed:seguridad
 
-      - name: Sembrar catalogo y seguridad (segunda vez — idempotencia)
+      - name: Sembrar catalogo y seguridad (segunda vez - idempotencia)
         run: npm run db:seed:catalogos && npm run db:seed:seguridad
 
       - name: Sembrar demo
@@ -152,6 +166,7 @@ jobs:
       HASH_TOKEN_SECRETO: ci-hash-secret-no-produccion-32-chars-minimo
       INTEGRACION_DOCUMENTOS_HABILITADA: 'false'
       INTEGRACION_RUTAS_HABILITADA: 'false'
+      SWAGGER_HABILITADO: 'false'
 
     steps:
       - uses: actions/checkout@v4
@@ -166,7 +181,13 @@ jobs:
         run: npm ci
 
       - name: Prepare database
-        run: npm run db:migration:run && npm run db:seed:all
+        run: npm run db:migration:run && npm run db:seed:catalogos && npm run db:seed:catalogos && npm run db:seed:seguridad && npm run db:seed:seguridad && npm run db:seed:all
+
+      - name: Revert last migration
+        run: npm run db:migration:revert
+
+      - name: Apply migration again
+        run: npm run db:migration:run
 
       - name: E2E tests
         run: npm run test:e2e

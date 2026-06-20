@@ -1,3 +1,4 @@
+import { RecursoNoEncontradoError } from '../../../../compartido/dominio/errores-dominio';
 import { RepositorioPaginas } from '../../dominio/paginas/repositorio-paginas.puerto';
 import { PaginaSalida } from './contratos/pagina.salida';
 import { SeccionPaginaSalida } from './contratos/seccion-pagina.salida';
@@ -59,9 +60,17 @@ export interface AgregarSeccionPaginaEntrada {
 export class AgregarSeccionPaginaCasoUso {
   constructor(private readonly repositorio: RepositorioPaginas) {}
 
-  ejecutar(entrada: AgregarSeccionPaginaEntrada): Promise<SeccionPaginaSalida> {
-    return this.repositorio.agregarSeccion({
-      paginaSedeId: entrada.paginaSedeId,
+  async ejecutar(
+    entrada: AgregarSeccionPaginaEntrada,
+    idPagina: string,
+    idSede: string,
+  ): Promise<SeccionPaginaSalida> {
+    const pagina = await this.repositorio.buscarPorIdYSede(idPagina, idSede);
+    if (!pagina) {
+      throw new RecursoNoEncontradoError('La pagina solicitada no existe.');
+    }
+    return this.repositorio.agregarSeccion(idPagina, idSede, {
+      paginaSedeId: idPagina,
       tipoSeccion: entrada.tipoSeccion,
       contenido: entrada.contenido,
       orden: entrada.orden,
@@ -100,7 +109,11 @@ export class RestaurarPaginaCasoUso {
 export class CambiarEstadoSeccionCasoUso {
   constructor(private readonly repositorio: RepositorioPaginas) {}
 
-  ejecutar(id: string, sedeId: string): Promise<SeccionPaginaSalida | null> {
-    return this.repositorio.publicarSeccion(id, sedeId);
+  ejecutar(
+    idSeccion: string,
+    idPagina: string,
+    sedeId: string,
+  ): Promise<SeccionPaginaSalida | null> {
+    return this.repositorio.publicarSeccion(idSeccion, idPagina, sedeId);
   }
 }

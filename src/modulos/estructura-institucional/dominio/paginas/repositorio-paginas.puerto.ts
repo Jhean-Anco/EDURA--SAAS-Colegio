@@ -32,6 +32,8 @@ export interface RepositorioPaginas {
     pagina: Partial<PaginaSedeResumenPersistencia>,
   ): Promise<PaginaSedeResumenPersistencia>;
   agregarSeccion(
+    paginaId: string,
+    sedeId: string,
     seccion: Partial<SeccionPaginaSedeResumenPersistencia>,
   ): Promise<SeccionPaginaSedeResumenPersistencia>;
   publicar(
@@ -48,6 +50,16 @@ export interface RepositorioPaginas {
   ): Promise<PaginaSedeResumenPersistencia | null>;
   publicarSeccion(
     id: string,
+    idPagina: string,
+    sedeId: string,
+  ): Promise<SeccionPaginaSedeResumenPersistencia | null>;
+  buscarPorIdYSede(
+    idPagina: string,
+    sedeId: string,
+  ): Promise<PaginaSedeResumenPersistencia | null>;
+  buscarSeccionPorIdYPagina(
+    idSeccion: string,
+    idPagina: string,
     sedeId: string,
   ): Promise<SeccionPaginaSedeResumenPersistencia | null>;
 }

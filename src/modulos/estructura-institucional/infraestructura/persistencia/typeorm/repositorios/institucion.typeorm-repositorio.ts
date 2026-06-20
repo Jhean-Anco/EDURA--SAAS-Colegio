@@ -31,6 +31,25 @@ export class InstitucionTypeormRepositorio implements RepositorioInstituciones {
     return entidad ? InstitucionEducativaMapeador.aDominio(entidad) : null;
   }
 
+  async buscarPorIdYAlcance(
+    id: string,
+    entrada: {
+      ambito: 'PLATAFORMA' | 'INSTITUCION' | 'SEDE';
+      institucionId: string | null;
+    },
+  ): Promise<InstitucionEducativa | null> {
+    if (entrada.ambito !== 'PLATAFORMA' && !entrada.institucionId) {
+      return null;
+    }
+    if (entrada.ambito !== 'PLATAFORMA' && entrada.institucionId !== id) {
+      return null;
+    }
+    const entidad = await this.repositorio.findOne({
+      where: { id },
+    });
+    return entidad ? InstitucionEducativaMapeador.aDominio(entidad) : null;
+  }
+
   async buscarPorCodigo(codigo: string): Promise<InstitucionEducativa | null> {
     const entidad = await this.repositorio.findOne({ where: { codigo } });
     return entidad ? InstitucionEducativaMapeador.aDominio(entidad) : null;
@@ -49,7 +68,7 @@ export class InstitucionTypeormRepositorio implements RepositorioInstituciones {
         ? {}
         : entrada.institucionId
           ? { id: entrada.institucionId }
-          : {};
+          : { id: '__no_autorizado__' };
     const entidades = await this.repositorio.find({
       where,
       order: { nombreLegal: 'ASC' },
@@ -67,5 +86,32 @@ export class InstitucionTypeormRepositorio implements RepositorioInstituciones {
       tipoGestion: institucion.tipoGestion,
       estado: institucion.estado,
     });
+  }
+
+  async actualizarPorIdYAlcance(
+    id: string,
+    entrada: {
+      ambito: 'PLATAFORMA' | 'INSTITUCION' | 'SEDE';
+      institucionId: string | null;
+    },
+    cambios: Partial<InstitucionEducativa>,
+  ): Promise<boolean> {
+    if (entrada.ambito !== 'PLATAFORMA' && !entrada.institucionId) {
+      return false;
+    }
+    if (entrada.ambito !== 'PLATAFORMA' && entrada.institucionId !== id) {
+      return false;
+    }
+    const resultado = await this.repositorio.update(
+      { id },
+      {
+        codigo: cambios.codigo,
+        nombreLegal: cambios.nombreLegal,
+        nombreCorto: cambios.nombreCorto,
+        tipoGestion: cambios.tipoGestion,
+        estado: cambios.estado,
+      },
+    );
+    return (resultado.affected ?? 0) === 1;
   }
 }

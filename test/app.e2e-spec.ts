@@ -2,19 +2,21 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { configurarAplicacion } from '../src/configuracion/configurar-aplicacion';
+import { ConfiguracionAplicacion } from '../src/configuracion/configuracion-aplicacion';
 import { AppModule } from '../src/app.module';
+import { configurarAplicacion } from '../src/configuracion/configurar-aplicacion';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
 
   beforeEach(async () => {
+    process.env.SWAGGER_HABILITADO = 'true';
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    configurarAplicacion(app, true);
+    configurarAplicacion(app, app.get(ConfiguracionAplicacion));
     await app.init();
   });
 
