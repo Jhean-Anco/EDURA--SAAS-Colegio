@@ -31,3 +31,5 @@
 
 - Swagger: `/api/documentacion`
 - Salud: `/api/v1/salud`
+- Módulos principales: estructura institucional e infraestructura física
+- Entidades registradas: 27

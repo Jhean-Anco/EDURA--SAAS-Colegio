@@ -3,35 +3,38 @@
 ## Garantizado por PostgreSQL
 
 - Unicidad de códigos en catálogos.
-- Unicidad de `sedes` por institución y código.
-- Única sede principal activa por institución mediante índice parcial.
-- Autorrelación de `ubigeos` con FK restrictiva.
-- Autorrelación de `elementos_infraestructura` con FK compuesta a la misma sede.
-- FK restrictivas entre especializaciones y `elementos_infraestructura`.
-- Restricciones de no negatividad y fechas coherentes incluidas en la migración V02.
+- Unicidad de sede por institución y código.
+- Sede principal activa única por institución.
+- Autorrelación de ubigeos.
+- Una identidad por sede.
+- Slug público único cuando existe.
+- Una página de inicio publicada por sede.
+- Orden único por página en secciones.
+- Jerarquía física por `id_elemento_padre`.
+- FKs restrictivas en especializaciones.
 
 ## Representado por TypeORM
 
-- Registro exacto de 21 entidades.
+- Registro de 27 entidades.
+- Relaciones explícitas con `JoinColumn`.
 - Especializaciones con PK/FK compartida.
-- Relaciones `ManyToOne` y `OneToOne` explícitas con `JoinColumn`.
 - `synchronize: false`.
 - `migrationsRun: false`.
 
 ## Pendiente para dominio
 
-- Validación semántica del estado de cada tipo de elemento.
-- Reglas de negocio sobre creación, traslado y baja de infraestructura.
-- Coherencia funcional entre sede, elemento y catálogo.
+- Reglas de publicación de identidad.
+- Validación de contenido JSON por sección.
+- Reglas de jerarquía sin ciclos.
+- Reglas de publicación/despublicación de páginas.
 
 ## Pendiente para aplicación
 
-- Casos de uso para creación y actualización.
-- Comandos/consultas de mantenimiento.
-- Flujo de carga y reconciliación de datos externos.
+- Casos de uso de creación, actualización, publicación y consulta.
+- Validación de permisos futuros por sede/institución.
 
 ## Pendiente de pruebas
 
-- Verificación contra PostgreSQL real de restricciones y semillas idempotentes.
-- Escenarios de rechazo por padre de otra sede.
-- Repetición de semillas sin duplicados.
+- Integración real con PostgreSQL.
+- CTE recursivo de árbol y rutas.
+- Transacciones de creación y rollback.
