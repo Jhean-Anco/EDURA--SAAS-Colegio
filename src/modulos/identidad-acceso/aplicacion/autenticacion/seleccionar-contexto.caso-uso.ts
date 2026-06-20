@@ -1,4 +1,5 @@
 import { ForbiddenException } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { RepositorioAuditoria } from '../../dominio/puertos/repositorios';
 import { EventoAuditoria } from '../../dominio/auditoria/evento-auditoria';
 import { ServicioTokenAccesoJwt } from '../../infraestructura/tokens/servicio-token-acceso-jwt';
@@ -57,7 +58,7 @@ export class SeleccionarContextoCasoUso {
     );
     await this.auditoria.registrar(
       new EventoAuditoria(
-        entrada.usuarioId,
+        randomUUID(),
         'CONTEXTO_SELECCIONADO',
         'autenticacion',
         'EXITO',

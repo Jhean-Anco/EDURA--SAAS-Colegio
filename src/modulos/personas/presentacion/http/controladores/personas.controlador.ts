@@ -11,6 +11,7 @@ import {
   Post,
   Put,
   Query,
+  NotFoundException,
 } from '@nestjs/common';
 import { Permisos } from '../../../../../compartido/presentacion/http/decoradores/permisos.decorador';
 import { ContextoActual } from '../../../../../compartido/presentacion/http/decoradores/contexto-actual.decorador';
@@ -90,12 +91,19 @@ export class PersonasControlador {
 
   @Permisos('PERSONAS.LEER')
   @Get(':idPersona')
-  obtener(
+  async obtener(
     @Param('idPersona', ParseUUIDPipe) idPersona: string,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
-  ): Promise<Persona | null> {
+  ): Promise<Persona> {
     validarInstitucionDelContexto(ctx, this.instId(ctx));
-    return this.obtenerPersona.ejecutar(idPersona, this.instId(ctx));
+    const persona = await this.obtenerPersona.ejecutar(
+      idPersona,
+      this.instId(ctx),
+    );
+    if (!persona) {
+      throw new NotFoundException('PERSONA_NO_ENCONTRADA');
+    }
+    return persona;
   }
 
   @Permisos('PERSONAS.GESTIONAR_DOCUMENTOS')
