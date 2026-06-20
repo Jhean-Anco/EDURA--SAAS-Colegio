@@ -3,8 +3,8 @@ import { join } from 'node:path';
 import { entidadesTypeOrm } from '../../src/base-datos/typeorm/typeorm.registro';
 
 describe('Registro TypeORM', () => {
-  it('contiene exactamente 21 entidades', () => {
-    expect(entidadesTypeOrm).toHaveLength(21);
+  it('contiene exactamente 27 entidades', () => {
+    expect(entidadesTypeOrm).toHaveLength(27);
   });
 
   it('no duplica un segundo id en las especializaciones', () => {

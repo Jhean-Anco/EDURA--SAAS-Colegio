@@ -1,5 +1,11 @@
 import { DireccionSedeTypeormEntidad } from '../../modulos/estructura-institucional/infraestructura/persistencia/typeorm/entidades/direccion-sede.typeorm-entidad';
+import { CanalContactoSedeTypeormEntidad } from '../../modulos/estructura-institucional/infraestructura/persistencia/typeorm/entidades/canal-contacto-sede.typeorm-entidad';
+import { HorarioAtencionSedeTypeormEntidad } from '../../modulos/estructura-institucional/infraestructura/persistencia/typeorm/entidades/horario-atencion-sede.typeorm-entidad';
+import { IdentidadSedeTypeormEntidad } from '../../modulos/estructura-institucional/infraestructura/persistencia/typeorm/entidades/identidad-sede.typeorm-entidad';
+import { PaginaSedeTypeormEntidad } from '../../modulos/estructura-institucional/infraestructura/persistencia/typeorm/entidades/pagina-sede.typeorm-entidad';
+import { RecursoIdentidadSedeTypeormEntidad } from '../../modulos/estructura-institucional/infraestructura/persistencia/typeorm/entidades/recurso-identidad-sede.typeorm-entidad';
 import { InstitucionEducativaTypeormEntidad } from '../../modulos/estructura-institucional/infraestructura/persistencia/typeorm/entidades/institucion-educativa.typeorm-entidad';
+import { SeccionPaginaSedeTypeormEntidad } from '../../modulos/estructura-institucional/infraestructura/persistencia/typeorm/entidades/seccion-pagina-sede.typeorm-entidad';
 import { SedeTypeormEntidad } from '../../modulos/estructura-institucional/infraestructura/persistencia/typeorm/entidades/sede.typeorm-entidad';
 import { UbigeoTypeormEntidad } from '../../modulos/estructura-institucional/infraestructura/persistencia/typeorm/entidades/ubigeo.typeorm-entidad';
 import { ComponenteInfraestructuraTypeormEntidad } from '../../modulos/infraestructura-fisica/infraestructura/persistencia/typeorm/entidades/componente-infraestructura.typeorm-entidad';
@@ -25,6 +31,12 @@ export const entidadesTypeOrm = [
   SedeTypeormEntidad,
   UbigeoTypeormEntidad,
   DireccionSedeTypeormEntidad,
+  IdentidadSedeTypeormEntidad,
+  RecursoIdentidadSedeTypeormEntidad,
+  CanalContactoSedeTypeormEntidad,
+  HorarioAtencionSedeTypeormEntidad,
+  PaginaSedeTypeormEntidad,
+  SeccionPaginaSedeTypeormEntidad,
   TipoServicioBasicoTypeormEntidad,
   ServicioBasicoSedeTypeormEntidad,
   TipoElementoInfraestructuraTypeormEntidad,

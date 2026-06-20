@@ -4,6 +4,12 @@
 
 - `instituciones_educativas` 1---n `sedes`
 - `sedes` 1---1 `direcciones_sede`
+- `sedes` 1---0..1 `identidades_sede`
+- `identidades_sede` 1---n `recursos_identidad_sede`
+- `sedes` 1---n `canales_contacto_sede`
+- `sedes` 1---n `horarios_atencion_sede`
+- `sedes` 1---n `paginas_sede`
+- `paginas_sede` 1---n `secciones_pagina_sede`
 - `ubigeos` 1---n `ubigeos` por `id_ubigeo_padre`
 - `ubigeos` 1---n `direcciones_sede`
 - `sedes` 1---n `servicios_basicos_sede`
@@ -35,4 +41,4 @@
 
 - La jerarquía física se expresa por `elementos_infraestructura.id_elemento_padre`.
 - Las especializaciones comparten la PK/FK `id_elemento_infraestructura`.
-- No se modelan tablas adicionales fuera de las 21 entidades registradas.
+- No se modelan tablas adicionales fuera de las 27 entidades registradas.
