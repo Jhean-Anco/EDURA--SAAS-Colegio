@@ -54,7 +54,7 @@ jobs:
         run: npm run build
 
       - name: Unit tests
-        run: npm test -- --runInBand --coverage
+        run: npm run test:unit -- --coverage
 
   migraciones-y-semillas:
     name: Migraciones + Semillas (idempotencia)
@@ -169,4 +169,4 @@ jobs:
         run: npm run db:migration:run && npm run db:seed:all
 
       - name: E2E tests
-        run: npm run test:e2e -- --runInBand
+        run: npm run test:e2e
