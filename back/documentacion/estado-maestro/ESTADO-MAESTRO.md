@@ -11,6 +11,15 @@
 - Evidencia automatizada: `lint`, `build` y `test` pasan.
 - E2E de aislamiento: requiere PostgreSQL activo para ejecucion completa.
 
+## PR-PLT-00
+
+- Estado: en estabilizacion backend.
+- Bootstrap propietario: alineado al esquema vigente e idempotente.
+- Semilla demo: restringida a desarrollo/test/ci e idempotente.
+- Contexto plataforma: corregido para no exigir `institucionId`.
+- CI: preparado para bootstrap, migraciones y semillas idempotentes con PostgreSQL 16.
+- Evidencia automatizada: `lint`, `build`, `test:unit` y cobertura pasan.
+
 ## RSK-006
 
 - Estado: corregido en codigo.
@@ -23,8 +32,10 @@
 ## ADR
 
 - ADR-011 actualizado y alineado con la implementacion.
+- ADR-012 agregado para la evolucion SaaS directa por institucion.
 
 ## Riesgos residuales
 
 - Falta ejecutar la suite E2E de aislamiento con una base PostgreSQL disponible.
 - Cualquier controlador nuevo que use `idInstitucion` o `idSede` debe seguir la misma validacion de contexto.
+- El cierre total de PR-PLT-00 sigue dependiendo de la ejecucion E2E contra PostgreSQL real.

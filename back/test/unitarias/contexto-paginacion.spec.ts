@@ -25,6 +25,12 @@ describe('Paginacion', () => {
 });
 
 describe('Contexto', () => {
+  const contextoPlataforma = {
+    tipoToken: 'ACCESO',
+    ambito: 'PLATAFORMA',
+    institucionId: null,
+    sedeId: null,
+  } as ContextoSolicitudAutenticada;
   const contextoSede = {
     tipoToken: 'ACCESO',
     ambito: 'SEDE',
@@ -42,5 +48,11 @@ describe('Contexto', () => {
     expect(() =>
       validarSedeDelContexto(contextoSede, 'inst-1', 'sede-2'),
     ).toThrow(NotFoundException);
+  });
+
+  it('permite contexto plataforma sin institucion ni sede', () => {
+    expect(() =>
+      validarSedeDelContexto(contextoPlataforma, 'inst-1', 'sede-2'),
+    ).not.toThrow();
   });
 });

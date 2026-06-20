@@ -41,3 +41,8 @@
 - `GuardiaJwt` y `GuardiaPermisos` se registran globalmente mediante `APP_GUARD`.
 - El contexto institucional y de sede se deriva del token autenticado.
 - La política detallada vive en `documentacion/adr/ADR-011-seguridad-fail-closed.md`.
+## Semillas
+
+- `npm run db:seed:bootstrap` asegura el propietario de plataforma.
+- `npm run db:seed:demo` solo corre en desarrollo/test/ci.
+- `npm run db:seed:all` ejecuta catálogos, seguridad, bootstrap y demo.

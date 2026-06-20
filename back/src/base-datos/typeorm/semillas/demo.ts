@@ -1,13 +1,15 @@
 import * as argon2 from 'argon2';
 import { randomUUID } from 'crypto';
 import fuenteDatos from '../fuente-datos';
-
-const ENTORNOS_PERMITIDOS = ['desarrollo', 'test', 'development'];
+import {
+  entornoPermiteSemillasDemo,
+  normalizarCorreo,
+} from './utilidades-semilla';
 
 async function ejecutarDemo(): Promise<void> {
   const entorno = process.env['NODE_ENV'] ?? 'development';
 
-  if (!ENTORNOS_PERMITIDOS.includes(entorno)) {
+  if (!entornoPermiteSemillasDemo(entorno)) {
     throw new Error(
       `La semilla demo solo se ejecuta en entornos de desarrollo/test. NODE_ENV=${entorno}`,
     );
@@ -18,8 +20,10 @@ async function ejecutarDemo(): Promise<void> {
   }
 
   await fuenteDatos.transaction(async (manager) => {
+    const codigoDemo = 'DEMO';
     const [instExistente] = await manager.query<{ id: string }[]>(
-      `SELECT id FROM instituciones_educativas WHERE ruc = '00000000000' LIMIT 1`,
+      `SELECT id FROM instituciones_educativas WHERE codigo = $1 LIMIT 1`,
+      [codigoDemo],
     );
 
     if (instExistente) {
@@ -30,9 +34,9 @@ async function ejecutarDemo(): Promise<void> {
     const institucionId = randomUUID();
     await manager.query(
       `INSERT INTO instituciones_educativas
-         (id, nombre, nombre_corto, ruc, estado, fecha_creacion, fecha_actualizacion)
-       VALUES ($1, 'Institución Demo', 'DEMO', '00000000000', 'ACTIVA', now(), now())`,
-      [institucionId],
+         (id, codigo, nombre, nombre_corto, ruc, estado, fecha_creacion, fecha_actualizacion)
+       VALUES ($1, $2, 'Institucion Demo', 'DEMO', '00000000000', 'ACTIVA', now(), now())`,
+      [institucionId, codigoDemo],
     );
 
     const sedeId = randomUUID();
@@ -44,25 +48,46 @@ async function ejecutarDemo(): Promise<void> {
     );
 
     const usuarioAdminId = randomUUID();
+    const correoAdmin = normalizarCorreo('admin.demo@institucion.local');
+    const correoPersona = normalizarCorreo('persona.demo@institucion.local');
     const hashClave = await argon2.hash('Demo@2024!', {
       type: argon2.argon2id,
     });
     await manager.query(
-      `INSERT INTO usuarios (id, correo_electronico, nombre_mostrado, estado, version_seguridad, fecha_creacion, fecha_actualizacion)
-       VALUES ($1, 'admin.demo@institucion.local', 'Admin Demo', 'ACTIVO', 1, now(), now())`,
-      [usuarioAdminId],
+      `INSERT INTO usuarios
+         (id, correo, correo_normalizado, nombre_mostrado, estado, correo_verificado, version_seguridad, fecha_creacion, fecha_modificacion)
+       VALUES ($1, $2, $3, 'Admin Demo', 'ACTIVO', false, 1, now(), now())
+       ON CONFLICT (correo_normalizado) DO UPDATE
+         SET correo = EXCLUDED.correo,
+             nombre_mostrado = EXCLUDED.nombre_mostrado,
+             estado = 'ACTIVO',
+             version_seguridad = GREATEST(usuarios.version_seguridad, EXCLUDED.version_seguridad),
+             fecha_modificacion = now()`,
+      [usuarioAdminId, correoAdmin, correoAdmin],
     );
     await manager.query(
-      `INSERT INTO credenciales_usuario (id, id_usuario, tipo, hash_clave, activo, fecha_creacion, fecha_actualizacion)
-       VALUES ($1, $2, 'CLAVE_HASH', $3, true, now(), now())`,
-      [randomUUID(), usuarioAdminId, hashClave],
+      `INSERT INTO credenciales_usuario
+         (id_usuario, hash_clave, algoritmo, requiere_cambio, intentos_fallidos, fecha_cambio_clave, fecha_modificacion)
+       VALUES ($1, $2, 'ARGON2ID', true, 0, now(), now())
+       ON CONFLICT (id_usuario) DO UPDATE
+         SET hash_clave = EXCLUDED.hash_clave,
+             algoritmo = EXCLUDED.algoritmo,
+             requiere_cambio = true,
+             intentos_fallidos = 0,
+             fecha_cambio_clave = now(),
+             fecha_modificacion = now()`,
+      [usuarioAdminId, hashClave],
     );
 
     const membresiaId = randomUUID();
     await manager.query(
       `INSERT INTO membresias_institucion
          (id, id_usuario, id_institucion_educativa, estado, fecha_inicio, fecha_creacion, fecha_actualizacion)
-       VALUES ($1, $2, $3, 'ACTIVA', CURRENT_DATE, now(), now())`,
+       VALUES ($1, $2, $3, 'ACTIVA', CURRENT_DATE, now(), now())
+       ON CONFLICT (id_usuario, id_institucion_educativa) DO UPDATE
+         SET estado = 'ACTIVA',
+             fecha_inicio = COALESCE(membresias_institucion.fecha_inicio, CURRENT_DATE),
+             fecha_actualizacion = now()`,
       [membresiaId, usuarioAdminId, institucionId],
     );
 
@@ -72,9 +97,12 @@ async function ejecutarDemo(): Promise<void> {
     if (rolAdmin) {
       await manager.query(
         `INSERT INTO asignaciones_rol_usuario
-           (id, id_usuario, id_rol, id_membresia_institucion, id_sede, ambito, estado, fecha_inicio, fecha_creacion, fecha_actualizacion)
-         VALUES ($1, $2, $3, $4, NULL, 'INSTITUCION', 'ACTIVA', CURRENT_DATE, now(), now())`,
-        [randomUUID(), usuarioAdminId, rolAdmin.id, membresiaId],
+           (id, id_usuario, id_rol, id_membresia_institucion, id_sede, estado, fecha_inicio, fecha_creacion)
+         SELECT $1, $2, $3, m.id, NULL, 'ACTIVA', CURRENT_DATE, now()
+           FROM membresias_institucion m
+          WHERE m.id_usuario = $2 AND m.id_institucion_educativa = $4
+          ON CONFLICT DO NOTHING`,
+        [randomUUID(), usuarioAdminId, rolAdmin.id, institucionId],
       );
     }
 
@@ -96,7 +124,8 @@ async function ejecutarDemo(): Promise<void> {
         `INSERT INTO documentos_identidad_persona
            (id, id_persona, id_institucion_educativa, id_tipo_documento_identidad,
             numero, numero_normalizado, es_principal, estado, fecha_creacion, fecha_actualizacion)
-         VALUES ($1, $2, $3, $4, '00000001', '00000001', true, 'ACTIVO', now(), now())`,
+         VALUES ($1, $2, $3, $4, '00000001', '00000001', true, 'ACTIVO', now(), now())
+         ON CONFLICT DO NOTHING`,
         [randomUUID(), personaId, institucionId, tipoDoc.id],
       );
     }
@@ -105,9 +134,9 @@ async function ejecutarDemo(): Promise<void> {
       `INSERT INTO medios_contacto_persona
          (id, id_persona, id_institucion_educativa, tipo, valor, valor_normalizado,
           es_principal, estado, fecha_creacion, fecha_actualizacion)
-       VALUES ($1, $2, $3, 'CORREO', 'persona.demo@institucion.local', 'persona.demo@institucion.local',
-               true, 'ACTIVO', now(), now())`,
-      [randomUUID(), personaId, institucionId],
+       VALUES ($1, $2, $3, 'CORREO', $4, $5, true, 'ACTIVO', now(), now())
+       ON CONFLICT DO NOTHING`,
+      [randomUUID(), personaId, institucionId, correoPersona, correoPersona],
     );
 
     await manager.query(
@@ -115,11 +144,12 @@ async function ejecutarDemo(): Promise<void> {
          (id, id_persona, id_institucion_educativa, direccion_linea, referencia,
           es_principal, estado, fecha_creacion, fecha_actualizacion)
        VALUES ($1, $2, $3, 'Av. Demo 000, Ciudad Demo', 'Referencia de ejemplo',
-               true, 'ACTIVA', now(), now())`,
+               true, 'ACTIVA', now(), now())
+       ON CONFLICT DO NOTHING`,
       [randomUUID(), personaId, institucionId],
     );
 
-    console.log(`Datos demo creados. Institución id=${institucionId}`);
+    console.log(`Datos demo creados. Institucion id=${institucionId}`);
   });
 }
 

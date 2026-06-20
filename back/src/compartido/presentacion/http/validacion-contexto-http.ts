@@ -30,16 +30,22 @@ export function validarSedeDelContexto(
   sedeId: string,
 ): void {
   const ctx = exigirContextoAutenticado(contexto);
-  if (!ctx.institucionId || (ctx.ambito === 'SEDE' && !ctx.sedeId)) {
+  if (ctx.ambito === 'PLATAFORMA') {
+    return;
+  }
+  if (!ctx.institucionId) {
     throw new ForbiddenException('CONTEXTO_NO_AUTORIZADO');
   }
-  if (ctx.ambito === 'SEDE') {
-    if (ctx.sedeId !== sedeId || ctx.institucionId !== institucionId) {
+  if (ctx.ambito === 'INSTITUCION') {
+    if (ctx.institucionId !== institucionId) {
       throw new NotFoundException('RECURSO_NO_ENCONTRADO');
     }
     return;
   }
-  if (ctx.ambito === 'INSTITUCION' && ctx.institucionId !== institucionId) {
+  if (!ctx.sedeId) {
+    throw new ForbiddenException('CONTEXTO_NO_AUTORIZADO');
+  }
+  if (ctx.sedeId !== sedeId || ctx.institucionId !== institucionId) {
     throw new NotFoundException('RECURSO_NO_ENCONTRADO');
   }
 }

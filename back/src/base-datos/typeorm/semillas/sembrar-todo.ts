@@ -2,6 +2,7 @@ import fuenteDatos from '../fuente-datos';
 import { ejecutarSemilla } from './sembrar';
 import { ejecutarBootstrapAdmin } from './bootstrap-admin';
 import { ejecutarDemo } from './demo';
+import { entornoPermiteSemillasDemo } from './utilidades-semilla';
 
 async function sembrarTodo(): Promise<void> {
   if (!fuenteDatos.isInitialized) {
@@ -19,7 +20,7 @@ async function sembrarTodo(): Promise<void> {
   }
 
   const entorno = process.env['NODE_ENV'] ?? 'development';
-  if (['desarrollo', 'test', 'development'].includes(entorno)) {
+  if (entornoPermiteSemillasDemo(entorno)) {
     await ejecutarDemo();
   }
 

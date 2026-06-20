@@ -38,3 +38,10 @@
 - Integración real con PostgreSQL.
 - CTE recursivo de árbol y rutas.
 - Transacciones de creación y rollback.
+## Reglas SaaS documentadas
+
+- `PLATAFORMA` no requiere `institucionId`.
+- `INSTITUCION` requiere `institucionId`.
+- `SEDE` requiere `institucionId` y `sedeId`.
+- Bootstrap propietario usa `PROPIETARIO_PLATAFORMA` y no inventa un ambito en la asignacion.
+- Demo y bootstrap son idempotentes.

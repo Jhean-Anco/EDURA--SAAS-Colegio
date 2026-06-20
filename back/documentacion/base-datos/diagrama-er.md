@@ -42,3 +42,18 @@
 - La jerarquía física se expresa por `elementos_infraestructura.id_elemento_padre`.
 - Las especializaciones comparten la PK/FK `id_elemento_infraestructura`.
 - No se modelan tablas adicionales fuera de las 27 entidades registradas.
+
+## Evolucion SaaS documentada
+
+- `planes_saas`
+- `versiones_plan_saas`
+- `caracteristicas_saas`
+- `versiones_plan_caracteristicas`
+- `suscripciones_institucion`
+- `eventos_suscripcion`
+- `excepciones_capacidad_institucion`
+- `procesos_alta_institucion`
+- `pasos_alta_institucion`
+- `obligaciones_pago`
+- `pagos_suscripcion`
+- `aplicaciones_pago`

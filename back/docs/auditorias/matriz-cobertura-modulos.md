@@ -35,4 +35,9 @@
 
 - El código ya registra 28 entidades; la documentación principal todavía no refleja esa cantidad.
 - La matriz base confirma que el siguiente bloque debe centrarse en puertos, tokens e inversión de dependencias.
+## PR-PLT-00
 
+- Bootstrap propietario: documentado y cubierto por pruebas unitarias.
+- Semilla demo: documentada y restringida a desarrollo/test/ci.
+- Contexto plataforma: corregido en código y validado por prueba unitaria.
+- E2E PostgreSQL: pendiente de ejecución en un entorno con BD disponible.

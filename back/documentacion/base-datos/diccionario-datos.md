@@ -36,3 +36,19 @@
 | espacios_fisicos | Especialización espacio físico | Padre nivel, área y aforo no negativos |
 | espacios_exteriores | Especialización espacio exterior | Padre predio, área no negativa |
 | componentes_infraestructura | Especialización componente | Cantidad positiva, vida útil no negativa |
+## Base SaaS documentada
+
+| Tabla | Propósito | Regla principal |
+|---|---|---|
+| planes_saas | Plan comercial | Codigo unico e inmutable |
+| versiones_plan_saas | Version de plan | Publicada inmutable |
+| caracteristicas_saas | Catalogo de capacidades | Codigo unico, activo controlado |
+| versiones_plan_caracteristicas | Capacidades por version | Clave compuesta |
+| suscripciones_institucion | Suscripcion institucional | Una actual por institucion |
+| eventos_suscripcion | Historial de cambios | Inmutable |
+| excepciones_capacidad_institucion | Excepcion puntual | Vigencia temporal |
+| procesos_alta_institucion | Alta reanudable | Idempotencia por clave |
+| pasos_alta_institucion | Paso del alta | Estado por paso |
+| obligaciones_pago | Cobranza operativa | Estado controlado |
+| pagos_suscripcion | Pagos registrados | Estado controlado |
+| aplicaciones_pago | Aplicacion de pago | Relacion pago-obligacion |

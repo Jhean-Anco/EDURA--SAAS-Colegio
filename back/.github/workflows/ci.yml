@@ -38,6 +38,10 @@ jobs:
       BD_CLAVE: edura_ci
       BD_NOMBRE: edura_test
       BD_SSL: 'false'
+      BOOTSTRAP_ADMIN_CORREO: owner.bootstrap@edura.local
+      BOOTSTRAP_ADMIN_CLAVE: Bootstrap@2024!Strong
+      BOOTSTRAP_ADMIN_NOMBRE: Propietario Plataforma
+      BOOTSTRAP_ADMIN_CORREO_VERIFICADO: 'false'
       JWT_SECRETO: ci-secret-no-produccion-32-chars-minimo
       JWT_EMISOR: EDURA_CI
       JWT_AUDIENCIA: EDURA_CI_WEB
@@ -97,6 +101,10 @@ jobs:
       BD_CLAVE: edura_ci
       BD_NOMBRE: edura_test
       BD_SSL: 'false'
+      BOOTSTRAP_ADMIN_CORREO: owner.bootstrap@edura.local
+      BOOTSTRAP_ADMIN_CLAVE: Bootstrap@2024!Strong
+      BOOTSTRAP_ADMIN_NOMBRE: Propietario Plataforma
+      BOOTSTRAP_ADMIN_CORREO_VERIFICADO: 'false'
       JWT_SECRETO: ci-secret-no-produccion-32-chars-minimo
       JWT_EMISOR: EDURA_CI
       JWT_AUDIENCIA: EDURA_CI_WEB
@@ -125,6 +133,12 @@ jobs:
 
       - name: Sembrar catalogo y seguridad (segunda vez - idempotencia)
         run: npm run db:seed:catalogos && npm run db:seed:seguridad
+
+      - name: Sembrar bootstrap
+        run: npm run db:seed:bootstrap
+
+      - name: Sembrar bootstrap segunda vez (idempotencia)
+        run: npm run db:seed:bootstrap
 
       - name: Sembrar demo
         run: npm run db:seed:demo
