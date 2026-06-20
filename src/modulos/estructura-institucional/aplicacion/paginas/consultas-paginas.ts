@@ -76,31 +76,31 @@ export class AgregarSeccionPaginaCasoUso {
 export class PublicarPaginaCasoUso {
   constructor(private readonly repositorio: RepositorioPaginas) {}
 
-  ejecutar(id: string): Promise<PaginaSalida | null> {
-    return this.repositorio.publicar(id);
+  ejecutar(id: string, sedeId: string): Promise<PaginaSalida | null> {
+    return this.repositorio.publicar(id, sedeId);
   }
 }
 
 export class ArchivarPaginaCasoUso {
   constructor(private readonly repositorio: RepositorioPaginas) {}
 
-  ejecutar(id: string): Promise<PaginaSalida | null> {
-    return this.repositorio.archivar(id);
+  ejecutar(id: string, sedeId: string): Promise<PaginaSalida | null> {
+    return this.repositorio.archivar(id, sedeId);
   }
 }
 
 export class RestaurarPaginaCasoUso {
   constructor(private readonly repositorio: RepositorioPaginas) {}
 
-  ejecutar(id: string): Promise<PaginaSalida | null> {
-    return this.repositorio.restaurar(id);
+  ejecutar(id: string, sedeId: string): Promise<PaginaSalida | null> {
+    return this.repositorio.restaurar(id, sedeId);
   }
 }
 
 export class CambiarEstadoSeccionCasoUso {
   constructor(private readonly repositorio: RepositorioPaginas) {}
 
-  ejecutar(id: string): Promise<SeccionPaginaSalida | null> {
-    return this.repositorio.publicarSeccion(id);
+  ejecutar(id: string, sedeId: string): Promise<SeccionPaginaSalida | null> {
+    return this.repositorio.publicarSeccion(id, sedeId);
   }
 }

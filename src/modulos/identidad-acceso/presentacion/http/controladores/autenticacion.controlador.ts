@@ -7,6 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
+import { ContextoSolicitudAutenticada } from '../../../../../compartido/aplicacion/contexto-solicitud-autenticada';
 import { CerrarSesionCasoUso } from '../../../aplicacion/autenticacion/cerrar-sesion.caso-uso';
 import { CerrarTodasSesionesCasoUso } from '../../../aplicacion/autenticacion/cerrar-todas-sesiones.caso-uso';
 import { IniciarSesionCasoUso } from '../../../aplicacion/autenticacion/iniciar-sesion.caso-uso';
@@ -31,11 +32,22 @@ export class AutenticacionControlador {
   ) {}
 
   private obtenerUsuario(request: Request): PayloadAcceso {
-    const usuario = (request as Request & { usuario?: PayloadAcceso }).usuario;
+    const usuario = (
+      request as Request & { contextoActual?: ContextoSolicitudAutenticada }
+    ).contextoActual;
     if (!usuario) {
       throw new UnauthorizedException('SESION_INVALIDA');
     }
-    return usuario;
+    return {
+      sub: usuario.usuarioId,
+      sid: usuario.sesionId,
+      versionSeguridad: usuario.versionSeguridad,
+      tipoToken: usuario.tipoToken,
+      ambito: usuario.ambito,
+      rolId: usuario.rolId,
+      institucionId: usuario.institucionId,
+      sedeId: usuario.sedeId,
+    };
   }
 
   @Publico()

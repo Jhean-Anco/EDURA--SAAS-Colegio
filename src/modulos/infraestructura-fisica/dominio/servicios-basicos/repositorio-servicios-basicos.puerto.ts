@@ -25,10 +25,13 @@ export interface RepositorioServiciosBasicos {
   crear(
     entidad: CrearServicioBasicoEntrada,
   ): Promise<ServicioBasicoSedeRespuesta>;
-  buscarPorId(id: string): Promise<ServicioBasicoSedeRespuesta | null>;
+  buscarPorIdEnSede(
+    id: string,
+    sedeId: string,
+  ): Promise<ServicioBasicoSedeRespuesta | null>;
   listarPorSede(sedeId: string): Promise<ServicioBasicoSedeRespuesta[]>;
   cambiarEstado(
-    entrada: CambiarEstadoServicioBasicoEntrada,
+    entrada: CambiarEstadoServicioBasicoEntrada & { sedeId: string },
   ): Promise<ServicioBasicoSedeRespuesta>;
   buscarTipoActivoPorCodigo(codigo: string): Promise<unknown>;
   sedeActiva(sedeId: string): Promise<boolean>;

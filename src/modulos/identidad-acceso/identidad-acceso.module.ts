@@ -47,9 +47,11 @@ import { ContextoAccesoTypeormConsulta } from './infraestructura/persistencia/ty
 import { InstitucionEducativaTypeormEntidad } from '../estructura-institucional/infraestructura/persistencia/typeorm/entidades/institucion-educativa.typeorm-entidad';
 import { SedeTypeormEntidad } from '../estructura-institucional/infraestructura/persistencia/typeorm/entidades/sede.typeorm-entidad';
 import { ConfiguracionAplicacion } from '../../configuracion/configuracion-aplicacion';
+import { ConfiguracionModule } from '../../configuracion/configuracion.module';
 
 @Module({
   imports: [
+    ConfiguracionModule,
     TypeOrmModule.forFeature([
       UsuarioTypeormEntidad,
       CredencialUsuarioTypeormEntidad,
@@ -84,6 +86,7 @@ import { ConfiguracionAplicacion } from '../../configuracion/configuracion-aplic
       useFactory: (jwt: JwtService, configuracion: ConfiguracionAplicacion) =>
         new ServicioTokenAccesoJwt(
           jwt,
+          configuracion.jwtSecreto,
           configuracion.jwtEmisor,
           configuracion.jwtAudiencia,
         ),

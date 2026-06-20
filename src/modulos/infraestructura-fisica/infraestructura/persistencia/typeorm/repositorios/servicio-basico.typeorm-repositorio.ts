@@ -39,16 +39,19 @@ export class ServicioBasicoTypeormRepositorio implements RepositorioServiciosBas
     return entidades.map((entidad) => this.mapear(entidad));
   }
 
-  async buscarPorId(id: string): Promise<ServicioBasicoSedeRespuesta | null> {
-    const entidad = await this.repositorio.findOne({ where: { id } });
+  async buscarPorIdEnSede(
+    id: string,
+    sedeId: string,
+  ): Promise<ServicioBasicoSedeRespuesta | null> {
+    const entidad = await this.repositorio.findOne({ where: { id, sedeId } });
     return entidad ? this.mapear(entidad) : null;
   }
 
   async cambiarEstado(
-    entrada: CambiarEstadoServicioBasicoEntrada,
+    entrada: CambiarEstadoServicioBasicoEntrada & { sedeId: string },
   ): Promise<ServicioBasicoSedeRespuesta> {
     const entidad = await this.repositorio.findOne({
-      where: { id: entrada.id },
+      where: { id: entrada.id, sedeId: entrada.sedeId },
     });
     if (!entidad)
       throw new RecursoNoEncontradoError('El servicio basico no existe.');
