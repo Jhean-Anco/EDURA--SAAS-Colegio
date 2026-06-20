@@ -13,9 +13,12 @@ export interface RepositorioServiciosBasicos {
     input: CrearServicioBasicoEntrada,
   ): Promise<ServicioBasicoSedeRespuesta>;
   listarPorSede(sedeId: string): Promise<ServicioBasicoSedeRespuesta[]>;
-  buscarPorId(id: string): Promise<ServicioBasicoSedeRespuesta | null>;
+  buscarPorIdEnSede(
+    id: string,
+    sedeId: string,
+  ): Promise<ServicioBasicoSedeRespuesta | null>;
   cambiarEstado(
-    entrada: CambiarEstadoServicioBasicoEntrada,
+    entrada: CambiarEstadoServicioBasicoEntrada & { sedeId: string },
   ): Promise<ServicioBasicoSedeRespuesta>;
   buscarTipoActivoPorCodigo(codigo: string): Promise<{ id: string } | null>;
   sedeActiva(sedeId: string): Promise<boolean>;

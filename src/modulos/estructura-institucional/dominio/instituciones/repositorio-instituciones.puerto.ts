@@ -7,6 +7,9 @@ export interface RepositorioInstituciones {
   buscarPorId(id: string): Promise<InstitucionEducativa | null>;
   buscarPorCodigo(codigo: string): Promise<InstitucionEducativa | null>;
   existeCodigo(codigo: string): Promise<boolean>;
-  listarPaginado(): Promise<InstitucionEducativa[]>;
+  listarPorAlcance(entrada: {
+    ambito: 'PLATAFORMA' | 'INSTITUCION' | 'SEDE';
+    institucionId: string | null;
+  }): Promise<InstitucionEducativa[]>;
   actualizar(institucion: InstitucionEducativa): Promise<void>;
 }

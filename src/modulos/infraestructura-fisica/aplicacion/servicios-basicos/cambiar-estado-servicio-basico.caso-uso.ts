@@ -8,15 +8,17 @@ export class CambiarEstadoServicioBasicoCasoUso {
 
   async ejecutar(
     id: string,
+    sedeId: string,
     estado: 'ACTIVO' | 'SUSPENDIDO' | 'INACTIVO' | 'BAJA',
   ): Promise<ServicioBasicoSedeRespuesta> {
-    const servicio = await this.repositorio.buscarPorId(id);
+    const servicio = await this.repositorio.buscarPorIdEnSede(id, sedeId);
     if (!servicio) {
-      throw new RecursoNoEncontradoError('El servicio básico no existe.');
+      throw new RecursoNoEncontradoError('El servicio basico no existe.');
     }
-    const entrada: CambiarEstadoServicioBasicoEntrada = {
+    const entrada: CambiarEstadoServicioBasicoEntrada & { sedeId: string } = {
       id,
       estadoServicio: estado,
+      sedeId,
     };
     return this.repositorio.cambiarEstado(entrada);
   }

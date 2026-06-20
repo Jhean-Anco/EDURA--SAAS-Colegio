@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { Permisos } from '../../../../../compartido/presentacion/http/decoradores/permisos.decorador';
 import { ContextoActual } from '../../../../../compartido/presentacion/http/decoradores/contexto-actual.decorador';
 import { ContextoSolicitudAutenticada } from '../../../../../compartido/aplicacion/contexto-solicitud-autenticada';
@@ -9,6 +18,10 @@ import { RegistrarServicioBasicoSedeCasoUso } from '../../../aplicacion/servicio
 import { ServicioBasicoSedeRespuesta } from '../../../dominio/servicios-basicos/servicio-basico.respuesta';
 import { CambiarEstadoServicioBasicoSolicitud } from '../solicitudes/cambiar-estado-servicio-basico.solicitud';
 import { RegistrarServicioBasicoSedeSolicitud } from '../solicitudes/registrar-servicio-basico.solicitud';
+import {
+  CONSULTADOR_SEDES,
+  ConsultadorSedes,
+} from '../../../../estructura-institucional/dominio/sedes/consultador-sedes.puerto';
 
 @Controller('sedes/:idSede/servicios-basicos')
 export class ServiciosBasicosControlador {
@@ -16,6 +29,8 @@ export class ServiciosBasicosControlador {
     private readonly registrarServicioBasico: RegistrarServicioBasicoSedeCasoUso,
     private readonly listarServiciosBasicos: ListarServiciosBasicosSedeConsulta,
     private readonly cambiarEstadoServicioBasico: CambiarEstadoServicioBasicoCasoUso,
+    @Inject(CONSULTADOR_SEDES)
+    private readonly sedes: ConsultadorSedes,
   ) {}
 
   @Permisos('INFRAESTRUCTURA.LEER')
@@ -24,7 +39,11 @@ export class ServiciosBasicosControlador {
     @Param('idSede') idSede: string,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<ServicioBasicoSedeRespuesta[]> {
-    validarSedeDelContexto(ctx, ctx?.institucionId ?? '', idSede);
+    const sede = await this.sedes.obtenerPorId(idSede);
+    if (!sede) {
+      throw new NotFoundException('RECURSO_NO_ENCONTRADO');
+    }
+    validarSedeDelContexto(ctx, sede.institucionId, idSede);
     return this.listarServiciosBasicos.ejecutar(idSede);
   }
 
@@ -35,7 +54,11 @@ export class ServiciosBasicosControlador {
     @Body() solicitud: RegistrarServicioBasicoSedeSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<ServicioBasicoSedeRespuesta> {
-    validarSedeDelContexto(ctx, ctx?.institucionId ?? '', idSede);
+    const sede = await this.sedes.obtenerPorId(idSede);
+    if (!sede) {
+      throw new NotFoundException('RECURSO_NO_ENCONTRADO');
+    }
+    validarSedeDelContexto(ctx, sede.institucionId, idSede);
     return this.registrarServicioBasico.ejecutar({
       id: crypto.randomUUID(),
       sedeId: idSede,
@@ -48,11 +71,19 @@ export class ServiciosBasicosControlador {
   @Permisos('INFRAESTRUCTURA.GESTIONAR')
   @Patch(':idServicio')
   async cambiarEstado(
+    @Param('idSede') idSede: string,
     @Param('idServicio') idServicio: string,
     @Body() solicitud: CambiarEstadoServicioBasicoSolicitud,
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<ServicioBasicoSedeRespuesta> {
+    const sede = await this.sedes.obtenerPorId(idSede);
+    if (!sede) {
+      throw new NotFoundException('RECURSO_NO_ENCONTRADO');
+    }
+    validarSedeDelContexto(ctx, sede.institucionId, idSede);
     return this.cambiarEstadoServicioBasico.ejecutar(
       idServicio,
+      idSede,
       solicitud.estadoServicio,
     );
   }

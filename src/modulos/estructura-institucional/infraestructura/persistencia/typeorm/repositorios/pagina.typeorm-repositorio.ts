@@ -32,25 +32,49 @@ export class PaginaTypeormRepositorio {
     });
   }
 
-  async publicar(id: string): Promise<PaginaSedeTypeormEntidad | null> {
-    await this.paginas.update({ id }, { estado: 'PUBLICADA' });
-    return this.paginas.findOne({ where: { id } });
+  async publicar(
+    id: string,
+    sedeId: string,
+  ): Promise<PaginaSedeTypeormEntidad | null> {
+    await this.paginas.update({ id, sedeId }, { estado: 'PUBLICADA' });
+    return this.paginas.findOne({ where: { id, sedeId } });
   }
 
-  async archivar(id: string): Promise<PaginaSedeTypeormEntidad | null> {
-    await this.paginas.update({ id }, { estado: 'ARCHIVADA' });
-    return this.paginas.findOne({ where: { id } });
+  async archivar(
+    id: string,
+    sedeId: string,
+  ): Promise<PaginaSedeTypeormEntidad | null> {
+    await this.paginas.update({ id, sedeId }, { estado: 'ARCHIVADA' });
+    return this.paginas.findOne({ where: { id, sedeId } });
   }
 
-  async restaurar(id: string): Promise<PaginaSedeTypeormEntidad | null> {
-    await this.paginas.update({ id }, { estado: 'BORRADOR' });
-    return this.paginas.findOne({ where: { id } });
+  async restaurar(
+    id: string,
+    sedeId: string,
+  ): Promise<PaginaSedeTypeormEntidad | null> {
+    await this.paginas.update({ id, sedeId }, { estado: 'BORRADOR' });
+    return this.paginas.findOne({ where: { id, sedeId } });
   }
 
   async publicarSeccion(
     id: string,
+    sedeId: string,
   ): Promise<SeccionPaginaSedeTypeormEntidad | null> {
-    await this.secciones.update({ id }, { estado: 'ACTIVA', visible: true });
-    return this.secciones.findOne({ where: { id } });
+    await this.secciones
+      .createQueryBuilder()
+      .update()
+      .set({ estado: 'ACTIVA', visible: true })
+      .where('id = :id', { id })
+      .andWhere(
+        `id_pagina_sede IN (
+          SELECT p.id FROM paginas_sede p WHERE p.id = :idPagina AND p.id_sede = :sedeId
+        )`,
+        { idPagina: id, sedeId },
+      )
+      .execute();
+    return this.secciones.findOne({
+      where: { id },
+      relations: ['paginaSede'],
+    });
   }
 }

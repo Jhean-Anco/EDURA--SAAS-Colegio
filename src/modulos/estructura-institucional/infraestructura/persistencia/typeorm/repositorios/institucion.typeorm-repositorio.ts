@@ -40,8 +40,18 @@ export class InstitucionTypeormRepositorio implements RepositorioInstituciones {
     return this.repositorio.exist({ where: { codigo } });
   }
 
-  async listarPaginado(): Promise<InstitucionEducativa[]> {
+  async listarPorAlcance(entrada: {
+    ambito: 'PLATAFORMA' | 'INSTITUCION' | 'SEDE';
+    institucionId: string | null;
+  }): Promise<InstitucionEducativa[]> {
+    const where =
+      entrada.ambito === 'PLATAFORMA'
+        ? {}
+        : entrada.institucionId
+          ? { id: entrada.institucionId }
+          : {};
     const entidades = await this.repositorio.find({
+      where,
       order: { nombreLegal: 'ASC' },
     });
     return entidades.map((entidad) =>

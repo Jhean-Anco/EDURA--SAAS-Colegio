@@ -34,10 +34,20 @@ export interface RepositorioPaginas {
   agregarSeccion(
     seccion: Partial<SeccionPaginaSedeResumenPersistencia>,
   ): Promise<SeccionPaginaSedeResumenPersistencia>;
-  publicar(id: string): Promise<PaginaSedeResumenPersistencia | null>;
-  archivar(id: string): Promise<PaginaSedeResumenPersistencia | null>;
-  restaurar(id: string): Promise<PaginaSedeResumenPersistencia | null>;
+  publicar(
+    id: string,
+    sedeId: string,
+  ): Promise<PaginaSedeResumenPersistencia | null>;
+  archivar(
+    id: string,
+    sedeId: string,
+  ): Promise<PaginaSedeResumenPersistencia | null>;
+  restaurar(
+    id: string,
+    sedeId: string,
+  ): Promise<PaginaSedeResumenPersistencia | null>;
   publicarSeccion(
     id: string,
+    sedeId: string,
   ): Promise<SeccionPaginaSedeResumenPersistencia | null>;
 }

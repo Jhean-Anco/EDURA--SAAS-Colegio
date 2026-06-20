@@ -59,7 +59,7 @@ export class IniciarSesionCasoUso {
     if (!valida) {
       await this.credenciales.actualizarIntentosFallidos(usuario.id, 1, null);
       await this.auditoria.registrar(
-        new EventoAuditoria(usuario.id, 'LOGIN_FALLO', 'usuario', 'FALLO'),
+        new EventoAuditoria(randomUUID(), 'LOGIN_FALLO', 'usuario', 'FALLO'),
       );
       throw new UnauthorizedException('CREDENCIALES_INVALIDAS');
     }
@@ -92,7 +92,7 @@ export class IniciarSesionCasoUso {
     await this.usuarios.actualizarUltimoAcceso(usuario.id, new Date());
     await this.credenciales.actualizarIntentosFallidos(usuario.id, 0, null);
     await this.auditoria.registrar(
-      new EventoAuditoria(usuario.id, 'LOGIN_EXITO', 'usuario', 'EXITO'),
+      new EventoAuditoria(randomUUID(), 'LOGIN_EXITO', 'usuario', 'EXITO'),
     );
     return {
       usuarioId: usuario.id,

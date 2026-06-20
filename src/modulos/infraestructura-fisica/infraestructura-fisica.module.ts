@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { EstructuraInstitucionalModule } from '../estructura-institucional/estructura-institucional.module';
 import { ComponenteInfraestructuraTypeormEntidad } from './infraestructura/persistencia/typeorm/entidades/componente-infraestructura.typeorm-entidad';
 import { EdificacionTypeormEntidad } from './infraestructura/persistencia/typeorm/entidades/edificacion.typeorm-entidad';
 import { ElementoInfraestructuraTypeormEntidad } from './infraestructura/persistencia/typeorm/entidades/elemento-infraestructura.typeorm-entidad';
@@ -36,6 +37,7 @@ import { REPOSITORIO_SERVICIOS_BASICOS } from './dominio/servicios-basicos/repos
 
 @Module({
   imports: [
+    EstructuraInstitucionalModule,
     TypeOrmModule.forFeature([
       TipoServicioBasicoTypeormEntidad,
       ServicioBasicoSedeTypeormEntidad,
