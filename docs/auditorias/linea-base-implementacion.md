@@ -1,16 +1,9 @@
 # Línea base de implementación
 
 - Fecha: 2026-06-19
-- Commit base: `86eca372fbe46b688efb72df15a26465f04c402b`
-- Rama analizada: `main`
-- Directorio auditado: `D:\EDURA\sistema\back`
-
-## Hallazgos iniciales
-
-- El registro TypeORM contiene 28 entidades.
-- El `README.md` todavía reporta 27 entidades.
-- La arquitectura vigente ya separa módulos por frontera funcional, pero todavía hay acoplamientos directos a TypeORM en aplicación, presentación e infraestructura.
-- Existen migraciones versionadas y `synchronize` está desactivado.
+- Rama: `feature/mod-003-identidad-acceso-v2`
+- Commit HEAD: `d6b2c3fa92d63550c4fcf96dd77cc0d540405731`
+- Entorno: `D:\EDURA\sistema\back`
 
 ## Comandos ejecutados
 
@@ -24,18 +17,23 @@
 
 ## Resultados
 
-| Comando                               | Resultado                       |
-| ------------------------------------- | ------------------------------- |
-| `npm.cmd ci`                          | Correcto                        |
-| `npm.cmd run lint`                    | Correcto                        |
-| `npm.cmd run build`                   | Correcto                        |
-| `npm.cmd test -- --runInBand`         | Correcto                        |
-| `npm.cmd run test:e2e -- --runInBand` | Correcto                        |
-| `npm.cmd run db:migration:show`       | Mostró 4 migraciones ejecutadas |
+| Comando | Resultado |
+|---|---|
+| `git rev-parse HEAD` | `d6b2c3fa92d63550c4fcf96dd77cc0d540405731` |
+| `npm.cmd ci` | Correcto |
+| `npm.cmd run lint` | Correcto |
+| `npm.cmd run build` | Correcto |
+| `npm.cmd test -- --runInBand` | Correcto |
+| `npm.cmd run test:e2e -- --runInBand` | Correcto |
+| `npm.cmd run db:migration:show` | 4 migraciones aplicadas |
 
-## Riesgos observados
+## Cantidad real de entidades
 
-- La capa de aplicación importa repositorios TypeORM concretos en varios casos de uso y consultas.
-- La presentación aún depende de consultas/repositorios de infraestructura.
-- La documentación de entidades no coincide con el registro real.
-- Faltan pruebas de integración con PostgreSQL real y cobertura de concurrencia.
+- Registro TypeORM: 28 entidades.
+
+## Hallazgos
+
+- El README declaraba 27 entidades y fue corregido a 28.
+- El registro TypeORM sigue en 28 entidades.
+- La base automática pasa sobre el `HEAD` posterior al merge del PR #3.
+

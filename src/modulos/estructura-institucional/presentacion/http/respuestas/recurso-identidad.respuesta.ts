@@ -1,10 +1,10 @@
 export class RecursoIdentidadRespuesta {
   id!: string;
   identidadSedeId!: string;
-  tipo!: string;
-  url!: string;
-  mime!: string;
+  tipoRecurso!: string;
+  urlRecurso!: string;
+  tipoMime!: string | null;
   textoAlternativo!: string | null;
-  activo!: boolean;
   orden!: number;
+  activo!: boolean;
 }

@@ -1,13 +1,8 @@
-import { ServicioBasicoTypeormRepositorio } from '../../infraestructura/persistencia/typeorm/repositorios/servicio-basico.typeorm-repositorio';
+import { ConsultadorServiciosBasicos } from './puertos';
 
 export class ListarServiciosBasicosSedeConsulta {
-  constructor(private readonly repositorio: ServicioBasicoTypeormRepositorio) {}
-
-  ejecutar(
-    sedeId: string,
-  ): Promise<
-    import('../../infraestructura/persistencia/typeorm/entidades/servicio-basico-sede.typeorm-entidad').ServicioBasicoSedeTypeormEntidad[]
-  > {
-    return this.repositorio.listarPorSede(sedeId);
+  constructor(private readonly consultador: ConsultadorServiciosBasicos) {}
+  ejecutar(sedeId: string) {
+    return this.consultador.listarPorSede(sedeId);
   }
 }
