@@ -33,6 +33,7 @@ export class CrearPersonasV101718900000000 implements MigrationInterface {
       CREATE INDEX IF NOT EXISTS ix_personas_institucion_nombres
       ON personas (id_institucion_educativa, nombres)
     `);
+
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS tipos_documento_identidad (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -46,6 +47,7 @@ export class CrearPersonasV101718900000000 implements MigrationInterface {
         fecha_modificacion timestamptz NOT NULL DEFAULT now()
       )
     `);
+
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS documentos_identidad_persona (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -71,6 +73,12 @@ export class CrearPersonasV101718900000000 implements MigrationInterface {
     `);
     await queryRunner.query(`
       ALTER TABLE documentos_identidad_persona
+      ADD CONSTRAINT fk_documentos_institucion
+      FOREIGN KEY (id_institucion_educativa) REFERENCES instituciones_educativas(id)
+      ON UPDATE CASCADE ON DELETE RESTRICT
+    `);
+    await queryRunner.query(`
+      ALTER TABLE documentos_identidad_persona
       ADD CONSTRAINT fk_documentos_tipo
       FOREIGN KEY (id_tipo_documento) REFERENCES tipos_documento_identidad(id)
       ON UPDATE CASCADE ON DELETE RESTRICT
@@ -79,6 +87,7 @@ export class CrearPersonasV101718900000000 implements MigrationInterface {
       CREATE UNIQUE INDEX IF NOT EXISTS ux_documentos_identidad_persona_unico
       ON documentos_identidad_persona (id_institucion_educativa, id_tipo_documento, numero_normalizado)
     `);
+
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS medios_contacto_persona (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -95,6 +104,19 @@ export class CrearPersonasV101718900000000 implements MigrationInterface {
       )
     `);
     await queryRunner.query(`
+      ALTER TABLE medios_contacto_persona
+      ADD CONSTRAINT fk_medios_contacto_persona
+      FOREIGN KEY (id_persona) REFERENCES personas(id)
+      ON UPDATE CASCADE ON DELETE RESTRICT
+    `);
+    await queryRunner.query(`
+      ALTER TABLE medios_contacto_persona
+      ADD CONSTRAINT fk_medios_contacto_institucion
+      FOREIGN KEY (id_institucion_educativa) REFERENCES instituciones_educativas(id)
+      ON UPDATE CASCADE ON DELETE RESTRICT
+    `);
+
+    await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS direcciones_persona (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         id_institucion_educativa uuid NOT NULL,
@@ -110,14 +132,53 @@ export class CrearPersonasV101718900000000 implements MigrationInterface {
         fecha_modificacion timestamptz NOT NULL DEFAULT now()
       )
     `);
+    await queryRunner.query(`
+      ALTER TABLE direcciones_persona
+      ADD CONSTRAINT fk_direcciones_persona
+      FOREIGN KEY (id_persona) REFERENCES personas(id)
+      ON UPDATE CASCADE ON DELETE RESTRICT
+    `);
+    await queryRunner.query(`
+      ALTER TABLE direcciones_persona
+      ADD CONSTRAINT fk_direcciones_institucion
+      FOREIGN KEY (id_institucion_educativa) REFERENCES instituciones_educativas(id)
+      ON UPDATE CASCADE ON DELETE RESTRICT
+    `);
+
+    await queryRunner.query(`
+      ALTER TABLE membresias_institucion
+      ADD COLUMN IF NOT EXISTS id_persona uuid NULL
+    `);
+    await queryRunner.query(`
+      ALTER TABLE membresias_institucion
+      ADD CONSTRAINT fk_membresias_persona
+      FOREIGN KEY (id_persona) REFERENCES personas(id)
+      ON UPDATE CASCADE ON DELETE SET NULL
+    `);
+    await queryRunner.query(`
+      CREATE INDEX IF NOT EXISTS ix_membresias_institucion_persona
+      ON membresias_institucion (id_persona)
+      WHERE id_persona IS NOT NULL
+    `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS ix_membresias_institucion_persona`,
+    );
+    await queryRunner.query(`
+      ALTER TABLE membresias_institucion
+      DROP CONSTRAINT IF EXISTS fk_membresias_persona
+    `);
+    await queryRunner.query(`
+      ALTER TABLE membresias_institucion
+      DROP COLUMN IF EXISTS id_persona
+    `);
     await queryRunner.query(`DROP TABLE IF EXISTS direcciones_persona`);
     await queryRunner.query(`DROP TABLE IF EXISTS medios_contacto_persona`);
-    await queryRunner.query(`
-      DROP TABLE IF EXISTS documentos_identidad_persona
-    `);
+    await queryRunner.query(
+      `DROP TABLE IF EXISTS documentos_identidad_persona`,
+    );
     await queryRunner.query(`DROP TABLE IF EXISTS tipos_documento_identidad`);
     await queryRunner.query(`DROP TABLE IF EXISTS personas`);
   }
