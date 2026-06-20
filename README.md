@@ -33,3 +33,11 @@
 - Salud: `/api/v1/salud`
 - Módulos principales: estructura institucional, infraestructura física, identidad y acceso, personas
 - Entidades registradas: 45
+
+## Seguridad HTTP
+
+- Todo endpoint de negocio es privado por defecto.
+- Solo `@Publico()` expone rutas sin token.
+- `GuardiaJwt` y `GuardiaPermisos` se registran globalmente mediante `APP_GUARD`.
+- El contexto institucional y de sede se deriva del token autenticado.
+- La política detallada vive en `documentacion/adr/ADR-011-seguridad-fail-closed.md`.
