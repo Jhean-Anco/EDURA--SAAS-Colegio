@@ -1,11 +1,15 @@
 import {
   Body,
   Controller,
+  Delete,
   ForbiddenException,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseUUIDPipe,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -17,7 +21,15 @@ import { ContextoSolicitudAutenticada } from '../../../../../compartido/aplicaci
 import { CrearPersonaCasoUso } from '../../../aplicacion/personas/crear-persona.caso-uso';
 import { ListarPersonasConsulta } from '../../../aplicacion/personas/listar-personas.consulta';
 import { ObtenerPersonaConsulta } from '../../../aplicacion/personas/obtener-persona.consulta';
+import { RegistrarDocumentoPersonaCasoUso } from '../../../aplicacion/documentos-identidad/registrar-documento-persona.caso-uso';
+import { RegistrarMedioContactoPersonaCasoUso } from '../../../aplicacion/medios-contacto/registrar-medio-contacto-persona.caso-uso';
+import { RegistrarDireccionPersonaCasoUso } from '../../../aplicacion/direcciones/registrar-direccion-persona.caso-uso';
+import { VincularPersonaMembresiaCasoUso } from '../../../aplicacion/vinculaciones/vincular-persona-membresia.caso-uso';
 import { CrearPersonaSolicitud } from '../solicitudes/crear-persona.solicitud';
+import { RegistrarDocumentoSolicitud } from '../solicitudes/registrar-documento.solicitud';
+import { RegistrarContactoSolicitud } from '../solicitudes/registrar-contacto.solicitud';
+import { RegistrarDireccionSolicitud } from '../solicitudes/registrar-direccion.solicitud';
+import { VincularMembresiaSolicitud } from '../solicitudes/vincular-membresia.solicitud';
 import { Persona } from '../../../dominio/personas/persona';
 
 @UseGuards(GuardiaJwt, GuardiaPermisos)
@@ -27,11 +39,13 @@ export class PersonasControlador {
     private readonly crearPersona: CrearPersonaCasoUso,
     private readonly obtenerPersona: ObtenerPersonaConsulta,
     private readonly listarPersonas: ListarPersonasConsulta,
+    private readonly registrarDocumento: RegistrarDocumentoPersonaCasoUso,
+    private readonly registrarContacto: RegistrarMedioContactoPersonaCasoUso,
+    private readonly registrarDireccion: RegistrarDireccionPersonaCasoUso,
+    private readonly vincularMembresia: VincularPersonaMembresiaCasoUso,
   ) {}
 
-  private extraerInstitucionId(
-    ctx: ContextoSolicitudAutenticada | undefined,
-  ): string {
+  private instId(ctx: ContextoSolicitudAutenticada | undefined): string {
     if (!ctx?.institucionId) {
       throw new ForbiddenException('CONTEXTO_NO_AUTORIZADO');
     }
@@ -41,20 +55,20 @@ export class PersonasControlador {
   @Permisos('PERSONAS.CREAR')
   @Post()
   crear(
-    @Body() entrada: CrearPersonaSolicitud,
+    @Body() cuerpo: CrearPersonaSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<Persona> {
-    const fechaNac = entrada.fechaNacimiento
-      ? new Date(entrada.fechaNacimiento)
+    const fechaNac = cuerpo.fechaNacimiento
+      ? new Date(cuerpo.fechaNacimiento)
       : null;
     return this.crearPersona.ejecutar({
-      institucionEducativaId: this.extraerInstitucionId(ctx),
-      nombres: entrada.nombres,
-      apellidoPaterno: entrada.apellidoPaterno ?? null,
-      apellidoMaterno: entrada.apellidoMaterno ?? null,
+      institucionEducativaId: this.instId(ctx),
+      nombres: cuerpo.nombres,
+      apellidoPaterno: cuerpo.apellidoPaterno ?? null,
+      apellidoMaterno: cuerpo.apellidoMaterno ?? null,
       fechaNacimiento: fechaNac,
-      sexoRegistral: entrada.sexoRegistral ?? null,
-      codigoPaisNacionalidad: entrada.codigoPaisNacionalidad ?? null,
+      sexoRegistral: cuerpo.sexoRegistral ?? null,
+      codigoPaisNacionalidad: cuerpo.codigoPaisNacionalidad ?? null,
     });
   }
 
@@ -67,9 +81,11 @@ export class PersonasControlador {
     @Query('estado') estado?: string,
     @Query('texto') texto?: string,
   ): Promise<{ datos: Persona[]; total: number }> {
-    return this.listarPersonas.ejecutar(this.extraerInstitucionId(ctx), {
-      pagina: Number(pagina),
-      tamano: Number(tamano),
+    const pag = Math.max(1, Number(pagina));
+    const tam = Math.min(100, Math.max(1, Number(tamano)));
+    return this.listarPersonas.ejecutar(this.instId(ctx), {
+      pagina: pag,
+      tamano: tam,
       estado,
       texto,
     });
@@ -81,9 +97,97 @@ export class PersonasControlador {
     @Param('idPersona', ParseUUIDPipe) idPersona: string,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<Persona | null> {
-    return this.obtenerPersona.ejecutar(
-      idPersona,
-      this.extraerInstitucionId(ctx),
-    );
+    return this.obtenerPersona.ejecutar(idPersona, this.instId(ctx));
+  }
+
+  @Permisos('PERSONAS.GESTIONAR_DOCUMENTOS')
+  @Post(':idPersona/documentos')
+  @HttpCode(HttpStatus.CREATED)
+  async registrarDoc(
+    @Param('idPersona', ParseUUIDPipe) idPersona: string,
+    @Body() cuerpo: RegistrarDocumentoSolicitud,
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
+  ): Promise<void> {
+    const fechaEm = cuerpo.fechaEmision ? new Date(cuerpo.fechaEmision) : null;
+    const fechaVenc = cuerpo.fechaVencimiento
+      ? new Date(cuerpo.fechaVencimiento)
+      : null;
+    await this.registrarDocumento.ejecutar({
+      personaId: idPersona,
+      institucionEducativaId: this.instId(ctx),
+      tipoDocumentoId: cuerpo.tipoDocumentoId,
+      numero: cuerpo.numero,
+      codigoPaisEmision: cuerpo.codigoPaisEmision ?? null,
+      esPrincipal: cuerpo.esPrincipal ?? false,
+      fechaEmision: fechaEm,
+      fechaVencimiento: fechaVenc,
+    });
+  }
+
+  @Permisos('PERSONAS.GESTIONAR_CONTACTOS')
+  @Post(':idPersona/contactos')
+  @HttpCode(HttpStatus.CREATED)
+  async agregarContacto(
+    @Param('idPersona', ParseUUIDPipe) idPersona: string,
+    @Body() cuerpo: RegistrarContactoSolicitud,
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
+  ): Promise<void> {
+    await this.registrarContacto.ejecutar({
+      personaId: idPersona,
+      institucionEducativaId: this.instId(ctx),
+      tipo: cuerpo.tipo,
+      valor: cuerpo.valor,
+      esPrincipal: cuerpo.esPrincipal ?? false,
+    });
+  }
+
+  @Permisos('PERSONAS.GESTIONAR_DIRECCIONES')
+  @Post(':idPersona/direcciones')
+  @HttpCode(HttpStatus.CREATED)
+  async agregarDireccion(
+    @Param('idPersona', ParseUUIDPipe) idPersona: string,
+    @Body() cuerpo: RegistrarDireccionSolicitud,
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
+  ): Promise<void> {
+    await this.registrarDireccion.ejecutar({
+      personaId: idPersona,
+      institucionEducativaId: this.instId(ctx),
+      direccionLinea: cuerpo.direccionLinea,
+      referencia: cuerpo.referencia ?? null,
+      latitud: cuerpo.latitud ?? null,
+      longitud: cuerpo.longitud ?? null,
+      ubigeoId: cuerpo.ubigeoId ?? null,
+      esPrincipal: cuerpo.esPrincipal ?? false,
+    });
+  }
+
+  @Permisos('PERSONAS.VINCULAR_USUARIO')
+  @Put(':idPersona/vinculo-membresia')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async vincular(
+    @Param('idPersona', ParseUUIDPipe) idPersona: string,
+    @Body() cuerpo: VincularMembresiaSolicitud,
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
+  ): Promise<void> {
+    await this.vincularMembresia.vincular({
+      personaId: idPersona,
+      membresiaId: cuerpo.membresiaId,
+      institucionEducativaId: this.instId(ctx),
+    });
+  }
+
+  @Permisos('PERSONAS.VINCULAR_USUARIO')
+  @Delete(':idPersona/vinculo-membresia')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async desvincular(
+    @Param('idPersona', ParseUUIDPipe) idPersona: string,
+    @Body() cuerpo: VincularMembresiaSolicitud,
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
+  ): Promise<void> {
+    await this.vincularMembresia.desvincular({
+      personaId: idPersona,
+      membresiaId: cuerpo.membresiaId,
+      institucionEducativaId: this.instId(ctx),
+    });
   }
 }
