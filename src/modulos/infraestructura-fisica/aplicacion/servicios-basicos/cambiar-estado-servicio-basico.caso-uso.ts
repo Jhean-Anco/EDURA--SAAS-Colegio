@@ -1,4 +1,5 @@
 import { RecursoNoEncontradoError } from '../../../../compartido/dominio/errores-dominio';
+import { CambiarEstadoServicioBasicoEntrada } from '../../dominio/servicios-basicos/repositorio-servicios-basicos.puerto';
 import { ServicioBasicoSedeRespuesta } from '../../dominio/servicios-basicos/servicio-basico.respuesta';
 import { RepositorioServiciosBasicos } from './puertos';
 
@@ -13,6 +14,10 @@ export class CambiarEstadoServicioBasicoCasoUso {
     if (!servicio) {
       throw new RecursoNoEncontradoError('El servicio básico no existe.');
     }
-    return this.repositorio.cambiarEstado(id, estado);
+    const entrada: CambiarEstadoServicioBasicoEntrada = {
+      id,
+      estadoServicio: estado,
+    };
+    return this.repositorio.cambiarEstado(entrada);
   }
 }

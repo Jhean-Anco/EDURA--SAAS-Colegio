@@ -4,13 +4,31 @@ export const REPOSITORIO_SERVICIOS_BASICOS = Symbol(
   'REPOSITORIO_SERVICIOS_BASICOS',
 );
 
+export interface CrearServicioBasicoEntrada {
+  id: string;
+  sedeId: string;
+  tipoServicioBasicoId: string;
+  proveedor: string | null;
+  numeroSuministro: string | null;
+  estadoServicio: string;
+  fechaInicio: string | null;
+  fechaFin: string | null;
+  observaciones: string | null;
+}
+
+export interface CambiarEstadoServicioBasicoEntrada {
+  id: string;
+  estadoServicio: string;
+}
+
 export interface RepositorioServiciosBasicos {
-  crear(entidad: Record<string, unknown>): Promise<ServicioBasicoSedeRespuesta>;
+  crear(
+    entidad: CrearServicioBasicoEntrada,
+  ): Promise<ServicioBasicoSedeRespuesta>;
   buscarPorId(id: string): Promise<ServicioBasicoSedeRespuesta | null>;
   listarPorSede(sedeId: string): Promise<ServicioBasicoSedeRespuesta[]>;
   cambiarEstado(
-    id: string,
-    estadoServicio: string,
+    entrada: CambiarEstadoServicioBasicoEntrada,
   ): Promise<ServicioBasicoSedeRespuesta>;
   buscarTipoActivoPorCodigo(codigo: string): Promise<unknown>;
   sedeActiva(sedeId: string): Promise<boolean>;

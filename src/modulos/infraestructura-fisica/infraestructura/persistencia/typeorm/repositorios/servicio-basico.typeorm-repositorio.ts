@@ -5,6 +5,10 @@ import { RecursoNoEncontradoError } from '../../../../../../compartido/dominio/e
 import { SedeTypeormEntidad } from '../../../../../estructura-institucional/infraestructura/persistencia/typeorm/entidades/sede.typeorm-entidad';
 import { RepositorioServiciosBasicos } from '../../../../aplicacion/servicios-basicos/puertos';
 import { ServicioBasicoSedeRespuesta } from '../../../../dominio/servicios-basicos/servicio-basico.respuesta';
+import {
+  CambiarEstadoServicioBasicoEntrada,
+  CrearServicioBasicoEntrada,
+} from '../../../../dominio/servicios-basicos/repositorio-servicios-basicos.puerto';
 import { ServicioBasicoSedeTypeormEntidad } from '../entidades/servicio-basico-sede.typeorm-entidad';
 import { TipoServicioBasicoTypeormEntidad } from '../entidades/tipo-servicio-basico.typeorm-entidad';
 
@@ -20,7 +24,7 @@ export class ServicioBasicoTypeormRepositorio implements RepositorioServiciosBas
   ) {}
 
   async crear(
-    entidad: Partial<ServicioBasicoSedeTypeormEntidad>,
+    entidad: CrearServicioBasicoEntrada,
   ): Promise<ServicioBasicoSedeRespuesta> {
     return this.mapear(
       await this.repositorio.save(this.repositorio.create(entidad)),
@@ -41,13 +45,14 @@ export class ServicioBasicoTypeormRepositorio implements RepositorioServiciosBas
   }
 
   async cambiarEstado(
-    id: string,
-    estadoServicio: string,
+    entrada: CambiarEstadoServicioBasicoEntrada,
   ): Promise<ServicioBasicoSedeRespuesta> {
-    const entidad = await this.repositorio.findOne({ where: { id } });
+    const entidad = await this.repositorio.findOne({
+      where: { id: entrada.id },
+    });
     if (!entidad)
       throw new RecursoNoEncontradoError('El servicio basico no existe.');
-    entidad.estadoServicio = estadoServicio;
+    entidad.estadoServicio = entrada.estadoServicio;
     return this.mapear(await this.repositorio.save(entidad));
   }
 

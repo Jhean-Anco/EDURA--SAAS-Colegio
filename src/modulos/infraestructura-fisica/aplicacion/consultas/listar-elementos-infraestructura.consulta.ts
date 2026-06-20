@@ -1,10 +1,10 @@
-import { ElementoInfraestructuraResumen } from '../../dominio/infraestructura/consultador-infraestructura.puerto';
-import { RepositorioElementosInfraestructuraTypeormConsulta } from '../../infraestructura/persistencia/typeorm/consultas/repositorio-elementos-infraestructura.typeorm-consulta';
+import {
+  ConsultadorInfraestructura,
+  ElementoInfraestructuraResumen,
+} from '../../dominio/infraestructura/consultador-infraestructura.puerto';
 
 export class ListarElementosInfraestructuraConsulta {
-  constructor(
-    private readonly consulta: RepositorioElementosInfraestructuraTypeormConsulta,
-  ) {}
+  constructor(private readonly consulta: ConsultadorInfraestructura) {}
 
   ejecutar(sedeId: string): Promise<ElementoInfraestructuraResumen[]> {
     return this.consulta.listarPorSede(sedeId);
