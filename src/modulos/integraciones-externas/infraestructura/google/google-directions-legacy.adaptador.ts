@@ -6,21 +6,24 @@ import {
   ResultadoCalculoRuta,
 } from '../../dominio/puertos/calculador-rutas';
 
-interface GoogleDistanceMatrixRespuesta {
+interface GoogleDirectionsLeg {
+  distance: { value: number; text: string };
+  duration: { value: number; text: string };
+}
+
+interface GoogleDirectionsRespuesta {
   status: string;
-  rows?: Array<{
-    elements: Array<{
-      status: string;
-      distance?: { value: number; text: string };
-      duration?: { value: number; text: string };
-    }>;
+  routes?: Array<{
+    summary: string;
+    legs: GoogleDirectionsLeg[];
   }>;
+  error_message?: string;
 }
 
 @Injectable()
 export class GoogleDirectionsLegacyAdaptador implements CalculadorRutas {
   private readonly urlBase =
-    'https://maps.googleapis.com/maps/api/distancematrix/json';
+    'https://maps.googleapis.com/maps/api/directions/json';
 
   constructor(private readonly config: ConfiguracionAplicacion) {}
 
@@ -41,7 +44,7 @@ export class GoogleDirectionsLegacyAdaptador implements CalculadorRutas {
 
     const origenStr = `${origen.latitud},${origen.longitud}`;
     const destinoStr = `${destino.latitud},${destino.longitud}`;
-    const url = `${this.urlBase}?origins=${origenStr}&destinations=${destinoStr}&key=${apiKey}&language=es&mode=driving`;
+    const url = `${this.urlBase}?origin=${origenStr}&destination=${destinoStr}&key=${apiKey}&language=es&mode=driving`;
 
     const controller = new AbortController();
     const timer = setTimeout(
@@ -60,40 +63,34 @@ export class GoogleDirectionsLegacyAdaptador implements CalculadorRutas {
           disponible: true,
           resultado: null,
           advertencias: [
-            `Google Maps respondió con estado ${respuesta.status}`,
+            `Google Directions respondió con estado ${respuesta.status}`,
           ],
         };
       }
 
-      const datos = (await respuesta.json()) as GoogleDistanceMatrixRespuesta;
+      const datos = (await respuesta.json()) as GoogleDirectionsRespuesta;
 
-      if (datos.status !== 'OK' || !datos.rows?.[0]?.elements?.[0]) {
+      if (datos.status !== 'OK' || !datos.routes?.[0]?.legs?.[0]) {
         return {
           disponible: true,
           resultado: null,
-          advertencias: [`Google Maps: ${datos.status}`],
+          advertencias: [
+            datos.error_message ?? `Google Directions: ${datos.status}`,
+          ],
         };
       }
 
-      const elemento = datos.rows[0].elements[0];
-      if (
-        elemento.status !== 'OK' ||
-        !elemento.distance ||
-        !elemento.duration
-      ) {
-        return {
-          disponible: true,
-          resultado: null,
-          advertencias: [`Google Maps elemento: ${elemento.status}`],
-        };
-      }
+      const leg = datos.routes[0].legs[0];
+      const resumen = datos.routes[0].summary;
 
       return {
         disponible: true,
         resultado: {
-          distanciaMetros: elemento.distance.value,
-          duracionSegundos: elemento.duration.value,
-          resumenRuta: `${elemento.distance.text} — ${elemento.duration.text}`,
+          distanciaMetros: leg.distance.value,
+          duracionSegundos: leg.duration.value,
+          resumenRuta: resumen
+            ? `${resumen} — ${leg.distance.text} — ${leg.duration.text}`
+            : `${leg.distance.text} — ${leg.duration.text}`,
         },
         advertencias: [],
       };
@@ -104,8 +101,8 @@ export class GoogleDirectionsLegacyAdaptador implements CalculadorRutas {
         resultado: null,
         advertencias: [
           esTimeout
-            ? 'Google Maps no respondió en el tiempo límite'
-            : 'Error al contactar Google Maps',
+            ? 'Google Directions no respondió en el tiempo límite'
+            : 'Error al contactar Google Directions',
         ],
       };
     } finally {
