@@ -3,6 +3,10 @@ import { Persona } from '../personas/persona';
 export interface RepositorioPersonas {
   crear(persona: Persona): Promise<Persona>;
   buscarPorId(id: string): Promise<Persona | null>;
+  buscarPorIdEnInstitucion(
+    id: string,
+    institucionEducativaId: string,
+  ): Promise<Persona | null>;
   listarPorInstitucion(
     institucionEducativaId: string,
     filtro: {

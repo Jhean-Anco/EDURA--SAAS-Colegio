@@ -1,14 +1,37 @@
-import { IsOptional, IsString, Length } from 'class-validator';
+import {
+  IsDateString,
+  IsIn,
+  IsOptional,
+  IsString,
+  Length,
+  Matches,
+} from 'class-validator';
 
 export class CrearPersonaSolicitud {
   @IsString()
   @Length(1, 150)
   nombres!: string;
 
+  @IsOptional()
   @IsString()
-  institucionEducativaId!: string;
+  @Length(1, 100)
+  apellidoPaterno?: string;
 
   @IsOptional()
   @IsString()
-  apellidoPaterno?: string | null;
+  @Length(1, 100)
+  apellidoMaterno?: string;
+
+  @IsOptional()
+  @IsDateString()
+  fechaNacimiento?: string;
+
+  @IsOptional()
+  @IsIn(['MASCULINO', 'FEMENINO', 'OTRO'])
+  sexoRegistral?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^[A-Z]{2}$/)
+  codigoPaisNacionalidad?: string;
 }

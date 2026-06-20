@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CerrarSesionCasoUso } from './aplicacion/autenticacion/cerrar-sesion.caso-uso';
@@ -149,6 +150,7 @@ import { ConfiguracionAplicacion } from '../../configuracion/configuracion-aplic
       provide: RenovarSesionCasoUso,
       useFactory: (
         sesiones: RepositorioSesiones,
+        usuarios: RepositorioUsuarios,
         auditoria: RepositorioAuditoria,
         tokenRefresh: ServicioTokenOpacoCriptografico,
         tokenAcceso: ServicioTokenAccesoJwt,
@@ -156,6 +158,7 @@ import { ConfiguracionAplicacion } from '../../configuracion/configuracion-aplic
       ) =>
         new RenovarSesionCasoUso(
           sesiones,
+          usuarios,
           auditoria,
           tokenRefresh,
           tokenAcceso,
@@ -164,6 +167,7 @@ import { ConfiguracionAplicacion } from '../../configuracion/configuracion-aplic
         ),
       inject: [
         REPOSITORIO_SESIONES,
+        REPOSITORIO_USUARIOS,
         REPOSITORIO_AUDITORIA,
         ServicioTokenOpacoCriptografico,
         ServicioTokenAccesoJwt,
@@ -207,7 +211,21 @@ import { ConfiguracionAplicacion } from '../../configuracion/configuracion-aplic
         ConfiguracionAplicacion,
       ],
     },
-    GuardiaJwt,
+    {
+      provide: GuardiaJwt,
+      useFactory: (
+        reflector: Reflector,
+        tokenAcceso: ServicioTokenAccesoJwt,
+        sesiones: RepositorioSesiones,
+        usuarios: RepositorioUsuarios,
+      ) => new GuardiaJwt(reflector, tokenAcceso, sesiones, usuarios),
+      inject: [
+        Reflector,
+        ServicioTokenAccesoJwt,
+        REPOSITORIO_SESIONES,
+        REPOSITORIO_USUARIOS,
+      ],
+    },
     ContextoAccesoTypeormConsulta,
     {
       provide: CONSULTADOR_CONTEXTOS,
@@ -229,6 +247,9 @@ import { ConfiguracionAplicacion } from '../../configuracion/configuracion-aplic
     SeleccionarContextoCasoUso,
     ListarContextosUsuarioConsulta,
     ServicioTokenAccesoJwt,
+    GuardiaJwt,
+    REPOSITORIO_SESIONES,
+    REPOSITORIO_USUARIOS,
   ],
 })
 export class IdentidadAccesoModule {}

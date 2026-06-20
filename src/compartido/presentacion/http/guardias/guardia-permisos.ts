@@ -2,41 +2,63 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
+  Inject,
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { PERMISOS_REQUERIDOS } from '../decoradores/permisos.decorador';
-import { PayloadAcceso } from '../../../../modulos/identidad-acceso/dominio/valores/payload-acceso';
+import { ContextoSolicitudAutenticada } from '../../../aplicacion/contexto-solicitud-autenticada';
+import {
+  CONSULTADOR_PERMISOS_EFECTIVOS,
+  ConsultadorPermisosEfectivos,
+} from '../../../infraestructura/persistencia/consultador-permisos.typeorm';
 
 @Injectable()
 export class GuardiaPermisos implements CanActivate {
-  constructor(private readonly reflector: Reflector) {}
+  constructor(
+    private readonly reflector: Reflector,
+    @Inject(CONSULTADOR_PERMISOS_EFECTIVOS)
+    private readonly consultador: ConsultadorPermisosEfectivos,
+  ) {}
 
-  canActivate(contexto: ExecutionContext): boolean {
-    const permisos = this.reflector.getAllAndOverride<string[]>(
+  async canActivate(contexto: ExecutionContext): Promise<boolean> {
+    const permisosRequeridos = this.reflector.getAllAndOverride<string[]>(
       PERMISOS_REQUERIDOS,
       [contexto.getHandler(), contexto.getClass()],
     );
-    if (!permisos || permisos.length === 0) {
+    if (!permisosRequeridos || permisosRequeridos.length === 0) {
       return true;
     }
+
     const request = contexto
       .switchToHttp()
-      .getRequest<Request & { usuario?: PayloadAcceso }>();
-    const usuario = request.usuario;
-    if (!usuario || usuario.tipoToken !== 'ACCESO') {
+      .getRequest<
+        Request & { contextoActual?: ContextoSolicitudAutenticada }
+      >();
+
+    const ctx = request.contextoActual;
+    if (!ctx || ctx.tipoToken !== 'ACCESO') {
       throw new ForbiddenException('PERMISO_DENEGADO');
     }
-    if (usuario.ambito === null) {
+    if (ctx.ambito === null) {
       throw new ForbiddenException('CONTEXTO_NO_AUTORIZADO');
     }
-    const requierePersona = permisos.some((permiso) =>
-      permiso.startsWith('PERSONAS.'),
+
+    const permisosEfectivos = await this.consultador.listar({
+      usuarioId: ctx.usuarioId,
+      rolId: ctx.rolId,
+      institucionId: ctx.institucionId,
+      sedeId: ctx.sedeId,
+    });
+
+    const tienePermisos = permisosRequeridos.every((p) =>
+      permisosEfectivos.includes(p),
     );
-    if (requierePersona && usuario.ambito === 'PLATAFORMA') {
-      throw new ForbiddenException('CONTEXTO_NO_AUTORIZADO');
+    if (!tienePermisos) {
+      throw new ForbiddenException('PERMISO_DENEGADO');
     }
+
     return true;
   }
 }

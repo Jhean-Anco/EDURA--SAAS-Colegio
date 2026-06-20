@@ -42,21 +42,33 @@ export class PersonasTypeormRepositorio implements RepositorioPersonas {
 
   async buscarPorId(id: string): Promise<Persona | null> {
     const entidad = await this.repositorio.findOne({ where: { id } });
-    return entidad
-      ? new Persona(
-          entidad.id,
-          entidad.institucionEducativaId,
-          entidad.nombres,
-          entidad.apellidoPaterno,
-          entidad.apellidoMaterno,
-          entidad.fechaNacimiento,
-          entidad.sexoRegistral,
-          entidad.codigoPaisNacionalidad,
-          entidad.estado as 'ACTIVA' | 'INACTIVA' | 'BAJA',
-          entidad.fechaCreacion,
-          entidad.fechaModificacion,
-        )
-      : null;
+    return entidad ? this.mapear(entidad) : null;
+  }
+
+  async buscarPorIdEnInstitucion(
+    id: string,
+    institucionEducativaId: string,
+  ): Promise<Persona | null> {
+    const entidad = await this.repositorio.findOne({
+      where: { id, institucionEducativaId },
+    });
+    return entidad ? this.mapear(entidad) : null;
+  }
+
+  private mapear(entidad: PersonaTypeormEntidad): Persona {
+    return new Persona(
+      entidad.id,
+      entidad.institucionEducativaId,
+      entidad.nombres,
+      entidad.apellidoPaterno,
+      entidad.apellidoMaterno,
+      entidad.fechaNacimiento,
+      entidad.sexoRegistral,
+      entidad.codigoPaisNacionalidad,
+      entidad.estado as 'ACTIVA' | 'INACTIVA' | 'BAJA',
+      entidad.fechaCreacion,
+      entidad.fechaModificacion,
+    );
   }
 
   async listarPorInstitucion(
@@ -73,22 +85,7 @@ export class PersonasTypeormRepositorio implements RepositorioPersonas {
       order: { fechaCreacion: 'DESC' },
     });
     return {
-      datos: datos.map(
-        (entidad) =>
-          new Persona(
-            entidad.id,
-            entidad.institucionEducativaId,
-            entidad.nombres,
-            entidad.apellidoPaterno,
-            entidad.apellidoMaterno,
-            entidad.fechaNacimiento,
-            entidad.sexoRegistral,
-            entidad.codigoPaisNacionalidad,
-            entidad.estado as 'ACTIVA' | 'INACTIVA' | 'BAJA',
-            entidad.fechaCreacion,
-            entidad.fechaModificacion,
-          ),
-      ),
+      datos: datos.map((e) => this.mapear(e)),
       total,
     };
   }
