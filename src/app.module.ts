@@ -5,6 +5,7 @@ import { SaludModule } from './salud/salud.module';
 import { EstructuraInstitucionalModule } from './modulos/estructura-institucional/estructura-institucional.module';
 import { InfraestructuraFisicaModule } from './modulos/infraestructura-fisica/infraestructura-fisica.module';
 import { IdentidadAccesoModule } from './modulos/identidad-acceso/identidad-acceso.module';
+import { PersonasModule } from './modulos/personas/personas.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { IdentidadAccesoModule } from './modulos/identidad-acceso/identidad-acce
     EstructuraInstitucionalModule,
     InfraestructuraFisicaModule,
     IdentidadAccesoModule,
+    PersonasModule,
   ],
 })
 export class AppModule {}

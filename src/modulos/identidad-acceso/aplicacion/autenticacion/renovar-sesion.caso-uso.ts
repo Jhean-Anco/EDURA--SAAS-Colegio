@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { UnauthorizedException } from '@nestjs/common';
 import {
   RepositorioAuditoria,
   RepositorioSesiones,
@@ -7,6 +8,7 @@ import { EventoAuditoria } from '../../dominio/auditoria/evento-auditoria';
 import { ServicioTokenOpacoCriptografico } from '../../infraestructura/tokens/servicio-token-opaco';
 import { ServicioTokenAccesoJwt } from '../../infraestructura/tokens/servicio-token-acceso-jwt';
 import { SesionUsuario } from '../../dominio/sesiones/sesion-usuario';
+import { PayloadAcceso } from '../../dominio/valores/payload-acceso';
 
 export interface RenovarSesionEntrada {
   refreshToken: string;
@@ -23,6 +25,8 @@ export class RenovarSesionCasoUso {
     private readonly auditoria: RepositorioAuditoria,
     private readonly tokenRefresh: ServicioTokenOpacoCriptografico,
     private readonly tokenAcceso: ServicioTokenAccesoJwt,
+    private readonly jwtAccesoTtlSegundos: number,
+    private readonly tokenRefreshTtlSegundos: number,
   ) {}
 
   async ejecutar(entrada: RenovarSesionEntrada): Promise<RenovarSesionSalida> {
@@ -37,27 +41,35 @@ export class RenovarSesionCasoUso {
       await this.auditoria.registrar(
         new EventoAuditoria('0', 'SESION_REVOCADA', 'sesion', 'FALLO'),
       );
-      throw new Error('Sesion invalida');
+      throw new UnauthorizedException('SESION_INVALIDA');
     }
     const nuevoRefresh = this.tokenRefresh.generar();
+    const expiracion = new Date(
+      Date.now() + this.tokenRefreshTtlSegundos * 1000,
+    );
     const nuevaSesion = new SesionUsuario(
       randomUUID(),
       sesion.usuarioId,
       sesion.familiaId,
       nuevoRefresh.hash,
       sesion.id,
-      new Date(Date.now() + 15 * 60 * 1000),
+      expiracion,
     );
     await this.sesiones.crear(nuevaSesion);
     await this.sesiones.revocar(sesion.id, 'ROTADA', new Date());
-    const accessToken = this.tokenAcceso.firmar({
-      usuarioId: sesion.usuarioId,
-      sesionId: nuevaSesion.id,
-      versionSeguridad: 1,
-      ambito: 'PLATAFORMA',
-      institucionId: null,
-      sedeId: null,
-    });
+    const accessToken = this.tokenAcceso.firmar(
+      {
+        sub: sesion.usuarioId,
+        sid: nuevaSesion.id,
+        versionSeguridad: 1,
+        tipoToken: 'ACCESO',
+        ambito: 'PLATAFORMA',
+        rolId: null,
+        institucionId: null,
+        sedeId: null,
+      } satisfies PayloadAcceso,
+      this.jwtAccesoTtlSegundos,
+    );
     await this.auditoria.registrar(
       new EventoAuditoria(
         sesion.usuarioId,

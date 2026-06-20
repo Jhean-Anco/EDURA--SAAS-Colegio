@@ -3,8 +3,8 @@ import { join } from 'node:path';
 import { entidadesTypeOrm } from '../../src/base-datos/typeorm/typeorm.registro';
 
 describe('Registro TypeORM', () => {
-  it('contiene exactamente 40 entidades', () => {
-    expect(entidadesTypeOrm).toHaveLength(40);
+  it('contiene exactamente 45 entidades', () => {
+    expect(entidadesTypeOrm).toHaveLength(45);
   });
 
   it('no duplica un segundo id en las especializaciones', () => {
@@ -36,5 +36,18 @@ describe('Registro TypeORM', () => {
       expect(contenido).not.toMatch(/\bfechaCreacion\b/);
       expect(contenido).not.toMatch(/\bfechaModificacion\b/);
     }
+  });
+
+  it('incluye las entidades de personas', () => {
+    const nombres = entidadesTypeOrm.map((entidad) => entidad.name);
+    expect(nombres).toEqual(
+      expect.arrayContaining([
+        'PersonaTypeormEntidad',
+        'TipoDocumentoIdentidadTypeormEntidad',
+        'DocumentoIdentidadPersonaTypeormEntidad',
+        'MedioContactoPersonaTypeormEntidad',
+        'DireccionPersonaTypeormEntidad',
+      ]),
+    );
   });
 });

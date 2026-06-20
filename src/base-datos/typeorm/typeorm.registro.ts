@@ -27,6 +27,13 @@ import { TipoServicioBasicoTypeormEntidad } from '../../modulos/infraestructura-
 import { TipoTenenciaPredioTypeormEntidad } from '../../modulos/infraestructura-fisica/infraestructura/persistencia/typeorm/entidades/tipo-tenencia-predio.typeorm-entidad';
 import { UnidadMedidaTypeormEntidad } from '../../modulos/infraestructura-fisica/infraestructura/persistencia/typeorm/entidades/unidad-medida.typeorm-entidad';
 import {
+  DireccionPersonaTypeormEntidad,
+  DocumentoIdentidadPersonaTypeormEntidad,
+  MedioContactoPersonaTypeormEntidad,
+  PersonaTypeormEntidad,
+  TipoDocumentoIdentidadTypeormEntidad,
+} from '../../modulos/personas/infraestructura/persistencia/typeorm/entidades/personas.typeorm-entidades';
+import {
   AsignacionRolUsuarioTypeormEntidad,
   ConfiguracionInstitucionTypeormEntidad,
   CredencialUsuarioTypeormEntidad,
@@ -82,5 +89,10 @@ export const entidadesTypeOrm = [
   TokenSeguridadUsuarioTypeormEntidad,
   EventoAuditoriaTypeormEntidad,
   ConfiguracionInstitucionTypeormEntidad,
+  PersonaTypeormEntidad,
+  TipoDocumentoIdentidadTypeormEntidad,
+  DocumentoIdentidadPersonaTypeormEntidad,
+  MedioContactoPersonaTypeormEntidad,
+  DireccionPersonaTypeormEntidad,
 ] as unknown as ConstructorEntidad[];
 type ConstructorEntidad = new (...argumentos: never[]) => unknown;

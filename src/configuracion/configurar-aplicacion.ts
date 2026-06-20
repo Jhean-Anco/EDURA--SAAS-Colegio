@@ -1,6 +1,6 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { FiltroErrorDominio } from '../modulos/estructura-institucional/infraestructura/errores/filtro-error-dominio';
+import { FiltroHttpGlobal } from '../compartido/presentacion/http/filtros/filtro-http.global';
 
 export function configurarAplicacion(
   app: INestApplication,
@@ -15,7 +15,7 @@ export function configurarAplicacion(
       stopAtFirstError: false,
     }),
   );
-  app.useGlobalFilters(new FiltroErrorDominio());
+  app.useGlobalFilters(new FiltroHttpGlobal());
 
   if (documentar) {
     const documentacion = new DocumentBuilder()

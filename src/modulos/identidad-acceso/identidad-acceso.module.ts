@@ -6,6 +6,7 @@ import { CerrarTodasSesionesCasoUso } from './aplicacion/autenticacion/cerrar-to
 import { IniciarSesionCasoUso } from './aplicacion/autenticacion/iniciar-sesion.caso-uso';
 import { RenovarSesionCasoUso } from './aplicacion/autenticacion/renovar-sesion.caso-uso';
 import { ListarContextosUsuarioConsulta } from './aplicacion/consultas/contexto-acceso';
+import { SeleccionarContextoCasoUso } from './aplicacion/autenticacion/seleccionar-contexto.caso-uso';
 import {
   CONSULTADOR_CONTEXTOS,
   REPOSITORIO_AUDITORIA,
@@ -21,6 +22,7 @@ import {
   RepositorioUsuarios,
 } from './dominio/puertos/repositorios';
 import { AutenticacionControlador } from './presentacion/http/controladores/autenticacion.controlador';
+import { GuardiaJwt } from './presentacion/http/guardias/guardia-jwt';
 import {
   AuditoriaTypeormRepositorio,
   CredencialTypeormRepositorio,
@@ -43,6 +45,7 @@ import { ServicioTokenOpacoCriptografico } from './infraestructura/tokens/servic
 import { ContextoAccesoTypeormConsulta } from './infraestructura/persistencia/typeorm/consultas/contexto-acceso.typeorm-consulta';
 import { InstitucionEducativaTypeormEntidad } from '../estructura-institucional/infraestructura/persistencia/typeorm/entidades/institucion-educativa.typeorm-entidad';
 import { SedeTypeormEntidad } from '../estructura-institucional/infraestructura/persistencia/typeorm/entidades/sede.typeorm-entidad';
+import { ConfiguracionAplicacion } from '../../configuracion/configuracion-aplicacion';
 
 @Module({
   imports: [
@@ -58,12 +61,15 @@ import { SedeTypeormEntidad } from '../estructura-institucional/infraestructura/
       InstitucionEducativaTypeormEntidad,
       SedeTypeormEntidad,
     ]),
-    JwtModule.register({
-      secret: process.env.JWT_SECRETO ?? 'dev-secret',
-      signOptions: {
-        issuer: process.env.JWT_EMISOR ?? 'EDURA',
-        audience: process.env.JWT_AUDIENCIA ?? 'EDURA_WEB',
-      },
+    JwtModule.registerAsync({
+      inject: [ConfiguracionAplicacion],
+      useFactory: (configuracion: ConfiguracionAplicacion) => ({
+        secret: configuracion.jwtSecreto,
+        signOptions: {
+          issuer: configuracion.jwtEmisor,
+          audience: configuracion.jwtAudiencia,
+        },
+      }),
     }),
   ],
   providers: [
@@ -75,20 +81,19 @@ import { SedeTypeormEntidad } from '../estructura-institucional/infraestructura/
     JwtService,
     {
       provide: ServicioTokenAccesoJwt,
-      useFactory: (jwt: JwtService) =>
+      useFactory: (jwt: JwtService, configuracion: ConfiguracionAplicacion) =>
         new ServicioTokenAccesoJwt(
           jwt,
-          process.env.JWT_EMISOR ?? 'EDURA',
-          process.env.JWT_AUDIENCIA ?? 'EDURA_WEB',
+          configuracion.jwtEmisor,
+          configuracion.jwtAudiencia,
         ),
-      inject: [JwtService],
+      inject: [JwtService, ConfiguracionAplicacion],
     },
     {
       provide: ServicioTokenOpacoCriptografico,
-      useFactory: () =>
-        new ServicioTokenOpacoCriptografico(
-          process.env.HASH_TOKEN_SECRETO ?? 'dev-secret-token',
-        ),
+      useFactory: (configuracion: ConfiguracionAplicacion) =>
+        new ServicioTokenOpacoCriptografico(configuracion.hashTokenSecreto),
+      inject: [ConfiguracionAplicacion],
     },
     {
       provide: REPOSITORIO_USUARIOS,
@@ -111,26 +116,33 @@ import { SedeTypeormEntidad } from '../estructura-institucional/infraestructura/
       useFactory: (
         usuarios: RepositorioUsuarios,
         credenciales: RepositorioCredenciales,
+        sesiones: RepositorioSesiones,
         auditoria: RepositorioAuditoria,
         hashClave: ServicioHashClaveArgon2,
         tokenAcceso: ServicioTokenAccesoJwt,
         tokenRefresh: ServicioTokenOpacoCriptografico,
+        configuracion: ConfiguracionAplicacion,
       ) =>
         new IniciarSesionCasoUso(
           usuarios,
           credenciales,
+          sesiones,
           auditoria,
           hashClave,
           tokenAcceso,
           tokenRefresh,
+          configuracion.jwtAccesoTtlSegundos,
+          configuracion.tokenRefreshTtlSegundos,
         ),
       inject: [
         REPOSITORIO_USUARIOS,
         REPOSITORIO_CREDENCIALES,
+        REPOSITORIO_SESIONES,
         REPOSITORIO_AUDITORIA,
         ServicioHashClaveArgon2,
         ServicioTokenAccesoJwt,
         ServicioTokenOpacoCriptografico,
+        ConfiguracionAplicacion,
       ],
     },
     {
@@ -140,18 +152,22 @@ import { SedeTypeormEntidad } from '../estructura-institucional/infraestructura/
         auditoria: RepositorioAuditoria,
         tokenRefresh: ServicioTokenOpacoCriptografico,
         tokenAcceso: ServicioTokenAccesoJwt,
+        configuracion: ConfiguracionAplicacion,
       ) =>
         new RenovarSesionCasoUso(
           sesiones,
           auditoria,
           tokenRefresh,
           tokenAcceso,
+          configuracion.jwtAccesoTtlSegundos,
+          configuracion.tokenRefreshTtlSegundos,
         ),
       inject: [
         REPOSITORIO_SESIONES,
         REPOSITORIO_AUDITORIA,
         ServicioTokenOpacoCriptografico,
         ServicioTokenAccesoJwt,
+        ConfiguracionAplicacion,
       ],
     },
     {
@@ -170,6 +186,28 @@ import { SedeTypeormEntidad } from '../estructura-institucional/infraestructura/
       ) => new CerrarTodasSesionesCasoUso(sesiones, auditoria),
       inject: [REPOSITORIO_SESIONES, REPOSITORIO_AUDITORIA],
     },
+    {
+      provide: SeleccionarContextoCasoUso,
+      useFactory: (
+        consultador: ConsultadorContextosAcceso,
+        auditoria: RepositorioAuditoria,
+        tokenAcceso: ServicioTokenAccesoJwt,
+        configuracion: ConfiguracionAplicacion,
+      ) =>
+        new SeleccionarContextoCasoUso(
+          consultador,
+          auditoria,
+          tokenAcceso,
+          configuracion.jwtAccesoTtlSegundos,
+        ),
+      inject: [
+        CONSULTADOR_CONTEXTOS,
+        REPOSITORIO_AUDITORIA,
+        ServicioTokenAccesoJwt,
+        ConfiguracionAplicacion,
+      ],
+    },
+    GuardiaJwt,
     ContextoAccesoTypeormConsulta,
     {
       provide: CONSULTADOR_CONTEXTOS,
@@ -188,7 +226,9 @@ import { SedeTypeormEntidad } from '../estructura-institucional/infraestructura/
     RenovarSesionCasoUso,
     CerrarSesionCasoUso,
     CerrarTodasSesionesCasoUso,
+    SeleccionarContextoCasoUso,
     ListarContextosUsuarioConsulta,
+    ServicioTokenAccesoJwt,
   ],
 })
 export class IdentidadAccesoModule {}
