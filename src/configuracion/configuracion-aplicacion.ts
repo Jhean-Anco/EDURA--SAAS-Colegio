@@ -34,6 +34,18 @@ export class ConfiguracionAplicacion {
 
   readonly tokenRefreshTtlSegundos: number;
 
+  readonly integracionDocumentosHabilitada: boolean;
+
+  readonly proveedorDocumentos: string;
+
+  readonly apisperuUrlBase: string;
+
+  readonly apisperuTimeoutMs: number;
+
+  readonly integracionRutasHabilitada: boolean;
+
+  readonly googleMapsTimeoutMs: number;
+
   constructor() {
     this.entorno = process.env.ENTORNO ?? 'desarrollo';
     this.puertoApi = Number(process.env.PUERTO_API ?? 3000);
@@ -58,6 +70,17 @@ export class ConfiguracionAplicacion {
     );
     this.tokenRefreshTtlSegundos = Number(
       process.env.TOKEN_REFRESH_TTL_SEGUNDOS ?? 2592000,
+    );
+    this.integracionDocumentosHabilitada =
+      (process.env.INTEGRACION_DOCUMENTOS_HABILITADA ?? 'false') === 'true';
+    this.proveedorDocumentos = process.env.PROVEEDOR_DOCUMENTOS ?? 'APISPERU';
+    this.apisperuUrlBase =
+      process.env.APISPERU_URL_BASE ?? 'https://dniruc.apisperu.com/api/v1';
+    this.apisperuTimeoutMs = Number(process.env.APISPERU_TIMEOUT_MS ?? 3000);
+    this.integracionRutasHabilitada =
+      (process.env.INTEGRACION_RUTAS_HABILITADA ?? 'false') === 'true';
+    this.googleMapsTimeoutMs = Number(
+      process.env.GOOGLE_MAPS_TIMEOUT_MS ?? 4000,
     );
   }
 }
