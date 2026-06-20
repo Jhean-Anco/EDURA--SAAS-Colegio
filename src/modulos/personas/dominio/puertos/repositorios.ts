@@ -18,33 +18,48 @@ export interface RepositorioPersonas {
   ): Promise<{ datos: Persona[]; total: number }>;
 }
 
+export interface RegistrarDocumentoEntrada {
+  personaId: string;
+  institucionEducativaId: string;
+  tipoDocumentoId: string;
+  numero: string;
+  numeroNormalizado: string;
+  codigoPaisEmision?: string | null;
+  esPrincipal?: boolean;
+  fechaEmision?: Date | null;
+  fechaVencimiento?: Date | null;
+}
+
 export interface RepositorioDocumentosIdentidadPersona {
-  registrar(entrada: {
-    personaId: string;
-    institucionEducativaId: string;
-    tipoDocumentoId: string;
-    numero: string;
-    numeroNormalizado: string;
-  }): Promise<void>;
+  registrar(entrada: RegistrarDocumentoEntrada): Promise<void>;
+}
+
+export interface RegistrarMedioContactoEntrada {
+  personaId: string;
+  institucionEducativaId: string;
+  tipo: string;
+  valor: string;
+  valorNormalizado: string;
+  esPrincipal?: boolean;
 }
 
 export interface RepositorioMediosContactoPersona {
-  registrar(entrada: {
-    personaId: string;
-    institucionEducativaId: string;
-    tipo: string;
-    valor: string;
-    valorNormalizado: string;
-  }): Promise<void>;
+  registrar(entrada: RegistrarMedioContactoEntrada): Promise<void>;
+}
+
+export interface RegistrarDireccionEntrada {
+  personaId: string;
+  institucionEducativaId: string;
+  direccionLinea: string;
+  referencia: string | null;
+  latitud?: number | null;
+  longitud?: number | null;
+  ubigeoId?: string | null;
+  esPrincipal?: boolean;
 }
 
 export interface RepositorioDireccionesPersona {
-  registrar(entrada: {
-    personaId: string;
-    institucionEducativaId: string;
-    direccionLinea: string;
-    referencia: string | null;
-  }): Promise<void>;
+  registrar(entrada: RegistrarDireccionEntrada): Promise<void>;
 }
 
 export interface RepositorioVinculosPersonaMembresia {
