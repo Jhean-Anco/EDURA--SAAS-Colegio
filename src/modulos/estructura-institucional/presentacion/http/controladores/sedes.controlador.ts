@@ -1,5 +1,11 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { Permisos } from '../../../../../compartido/presentacion/http/decoradores/permisos.decorador';
+import { ContextoActual } from '../../../../../compartido/presentacion/http/decoradores/contexto-actual.decorador';
+import { ContextoSolicitudAutenticada } from '../../../../../compartido/aplicacion/contexto-solicitud-autenticada';
+import {
+  validarInstitucionDelContexto,
+  validarSedeDelContexto,
+} from '../../../../../compartido/presentacion/http/validacion-contexto-http';
 import { CambiarEstadoSedeCasoUso } from '../../../aplicacion/sedes/cambiar-estado-sede.caso-uso';
 import { CrearSedeCasoUso } from '../../../aplicacion/sedes/crear-sede.caso-uso';
 import { EstablecerSedePrincipalCasoUso } from '../../../aplicacion/sedes/establecer-sede-principal.caso-uso';
@@ -23,7 +29,9 @@ export class SedesControlador {
   async crear(
     @Param('idInstitucion') idInstitucion: string,
     @Body() solicitud: CrearSedeSolicitud,
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<SedeRespuesta> {
+    validarInstitucionDelContexto(ctx, idInstitucion);
     return this.crearSede.ejecutar({
       id: crypto.randomUUID(),
       institucionId: idInstitucion,
@@ -36,7 +44,9 @@ export class SedesControlador {
   @Get()
   async listar(
     @Param('idInstitucion') idInstitucion: string,
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<{ datos: SedeRespuesta[] }> {
+    validarInstitucionDelContexto(ctx, idInstitucion);
     const sedes = await this.listarSedes.ejecutar(idInstitucion);
     return {
       datos: sedes.map((sede) => ({
@@ -55,7 +65,9 @@ export class SedesControlador {
   async obtener(
     @Param('idInstitucion') idInstitucion: string,
     @Param('idSede') idSede: string,
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<SedeRespuesta> {
+    validarSedeDelContexto(ctx, idInstitucion, idSede);
     const sede = await this.obtenerSede.ejecutar(idInstitucion, idSede);
     return {
       id: sede.id,
@@ -72,7 +84,9 @@ export class SedesControlador {
   async establecerPrincipalSede(
     @Param('idInstitucion') idInstitucion: string,
     @Param('idSede') idSede: string,
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<void> {
+    validarSedeDelContexto(ctx, idInstitucion, idSede);
     await this.establecerPrincipal.ejecutar(idInstitucion, idSede);
   }
 
@@ -82,7 +96,9 @@ export class SedesControlador {
     @Param('idInstitucion') idInstitucion: string,
     @Param('idSede') idSede: string,
     @Body() solicitud: { estado: 'ACTIVA' | 'INACTIVA' | 'BAJA' },
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<void> {
+    validarSedeDelContexto(ctx, idInstitucion, idSede);
     await this.cambiarEstado.ejecutar(idInstitucion, idSede, solicitud.estado);
   }
 }

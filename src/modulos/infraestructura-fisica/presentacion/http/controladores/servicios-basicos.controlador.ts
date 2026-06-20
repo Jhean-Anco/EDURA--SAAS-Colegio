@@ -1,5 +1,8 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { Permisos } from '../../../../../compartido/presentacion/http/decoradores/permisos.decorador';
+import { ContextoActual } from '../../../../../compartido/presentacion/http/decoradores/contexto-actual.decorador';
+import { ContextoSolicitudAutenticada } from '../../../../../compartido/aplicacion/contexto-solicitud-autenticada';
+import { validarSedeDelContexto } from '../../../../../compartido/presentacion/http/validacion-contexto-http';
 import { CambiarEstadoServicioBasicoCasoUso } from '../../../aplicacion/servicios-basicos/cambiar-estado-servicio-basico.caso-uso';
 import { ListarServiciosBasicosSedeConsulta } from '../../../aplicacion/servicios-basicos/listar-servicios-basicos-sede.consulta';
 import { RegistrarServicioBasicoSedeCasoUso } from '../../../aplicacion/servicios-basicos/registrar-servicio-basico-sede.caso-uso';
@@ -19,7 +22,9 @@ export class ServiciosBasicosControlador {
   @Get()
   async listar(
     @Param('idSede') idSede: string,
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<ServicioBasicoSedeRespuesta[]> {
+    validarSedeDelContexto(ctx, ctx?.institucionId ?? '', idSede);
     return this.listarServiciosBasicos.ejecutar(idSede);
   }
 
@@ -28,7 +33,9 @@ export class ServiciosBasicosControlador {
   async crear(
     @Param('idSede') idSede: string,
     @Body() solicitud: RegistrarServicioBasicoSedeSolicitud,
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<ServicioBasicoSedeRespuesta> {
+    validarSedeDelContexto(ctx, ctx?.institucionId ?? '', idSede);
     return this.registrarServicioBasico.ejecutar({
       id: crypto.randomUUID(),
       sedeId: idSede,

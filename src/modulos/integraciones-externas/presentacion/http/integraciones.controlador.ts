@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
-import { GuardiaJwt } from '../../../identidad-acceso/presentacion/http/guardias/guardia-jwt';
-import { GuardiaPermisos } from '../../../../compartido/presentacion/http/guardias/guardia-permisos';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { Permisos } from '../../../../compartido/presentacion/http/decoradores/permisos.decorador';
 import { ConsultarDniCasoUso } from '../../aplicacion/consultar-dni.caso-uso';
 import { ConsultarRucCasoUso } from '../../aplicacion/consultar-ruc.caso-uso';
@@ -19,7 +10,6 @@ import { ResultadoConsultaDni } from '../../dominio/puertos/consultador-dni';
 import { ResultadoConsultaRuc } from '../../dominio/puertos/consultador-ruc';
 import { ResultadoCalculoRuta } from '../../dominio/puertos/calculador-rutas';
 
-@UseGuards(GuardiaJwt, GuardiaPermisos)
 @Controller()
 export class IntegracionesControlador {
   constructor(

@@ -6,15 +6,14 @@ import { App } from 'supertest/types';
 import { configurarAplicacion } from '../src/configuracion/configurar-aplicacion';
 import { AppModule } from '../src/app.module';
 
-const SKIP_E2E = !process.env['BD_HOST'];
-
-const describeE2E = SKIP_E2E ? describe.skip : describe;
-
-describeE2E('Flujo personas E2E (requiere BD)', () => {
+describe('Flujo personas E2E (requiere BD)', () => {
   let app: INestApplication<App>;
   let dataSource: DataSource;
 
   beforeAll(async () => {
+    if (!process.env['BD_HOST']) {
+      throw new Error('BD_HOST es obligatorio para ejecutar este E2E');
+    }
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -51,11 +50,9 @@ describeE2E('Flujo personas E2E (requiere BD)', () => {
     ]);
 
     if (!instA || !instB) {
-      console.warn(
-        'Test de aislamiento omitido: no hay dos instituciones en BD',
-      );
-      return;
+      throw new Error('Se requieren al menos dos instituciones en BD');
     }
+    expect(instA.id).not.toBe(instB.id);
   });
 
   it('POST /api/v1/personas/consultas/dni con token inválido retorna 401', () => {
