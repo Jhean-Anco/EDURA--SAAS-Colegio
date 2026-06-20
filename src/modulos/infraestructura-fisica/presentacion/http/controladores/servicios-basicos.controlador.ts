@@ -2,9 +2,9 @@ import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { CambiarEstadoServicioBasicoCasoUso } from '../../../aplicacion/servicios-basicos/cambiar-estado-servicio-basico.caso-uso';
 import { ListarServiciosBasicosSedeConsulta } from '../../../aplicacion/servicios-basicos/listar-servicios-basicos-sede.consulta';
 import { RegistrarServicioBasicoSedeCasoUso } from '../../../aplicacion/servicios-basicos/registrar-servicio-basico-sede.caso-uso';
+import { ServicioBasicoSedeRespuesta } from '../../../dominio/servicios-basicos/servicio-basico.respuesta';
 import { CambiarEstadoServicioBasicoSolicitud } from '../solicitudes/cambiar-estado-servicio-basico.solicitud';
 import { RegistrarServicioBasicoSedeSolicitud } from '../solicitudes/registrar-servicio-basico.solicitud';
-import { ServicioBasicoSedeTypeormEntidad } from '../../../infraestructura/persistencia/typeorm/entidades/servicio-basico-sede.typeorm-entidad';
 
 @Controller('sedes/:idSede/servicios-basicos')
 export class ServiciosBasicosControlador {
@@ -17,7 +17,7 @@ export class ServiciosBasicosControlador {
   @Get()
   async listar(
     @Param('idSede') idSede: string,
-  ): Promise<ServicioBasicoSedeTypeormEntidad[]> {
+  ): Promise<ServicioBasicoSedeRespuesta[]> {
     return this.listarServiciosBasicos.ejecutar(idSede);
   }
 
@@ -25,7 +25,7 @@ export class ServiciosBasicosControlador {
   async crear(
     @Param('idSede') idSede: string,
     @Body() solicitud: RegistrarServicioBasicoSedeSolicitud,
-  ): Promise<ServicioBasicoSedeTypeormEntidad> {
+  ): Promise<ServicioBasicoSedeRespuesta> {
     return this.registrarServicioBasico.ejecutar({
       id: crypto.randomUUID(),
       sedeId: idSede,
@@ -39,7 +39,7 @@ export class ServiciosBasicosControlador {
   async cambiarEstado(
     @Param('idServicio') idServicio: string,
     @Body() solicitud: CambiarEstadoServicioBasicoSolicitud,
-  ): Promise<ServicioBasicoSedeTypeormEntidad> {
+  ): Promise<ServicioBasicoSedeRespuesta> {
     return this.cambiarEstadoServicioBasico.ejecutar(
       idServicio,
       solicitud.estadoServicio,

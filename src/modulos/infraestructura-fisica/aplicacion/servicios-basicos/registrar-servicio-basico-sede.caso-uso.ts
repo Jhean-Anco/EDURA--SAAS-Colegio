@@ -2,7 +2,8 @@ import {
   EstadoIncompatibleError,
   RecursoNoEncontradoError,
 } from '../../../../compartido/dominio/errores-dominio';
-import { ServicioBasicoTypeormRepositorio } from '../../infraestructura/persistencia/typeorm/repositorios/servicio-basico.typeorm-repositorio';
+import { ServicioBasicoSedeRespuesta } from '../../dominio/servicios-basicos/servicio-basico.respuesta';
+import { RepositorioServiciosBasicos } from './puertos';
 
 export interface RegistrarServicioBasicoSedeEntrada {
   id: string;
@@ -13,13 +14,11 @@ export interface RegistrarServicioBasicoSedeEntrada {
 }
 
 export class RegistrarServicioBasicoSedeCasoUso {
-  constructor(private readonly repositorio: ServicioBasicoTypeormRepositorio) {}
+  constructor(private readonly repositorio: RepositorioServiciosBasicos) {}
 
   async ejecutar(
     entrada: RegistrarServicioBasicoSedeEntrada,
-  ): Promise<
-    import('../../infraestructura/persistencia/typeorm/entidades/servicio-basico-sede.typeorm-entidad').ServicioBasicoSedeTypeormEntidad
-  > {
+  ): Promise<ServicioBasicoSedeRespuesta> {
     const sedeActiva = await this.repositorio.sedeActiva(entrada.sedeId);
     if (!sedeActiva) {
       throw new EstadoIncompatibleError(

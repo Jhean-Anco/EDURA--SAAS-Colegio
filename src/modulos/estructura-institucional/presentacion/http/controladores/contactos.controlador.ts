@@ -1,13 +1,13 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { ContactoTypeormConsulta } from '../../../infraestructura/persistencia/typeorm/repositorios/contacto.typeorm-consulta';
+import { ListarContactosSedeConsulta } from '../../../aplicacion/contactos/listar-contactos-sede.consulta';
 import { ContactoRespuesta } from '../respuestas/contacto.respuesta';
 
 @Controller('sedes/:idSede/contactos')
 export class ContactosControlador {
-  constructor(private readonly consulta: ContactoTypeormConsulta) {}
+  constructor(private readonly consulta: ListarContactosSedeConsulta) {}
 
   @Get()
   async listar(@Param('idSede') idSede: string): Promise<ContactoRespuesta[]> {
-    return this.consulta.listarPorSede(idSede);
+    return this.consulta.ejecutar(idSede);
   }
 }

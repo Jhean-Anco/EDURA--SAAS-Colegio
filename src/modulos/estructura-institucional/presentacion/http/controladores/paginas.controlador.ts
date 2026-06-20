@@ -1,93 +1,88 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
-import { EstadoIncompatibleError } from '../../../../../compartido/dominio/errores-dominio';
-import { PaginaSedeTypeormEntidad } from '../../../infraestructura/persistencia/typeorm/entidades/pagina-sede.typeorm-entidad';
-import { PaginaTypeormConsulta } from '../../../infraestructura/persistencia/typeorm/repositorios/pagina.typeorm-consulta';
-import { PaginaTypeormRepositorio } from '../../../infraestructura/persistencia/typeorm/repositorios/pagina.typeorm-repositorio';
+import {
+  AgregarSeccionPaginaCasoUso,
+  ArchivarPaginaCasoUso,
+  CambiarEstadoSeccionCasoUso,
+  CrearPaginaSedeCasoUso,
+  ListarPaginasSedeConsulta,
+  ObtenerPaginaSedeConsulta,
+  PublicarPaginaCasoUso,
+  RestaurarPaginaCasoUso,
+} from '../../../aplicacion/paginas/consultas-paginas';
+import { PaginaRespuesta } from '../respuestas/pagina.respuesta';
+import {
+  CrearPaginaSolicitud,
+  AgregarSeccionPaginaSolicitud,
+} from '../solicitudes/pagina.solicitud';
 
 @Controller('sedes/:idSede/paginas')
 export class PaginasControlador {
   constructor(
-    private readonly consulta: PaginaTypeormConsulta,
-    private readonly repositorio: PaginaTypeormRepositorio,
+    private readonly consulta: ListarPaginasSedeConsulta,
+    private readonly obtener: ObtenerPaginaSedeConsulta,
+    private readonly crearPagina: CrearPaginaSedeCasoUso,
+    private readonly agregarSeccion: AgregarSeccionPaginaCasoUso,
+    private readonly publicarPagina: PublicarPaginaCasoUso,
+    private readonly archivarPagina: ArchivarPaginaCasoUso,
+    private readonly restaurarPagina: RestaurarPaginaCasoUso,
+    private readonly cambiarEstadoSeccion: CambiarEstadoSeccionCasoUso,
   ) {}
 
   @Get()
-  async listar(@Param('idSede') idSede: string): Promise<unknown[]> {
-    return this.consulta.listarPorSede(idSede);
+  async listar(@Param('idSede') idSede: string): Promise<PaginaRespuesta[]> {
+    return this.consulta.ejecutar(idSede);
   }
 
   @Post()
   async crear(
     @Param('idSede') idSede: string,
-    @Body() solicitud: { slug: string; titulo: string },
-  ): Promise<PaginaSedeTypeormEntidad> {
-    return this.repositorio.crear({
+    @Body() solicitud: CrearPaginaSolicitud,
+  ) {
+    return this.crearPagina.ejecutar({
       sedeId: idSede,
       slug: solicitud.slug,
       titulo: solicitud.titulo,
-      estado: 'BORRADOR',
     });
   }
 
   @Post(':idPagina/secciones')
-  async agregarSeccion(
+  async agregar(
     @Param('idPagina') idPagina: string,
-    @Body()
-    solicitud: {
-      tipoSeccion: string;
-      contenido: Record<string, unknown>;
-      orden: number;
-    },
-  ): Promise<unknown> {
-    return this.repositorio.agregarSeccion({
+    @Body() solicitud: AgregarSeccionPaginaSolicitud,
+  ) {
+    return this.agregarSeccion.ejecutar({
       paginaSedeId: idPagina,
       tipoSeccion: solicitud.tipoSeccion,
-      contenido: solicitud.contenido,
-      orden: solicitud.orden,
-      visible: true,
-      estado: 'ACTIVA',
+      contenido: solicitud.contenido ?? {},
+      orden: solicitud.orden ?? 0,
     });
   }
 
   @Post(':idPagina/publicar')
-  async publicar(
-    @Param('idPagina') idPagina: string,
-  ): Promise<PaginaSedeTypeormEntidad> {
-    const pagina = await this.repositorio.publicar(idPagina);
-    if (!pagina) throw new EstadoIncompatibleError('PAGINA_NO_ENCONTRADA');
-    return pagina;
+  publicar(@Param('idPagina') idPagina: string) {
+    return this.publicarPagina.ejecutar(idPagina);
   }
 
   @Post(':idPagina/archivar')
-  async archivar(
-    @Param('idPagina') idPagina: string,
-  ): Promise<PaginaSedeTypeormEntidad> {
-    const pagina = await this.repositorio.archivar(idPagina);
-    if (!pagina) throw new EstadoIncompatibleError('PAGINA_NO_ENCONTRADA');
-    return pagina;
+  archivar(@Param('idPagina') idPagina: string) {
+    return this.archivarPagina.ejecutar(idPagina);
   }
 
   @Post(':idPagina/restaurar')
-  async restaurar(
-    @Param('idPagina') idPagina: string,
-  ): Promise<PaginaSedeTypeormEntidad> {
-    const pagina = await this.repositorio.restaurar(idPagina);
-    if (!pagina) throw new EstadoIncompatibleError('PAGINA_NO_ENCONTRADA');
-    return pagina;
+  restaurar(@Param('idPagina') idPagina: string) {
+    return this.restaurarPagina.ejecutar(idPagina);
   }
 
   @Patch(':idPagina/secciones/:idSeccion')
-  async publicarSeccion(
-    @Param('idSeccion') idSeccion: string,
-  ): Promise<unknown> {
-    return this.repositorio.publicarSeccion(idSeccion);
+  cambiarSeccion(@Param('idSeccion') idSeccion: string) {
+    return this.cambiarEstadoSeccion.ejecutar(idSeccion);
   }
 
   @Get(':slugPagina')
-  async obtener(
+  obtenerPagina(
     @Param('idSede') idSede: string,
     @Param('slugPagina') slugPagina: string,
-  ): Promise<PaginaSedeTypeormEntidad | null> {
-    return this.consulta.obtenerPorSlug(idSede, slugPagina);
+  ) {
+    return this.obtener.ejecutar(idSede, slugPagina);
   }
 }

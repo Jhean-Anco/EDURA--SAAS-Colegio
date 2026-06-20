@@ -4,6 +4,7 @@ import { TypeOrmDatabaseModule } from './base-datos/typeorm/typeorm.module';
 import { SaludModule } from './salud/salud.module';
 import { EstructuraInstitucionalModule } from './modulos/estructura-institucional/estructura-institucional.module';
 import { InfraestructuraFisicaModule } from './modulos/infraestructura-fisica/infraestructura-fisica.module';
+import { IdentidadAccesoModule } from './modulos/identidad-acceso/identidad-acceso.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { InfraestructuraFisicaModule } from './modulos/infraestructura-fisica/in
     SaludModule,
     EstructuraInstitucionalModule,
     InfraestructuraFisicaModule,
+    IdentidadAccesoModule,
   ],
 })
 export class AppModule {}
