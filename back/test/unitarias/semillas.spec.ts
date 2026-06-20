@@ -104,6 +104,7 @@ describe('Permisos del sistema', () => {
     expect(codigos).toContain('PERSONAS.CREAR');
     expect(codigos).toContain('PERSONAS.GESTIONAR_DOCUMENTOS');
     expect(codigos).toContain('PERSONAS.CONSULTAR_DNI');
+    expect(codigos).toContain('PANEL_INSTITUCIONAL.RESUMEN.LEER');
   });
 });
 

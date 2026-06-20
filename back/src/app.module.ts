@@ -9,6 +9,7 @@ import { InfraestructuraFisicaModule } from './modulos/infraestructura-fisica/in
 import { IdentidadAccesoModule } from './modulos/identidad-acceso/identidad-acceso.module';
 import { PersonasModule } from './modulos/personas/personas.module';
 import { IntegracionesExternasModule } from './modulos/integraciones-externas/integraciones-externas.module';
+import { PanelInstitucionalModule } from './modulos/panel-institucional/panel-institucional.module';
 import { GuardiaJwt } from './modulos/identidad-acceso/presentacion/http/guardias/guardia-jwt';
 import { GuardiaPermisos } from './compartido/presentacion/http/guardias/guardia-permisos';
 
@@ -23,6 +24,7 @@ import { GuardiaPermisos } from './compartido/presentacion/http/guardias/guardia
     IdentidadAccesoModule,
     PersonasModule,
     IntegracionesExternasModule,
+    PanelInstitucionalModule,
   ],
   providers: [
     { provide: APP_GUARD, useExisting: GuardiaJwt },

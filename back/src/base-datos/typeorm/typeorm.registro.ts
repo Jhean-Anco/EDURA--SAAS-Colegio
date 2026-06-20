@@ -47,6 +47,10 @@ import {
   TokenSeguridadUsuarioTypeormEntidad,
   UsuarioTypeormEntidad,
 } from '../../modulos/identidad-acceso/infraestructura/persistencia/typeorm/entidades/seguridad.typeorm-entidades';
+import {
+  AlertaInstitucionalTypeormEntidad,
+  ComunicadoInstitucionalTypeormEntidad,
+} from '../../modulos/panel-institucional/infraestructura/persistencia/typeorm/entidades/panel-institucional.typeorm-entidades';
 
 export const entidadesTypeOrm = [
   InstitucionEducativaTypeormEntidad,
@@ -94,5 +98,7 @@ export const entidadesTypeOrm = [
   DocumentoIdentidadPersonaTypeormEntidad,
   MedioContactoPersonaTypeormEntidad,
   DireccionPersonaTypeormEntidad,
+  AlertaInstitucionalTypeormEntidad,
+  ComunicadoInstitucionalTypeormEntidad,
 ] as unknown as ConstructorEntidad[];
 type ConstructorEntidad = new (...argumentos: never[]) => unknown;

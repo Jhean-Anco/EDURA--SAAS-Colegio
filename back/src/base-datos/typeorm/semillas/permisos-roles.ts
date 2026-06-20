@@ -131,6 +131,12 @@ export const permisosSistema = [
     codigo: 'GEOGRAFIA.CALCULAR_RUTA',
     descripcion: 'Calcular rutas geográficas',
   },
+  {
+    recurso: 'PANEL_INSTITUCIONAL',
+    accion: 'RESUMEN.LEER',
+    codigo: 'PANEL_INSTITUCIONAL.RESUMEN.LEER',
+    descripcion: 'Ver el resumen del panel institucional',
+  },
 ] as const;
 
 export const rolesSistema = [
@@ -176,6 +182,7 @@ export const permisosAdministradorInstitucion = [
   'PERSONAS.VINCULAR_USUARIO',
   'PERSONAS.CONSULTAR_DNI',
   'GEOGRAFIA.CALCULAR_RUTA',
+  'PANEL_INSTITUCIONAL.RESUMEN.LEER',
 ] as const;
 
 export const permisosDirectorSede = [
@@ -188,4 +195,5 @@ export const permisosDirectorSede = [
   'PERSONAS.GESTIONAR_CONTACTOS',
   'PERSONAS.GESTIONAR_DIRECCIONES',
   'PERSONAS.CONSULTAR_DNI',
+  'PANEL_INSTITUCIONAL.RESUMEN.LEER',
 ] as const;

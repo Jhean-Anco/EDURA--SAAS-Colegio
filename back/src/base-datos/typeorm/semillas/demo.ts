@@ -149,6 +149,27 @@ async function ejecutarDemo(): Promise<void> {
       [randomUUID(), personaId, institucionId],
     );
 
+    await manager.query(
+      `INSERT INTO alertas_institucionales
+         (id, id_institucion_educativa, id_sede, tipo, titulo, descripcion, prioridad, estado, modulo_origen, id_recurso_origen, fecha_generacion, fecha_creacion, fecha_modificacion)
+       VALUES
+         ($1, $2, $3, 'INFRAESTRUCTURA', 'Revisión de extintores pendiente', 'Se detectó revisión vencida en almacén principal', 'ALTA', 'PENDIENTE', 'infraestructura-fisica', NULL, now(), now(), now()),
+         ($4, $2, $3, 'SEGURIDAD', 'Sesión administrativa expirada', 'Se recomienda renovar la sesión del usuario administrador', 'MEDIA', 'EN_REVISION', 'identidad-acceso', NULL, now(), now(), now()),
+         ($5, $2, $3, 'SISTEMA', 'Sincronización de catálogo en cola', 'La sincronización de catálogos está programada para la noche', 'BAJA', 'PENDIENTE', 'base-datos', NULL, now(), now(), now())
+       ON CONFLICT DO NOTHING`,
+      [randomUUID(), institucionId, sedeId, randomUUID(), randomUUID()],
+    );
+
+    await manager.query(
+      `INSERT INTO comunicados_institucionales
+         (id, id_institucion_educativa, id_sede, titulo, contenido, tipo, prioridad, estado, fecha_publicacion, id_usuario_creador, fecha_creacion, fecha_modificacion)
+       VALUES
+         ($1, $2, $3, 'Inicio de proceso de matrícula', 'Se publicará el cronograma oficial durante la semana.', 'GENERAL', 'ALTA', 'PUBLICADO', now() - interval '2 days', $4, now(), now()),
+         ($5, $2, NULL, 'Mantenimiento programado', 'La plataforma tendrá mantenimiento el sábado a las 22:00.', 'SISTEMA', 'MEDIA', 'PUBLICADO', now() - interval '1 day', $4, now(), now())
+       ON CONFLICT DO NOTHING`,
+      [randomUUID(), institucionId, sedeId, usuarioAdminId, randomUUID()],
+    );
+
     console.log(`Datos demo creados. Institucion id=${institucionId}`);
   });
 }
