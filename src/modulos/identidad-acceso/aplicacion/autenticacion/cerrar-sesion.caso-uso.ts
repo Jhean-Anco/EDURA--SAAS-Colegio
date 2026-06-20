@@ -3,6 +3,7 @@ import {
   RepositorioSesiones,
 } from '../../dominio/puertos/repositorios';
 import { EventoAuditoria } from '../../dominio/auditoria/evento-auditoria';
+import { randomUUID } from 'node:crypto';
 
 export interface CerrarSesionEntrada {
   sesionId: string;
@@ -18,7 +19,7 @@ export class CerrarSesionCasoUso {
   async ejecutar(entrada: CerrarSesionEntrada): Promise<void> {
     await this.sesiones.revocar(entrada.sesionId, 'CIERRE_MANUAL', new Date());
     await this.auditoria.registrar(
-      new EventoAuditoria(entrada.usuarioId, 'LOGOUT', 'sesion', 'EXITO'),
+      new EventoAuditoria(randomUUID(), 'LOGOUT', 'sesion', 'EXITO'),
     );
   }
 }

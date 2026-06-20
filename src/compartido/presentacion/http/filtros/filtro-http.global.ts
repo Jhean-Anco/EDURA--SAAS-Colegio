@@ -32,5 +32,6 @@ export class FiltroHttpGlobal implements ExceptionFilter {
       ruta: request.url,
       fecha: new Date().toISOString(),
     });
+    void exception;
   }
 }

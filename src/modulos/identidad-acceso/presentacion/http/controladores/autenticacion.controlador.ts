@@ -18,10 +18,7 @@ import { Publico } from '../../../../../compartido/presentacion/http/decoradores
 import { IniciarSesionSolicitud } from '../solicitudes/iniciar-sesion.solicitud';
 import { RenovarSesionSolicitud } from '../solicitudes/renovar-sesion.solicitud';
 import { SeleccionarContextoSolicitud } from '../solicitudes/seleccionar-contexto.solicitud';
-import { GuardiaJwt } from '../guardias/guardia-jwt';
-import { UseGuards } from '@nestjs/common';
 
-@UseGuards(GuardiaJwt)
 @Controller('autenticacion')
 export class AutenticacionControlador {
   constructor(

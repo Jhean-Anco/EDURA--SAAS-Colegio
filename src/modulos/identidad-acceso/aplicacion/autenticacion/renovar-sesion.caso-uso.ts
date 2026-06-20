@@ -41,7 +41,12 @@ export class RenovarSesionCasoUso {
       (sesion.fechaExpiracion !== null && sesion.fechaExpiracion < new Date())
     ) {
       await this.auditoria.registrar(
-        new EventoAuditoria('0', 'REFRESH_INVALIDO', 'sesion', 'FALLO'),
+        new EventoAuditoria(
+          randomUUID(),
+          'REFRESH_INVALIDO',
+          'sesion',
+          'FALLO',
+        ),
       );
       throw new UnauthorizedException('SESION_INVALIDA');
     }
@@ -50,7 +55,7 @@ export class RenovarSesionCasoUso {
     if (!usuario || usuario.estado !== 'ACTIVO') {
       await this.auditoria.registrar(
         new EventoAuditoria(
-          sesion.usuarioId,
+          randomUUID(),
           'REFRESH_USUARIO_INACTIVO',
           'sesion',
           'FALLO',
@@ -89,12 +94,7 @@ export class RenovarSesionCasoUso {
     );
 
     await this.auditoria.registrar(
-      new EventoAuditoria(
-        sesion.usuarioId,
-        'SESION_RENOVADA',
-        'sesion',
-        'EXITO',
-      ),
+      new EventoAuditoria(randomUUID(), 'SESION_RENOVADA', 'sesion', 'EXITO'),
     );
 
     return { accessToken, refreshToken: nuevoRefresh.token };

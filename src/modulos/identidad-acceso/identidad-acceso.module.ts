@@ -79,7 +79,6 @@ import { ConfiguracionAplicacion } from '../../configuracion/configuracion-aplic
     AuditoriaTypeormRepositorio,
     SesionTypeormRepositorio,
     ServicioHashClaveArgon2,
-    JwtService,
     {
       provide: ServicioTokenAccesoJwt,
       useFactory: (jwt: JwtService, configuracion: ConfiguracionAplicacion) =>

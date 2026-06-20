@@ -41,11 +41,12 @@ export class GuardiaJwt implements CanActivate {
       return true;
     }
 
-    const request = contexto
-      .switchToHttp()
-      .getRequest<
-        Request & { contextoActual?: ContextoSolicitudAutenticada }
-      >();
+    const request = contexto.switchToHttp().getRequest<
+      Request & {
+        contextoActual?: ContextoSolicitudAutenticada;
+        usuario?: PayloadAcceso;
+      }
+    >();
 
     const authorization = request.headers.authorization;
     const token = authorization?.startsWith('Bearer ')
@@ -91,6 +92,7 @@ export class GuardiaJwt implements CanActivate {
       institucionId: payload.institucionId,
       sedeId: payload.sedeId,
     };
+    request.usuario = payload;
 
     return true;
   }

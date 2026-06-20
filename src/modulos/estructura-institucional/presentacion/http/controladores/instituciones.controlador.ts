@@ -1,4 +1,8 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { Permisos } from '../../../../../compartido/presentacion/http/decoradores/permisos.decorador';
+import { ContextoActual } from '../../../../../compartido/presentacion/http/decoradores/contexto-actual.decorador';
+import { ContextoSolicitudAutenticada } from '../../../../../compartido/aplicacion/contexto-solicitud-autenticada';
+import { validarInstitucionDelContexto } from '../../../../../compartido/presentacion/http/validacion-contexto-http';
 import { ActualizarInstitucionCasoUso } from '../../../aplicacion/instituciones/actualizar-institucion.caso-uso';
 import { CambiarEstadoInstitucionCasoUso } from '../../../aplicacion/instituciones/cambiar-estado-institucion.caso-uso';
 import { CrearInstitucionCasoUso } from '../../../aplicacion/instituciones/crear-institucion.caso-uso';
@@ -17,6 +21,7 @@ export class InstitucionesControlador {
     private readonly cambiarEstadoInstitucion: CambiarEstadoInstitucionCasoUso,
   ) {}
 
+  @Permisos('INSTITUCIONES.CREAR')
   @Post()
   async crear(
     @Body() solicitud: CrearInstitucionSolicitud,
@@ -38,11 +43,31 @@ export class InstitucionesControlador {
     };
   }
 
+  @Permisos('INSTITUCIONES.LEER')
   @Get()
-  async listar(): Promise<{ datos: InstitucionRespuesta[] }> {
+  async listar(
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
+  ): Promise<{ datos: InstitucionRespuesta[] }> {
     const instituciones = await this.listarInstituciones.ejecutar();
+    if (ctx?.ambito === 'PLATAFORMA') {
+      return {
+        datos: instituciones.map((institucion) => ({
+          id: institucion.id,
+          codigo: institucion.codigo,
+          nombreLegal: institucion.nombreLegal,
+          nombreCorto: institucion.nombreCorto,
+          tipoGestion: institucion.tipoGestion,
+          estado: institucion.estado,
+        })),
+      };
+    }
+    const filtradas = ctx?.institucionId
+      ? instituciones.filter(
+          (institucion) => institucion.id === ctx.institucionId,
+        )
+      : [];
     return {
-      datos: instituciones.map((institucion) => ({
+      datos: filtradas.map((institucion) => ({
         id: institucion.id,
         codigo: institucion.codigo,
         nombreLegal: institucion.nombreLegal,
@@ -53,10 +78,13 @@ export class InstitucionesControlador {
     };
   }
 
+  @Permisos('INSTITUCIONES.LEER')
   @Get(':idInstitucion')
   async obtener(
     @Param('idInstitucion') idInstitucion: string,
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<InstitucionRespuesta> {
+    validarInstitucionDelContexto(ctx, idInstitucion);
     const institucion = await this.obtenerInstitucion.ejecutar(idInstitucion);
     return {
       id: institucion.id,
@@ -68,11 +96,14 @@ export class InstitucionesControlador {
     };
   }
 
+  @Permisos('INSTITUCIONES.ACTUALIZAR')
   @Patch(':idInstitucion')
   async actualizar(
     @Param('idInstitucion') idInstitucion: string,
     @Body() solicitud: CrearInstitucionSolicitud,
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<void> {
+    validarInstitucionDelContexto(ctx, idInstitucion);
     await this.actualizarInstitucion.ejecutar({
       id: idInstitucion,
       nombreLegal: solicitud.nombreLegal,
@@ -81,11 +112,14 @@ export class InstitucionesControlador {
     });
   }
 
+  @Permisos('INSTITUCIONES.ACTUALIZAR')
   @Patch(':idInstitucion/estado')
   async cambiarEstado(
     @Param('idInstitucion') idInstitucion: string,
     @Body() solicitud: { estado: 'ACTIVA' | 'INACTIVA' | 'BAJA' },
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<void> {
+    validarInstitucionDelContexto(ctx, idInstitucion);
     await this.cambiarEstadoInstitucion.ejecutar(
       idInstitucion,
       solicitud.estado,

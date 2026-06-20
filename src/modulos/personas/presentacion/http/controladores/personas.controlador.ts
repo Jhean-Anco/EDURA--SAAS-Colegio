@@ -11,13 +11,12 @@ import {
   Post,
   Put,
   Query,
-  UseGuards,
+  NotFoundException,
 } from '@nestjs/common';
-import { GuardiaJwt } from '../../../../identidad-acceso/presentacion/http/guardias/guardia-jwt';
-import { GuardiaPermisos } from '../../../../../compartido/presentacion/http/guardias/guardia-permisos';
 import { Permisos } from '../../../../../compartido/presentacion/http/decoradores/permisos.decorador';
 import { ContextoActual } from '../../../../../compartido/presentacion/http/decoradores/contexto-actual.decorador';
 import { ContextoSolicitudAutenticada } from '../../../../../compartido/aplicacion/contexto-solicitud-autenticada';
+import { validarInstitucionDelContexto } from '../../../../../compartido/presentacion/http/validacion-contexto-http';
 import { CrearPersonaCasoUso } from '../../../aplicacion/personas/crear-persona.caso-uso';
 import { ListarPersonasConsulta } from '../../../aplicacion/personas/listar-personas.consulta';
 import { ObtenerPersonaConsulta } from '../../../aplicacion/personas/obtener-persona.consulta';
@@ -32,7 +31,6 @@ import { RegistrarDireccionSolicitud } from '../solicitudes/registrar-direccion.
 import { VincularMembresiaSolicitud } from '../solicitudes/vincular-membresia.solicitud';
 import { Persona } from '../../../dominio/personas/persona';
 
-@UseGuards(GuardiaJwt, GuardiaPermisos)
 @Controller('personas')
 export class PersonasControlador {
   constructor(
@@ -93,11 +91,19 @@ export class PersonasControlador {
 
   @Permisos('PERSONAS.LEER')
   @Get(':idPersona')
-  obtener(
+  async obtener(
     @Param('idPersona', ParseUUIDPipe) idPersona: string,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
-  ): Promise<Persona | null> {
-    return this.obtenerPersona.ejecutar(idPersona, this.instId(ctx));
+  ): Promise<Persona> {
+    validarInstitucionDelContexto(ctx, this.instId(ctx));
+    const persona = await this.obtenerPersona.ejecutar(
+      idPersona,
+      this.instId(ctx),
+    );
+    if (!persona) {
+      throw new NotFoundException('PERSONA_NO_ENCONTRADA');
+    }
+    return persona;
   }
 
   @Permisos('PERSONAS.GESTIONAR_DOCUMENTOS')
@@ -108,6 +114,7 @@ export class PersonasControlador {
     @Body() cuerpo: RegistrarDocumentoSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<void> {
+    validarInstitucionDelContexto(ctx, this.instId(ctx));
     const fechaEm = cuerpo.fechaEmision ? new Date(cuerpo.fechaEmision) : null;
     const fechaVenc = cuerpo.fechaVencimiento
       ? new Date(cuerpo.fechaVencimiento)
@@ -132,6 +139,7 @@ export class PersonasControlador {
     @Body() cuerpo: RegistrarContactoSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<void> {
+    validarInstitucionDelContexto(ctx, this.instId(ctx));
     await this.registrarContacto.ejecutar({
       personaId: idPersona,
       institucionEducativaId: this.instId(ctx),
@@ -149,6 +157,7 @@ export class PersonasControlador {
     @Body() cuerpo: RegistrarDireccionSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<void> {
+    validarInstitucionDelContexto(ctx, this.instId(ctx));
     await this.registrarDireccion.ejecutar({
       personaId: idPersona,
       institucionEducativaId: this.instId(ctx),
@@ -169,6 +178,7 @@ export class PersonasControlador {
     @Body() cuerpo: VincularMembresiaSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<void> {
+    validarInstitucionDelContexto(ctx, this.instId(ctx));
     await this.vincularMembresia.vincular({
       personaId: idPersona,
       membresiaId: cuerpo.membresiaId,
@@ -184,6 +194,7 @@ export class PersonasControlador {
     @Body() cuerpo: VincularMembresiaSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<void> {
+    validarInstitucionDelContexto(ctx, this.instId(ctx));
     await this.vincularMembresia.desvincular({
       personaId: idPersona,
       membresiaId: cuerpo.membresiaId,
