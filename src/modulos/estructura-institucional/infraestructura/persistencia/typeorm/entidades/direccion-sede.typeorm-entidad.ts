@@ -3,10 +3,12 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { UbigeoTypeormEntidad } from './ubigeo.typeorm-entidad';
 import { SedeTypeormEntidad } from './sede.typeorm-entidad';
 
 @Entity({ name: 'direcciones_sede' })
@@ -30,6 +32,18 @@ export class DireccionSedeTypeormEntidad {
 
   @Column({ name: 'id_ubigeo', type: 'uuid', nullable: true })
   idUbigeo!: string | null;
+
+  @ManyToOne(() => UbigeoTypeormEntidad, {
+    onDelete: 'RESTRICT',
+    onUpdate: 'RESTRICT',
+    nullable: true,
+  })
+  @JoinColumn({
+    name: 'id_ubigeo',
+    referencedColumnName: 'id',
+    foreignKeyConstraintName: 'fk_direcciones_sede_ubigeos',
+  })
+  ubigeo!: UbigeoTypeormEntidad | null;
 
   @Column({ name: 'direccion_linea', type: 'varchar', length: 250 })
   direccionLinea!: string;

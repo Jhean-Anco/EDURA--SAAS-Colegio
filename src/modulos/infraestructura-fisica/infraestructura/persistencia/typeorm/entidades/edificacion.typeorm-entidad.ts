@@ -1,5 +1,13 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
+  PrimaryColumn,
+} from 'typeorm';
 import { ElementoInfraestructuraTypeormEntidad } from './elemento-infraestructura.typeorm-entidad';
+import { TipoEdificacionTypeormEntidad } from './tipo-edificacion.typeorm-entidad';
 
 @Entity({ name: 'edificaciones' })
 export class EdificacionTypeormEntidad {
@@ -17,6 +25,18 @@ export class EdificacionTypeormEntidad {
   elementoInfraestructura!: ElementoInfraestructuraTypeormEntidad;
   @Column({ name: 'id_tipo_edificacion', type: 'uuid', nullable: true })
   tipoEdificacionId!: string | null;
+
+  @ManyToOne(() => TipoEdificacionTypeormEntidad, {
+    onDelete: 'RESTRICT',
+    onUpdate: 'RESTRICT',
+    nullable: true,
+  })
+  @JoinColumn({
+    name: 'id_tipo_edificacion',
+    referencedColumnName: 'id',
+    foreignKeyConstraintName: 'fk_edificaciones_tipos_edificacion',
+  })
+  tipoEdificacion!: TipoEdificacionTypeormEntidad | null;
   @Column({ name: 'anio_construccion', type: 'integer', nullable: true })
   anioConstruccion!: number | null;
   @Column({

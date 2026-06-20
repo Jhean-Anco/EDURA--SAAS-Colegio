@@ -1,5 +1,13 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
+  PrimaryColumn,
+} from 'typeorm';
 import { ElementoInfraestructuraTypeormEntidad } from './elemento-infraestructura.typeorm-entidad';
+import { TipoTenenciaPredioTypeormEntidad } from './tipo-tenencia-predio.typeorm-entidad';
 
 @Entity({ name: 'predios' })
 export class PredioTypeormEntidad {
@@ -17,6 +25,18 @@ export class PredioTypeormEntidad {
   elementoInfraestructura!: ElementoInfraestructuraTypeormEntidad;
   @Column({ name: 'id_tipo_tenencia', type: 'uuid', nullable: true })
   tipoTenenciaId!: string | null;
+
+  @ManyToOne(() => TipoTenenciaPredioTypeormEntidad, {
+    onDelete: 'RESTRICT',
+    onUpdate: 'RESTRICT',
+    nullable: true,
+  })
+  @JoinColumn({
+    name: 'id_tipo_tenencia',
+    referencedColumnName: 'id',
+    foreignKeyConstraintName: 'fk_predios_tipos_tenencia_predio',
+  })
+  tipoTenencia!: TipoTenenciaPredioTypeormEntidad | null;
   @Column({
     name: 'area_total_m2',
     type: 'numeric',

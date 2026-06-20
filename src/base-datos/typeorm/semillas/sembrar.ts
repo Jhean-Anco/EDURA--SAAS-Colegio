@@ -1,97 +1,73 @@
-import { DataSource } from 'typeorm';
+import { DataSource, EntityManager } from 'typeorm';
 import fuenteDatos from '../fuente-datos';
 import { catalogos } from './catalogos';
 
-async function sembrarTabla(
-  dataSource: DataSource,
+async function upsertCatalogo(
+  manager: EntityManager,
   tabla: string,
-  codigos: readonly string[],
-  extras: Record<string, unknown> = {},
+  columnas: readonly string[],
+  registros: readonly Record<string, unknown>[],
 ): Promise<void> {
-  for (const codigo of codigos) {
-    await dataSource
-      .query(
-        `INSERT INTO ${tabla} (codigo, nombre, descripcion, activo, categoria, orden, requiere_aforo) VALUES ($1,$2,$3,true,$4,$5,$6) ON CONFLICT (codigo) DO UPDATE SET nombre = EXCLUDED.nombre, descripcion = EXCLUDED.descripcion, activo = EXCLUDED.activo`,
-        [
-          codigo,
-          codigo.replaceAll('_', ' '),
-          `Catálogo local de desarrollo: ${codigo}`,
-          extras.categoria ?? null,
-          extras.orden ?? 0,
-          extras.requiereAforo ?? true,
-        ],
-      )
-      .catch(async () => {
-        await dataSource.query(
-          `INSERT INTO ${tabla} (codigo, nombre, descripcion, activo) VALUES ($1,$2,$3,true) ON CONFLICT (codigo) DO UPDATE SET nombre = EXCLUDED.nombre, descripcion = EXCLUDED.descripcion, activo = EXCLUDED.activo`,
-          [
-            codigo,
-            codigo.replaceAll('_', ' '),
-            `Catálogo local de desarrollo: ${codigo}`,
-          ],
-        );
-      });
+  for (const registro of registros) {
+    const valores = columnas.map((columna) => registro[columna] ?? null);
+    const placeholders = valores
+      .map((_, indice) => `$${indice + 1}`)
+      .join(', ');
+    const actualizaciones = columnas
+      .filter((columna) => columna !== 'codigo')
+      .map((columna) => `${columna} = EXCLUDED.${columna}`)
+      .join(', ');
+    await manager.query(
+      `INSERT INTO ${tabla} (${columnas.join(', ')}) VALUES (${placeholders}) ON CONFLICT (codigo) DO UPDATE SET ${actualizaciones}`,
+      valores,
+    );
   }
 }
 
-export async function ejecutarSemilla(): Promise<void> {
-  await fuenteDatos.initialize();
-  await fuenteDatos.transaction(async (manager) => {
-    await sembrarTabla(
-      manager.connection,
-      'tipos_servicio_basico',
-      catalogos.tiposServicioBasico,
-    );
-    await sembrarTabla(
-      manager.connection,
-      'tipos_elemento_infraestructura',
-      catalogos.tiposElementoInfraestructura,
-    );
-    await sembrarTabla(
-      manager.connection,
+export async function ejecutarSemilla(
+  dataSource: DataSource = fuenteDatos,
+): Promise<void> {
+  if (!dataSource.isInitialized) {
+    await dataSource.initialize();
+  }
+
+  await dataSource.transaction(async (manager) => {
+    await upsertCatalogo(
+      manager,
       'estados_conservacion',
+      ['codigo', 'nombre', 'orden', 'activo'],
       catalogos.estadosConservacion,
-      { orden: 1 },
     );
-    await sembrarTabla(
-      manager.connection,
-      'tipos_tenencia_predio',
-      catalogos.tiposTenenciaPredio,
-    );
-    await sembrarTabla(
-      manager.connection,
-      'tipos_edificacion',
-      catalogos.tiposEdificacion,
-    );
-    await sembrarTabla(
-      manager.connection,
-      'tipos_espacio_fisico',
-      catalogos.tiposEspacioFisico,
-      { requiereAforo: true },
-    );
-    await sembrarTabla(
-      manager.connection,
-      'tipos_espacio_exterior',
-      catalogos.tiposEspacioExterior,
-    );
-    await sembrarTabla(
-      manager.connection,
+    await upsertCatalogo(
+      manager,
       'tipos_componente_infraestructura',
+      ['codigo', 'nombre', 'categoria', 'activo'],
       catalogos.tiposComponenteInfraestructura,
-      { categoria: 'GENERAL' },
     );
-    await sembrarTabla(
-      manager.connection,
+    await upsertCatalogo(
+      manager,
       'unidades_medida',
+      ['codigo', 'nombre', 'simbolo', 'magnitud', 'activo'],
       catalogos.unidadesMedida,
     );
+    await upsertCatalogo(
+      manager,
+      'tipos_espacio_fisico',
+      ['codigo', 'nombre', 'descripcion', 'activo', 'requiere_aforo'],
+      catalogos.tiposEspacioFisico,
+    );
   });
-  await fuenteDatos.destroy();
+
+  if (dataSource === fuenteDatos) {
+    await dataSource.destroy();
+  }
 }
 
 if (require.main === module) {
   ejecutarSemilla().catch(async (error) => {
-    await fuenteDatos.destroy().catch(() => undefined);
+    if (fuenteDatos.isInitialized) {
+      await fuenteDatos.destroy().catch(() => undefined);
+    }
     console.error(error instanceof Error ? error.message : error);
     process.exitCode = 1;
   });

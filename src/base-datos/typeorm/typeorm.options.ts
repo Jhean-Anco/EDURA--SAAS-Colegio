@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import { DataSourceOptions } from 'typeorm';
 import { entidadesTypeOrm } from './typeorm.registro';
 import { ConfiguracionAplicacion } from '../../configuracion/configuracion-aplicacion';
@@ -18,7 +19,7 @@ export const configuracionTypeOrm = (): DataSourceOptions => {
     entities: entidadesTypeOrm as unknown as NonNullable<
       DataSourceOptions['entities']
     >,
-    migrations: ['dist/base-datos/typeorm/migraciones/*.js'],
+    migrations: [join(__dirname, 'migraciones/*{.ts,.js}')],
     migrationsTableName: 'migraciones_aplicadas',
   };
 };

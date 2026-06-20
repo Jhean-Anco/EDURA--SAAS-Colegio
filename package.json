@@ -23,8 +23,8 @@
     "db:migration:run": "typeorm-ts-node-commonjs migration:run -d src/base-datos/typeorm/fuente-datos.ts",
     "db:migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/base-datos/typeorm/fuente-datos.ts",
     "db:migration:show": "typeorm-ts-node-commonjs migration:show -d src/base-datos/typeorm/fuente-datos.ts",
-    "db:seed": "node dist/base-datos/typeorm/semillas/sembrar.js",
-    "db:reset:local": "node dist/base-datos/typeorm/semillas/reiniciar-local.js"
+    "db:seed": "ts-node -r tsconfig-paths/register src/base-datos/typeorm/semillas/sembrar.ts",
+    "db:reseed:local": "ts-node -r tsconfig-paths/register src/base-datos/typeorm/semillas/reiniciar-local.ts"
   },
   "dependencies": {
     "@nestjs/config": "^4.0.2",

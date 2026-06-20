@@ -1,5 +1,13 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
+  PrimaryColumn,
+} from 'typeorm';
 import { ElementoInfraestructuraTypeormEntidad } from './elemento-infraestructura.typeorm-entidad';
+import { TipoEspacioFisicoTypeormEntidad } from './tipo-espacio-fisico.typeorm-entidad';
 
 @Entity({ name: 'espacios_fisicos' })
 export class EspacioFisicoTypeormEntidad {
@@ -17,6 +25,17 @@ export class EspacioFisicoTypeormEntidad {
   elementoInfraestructura!: ElementoInfraestructuraTypeormEntidad;
   @Column({ name: 'id_tipo_espacio_fisico', type: 'uuid' })
   tipoEspacioFisicoId!: string;
+
+  @ManyToOne(() => TipoEspacioFisicoTypeormEntidad, {
+    onDelete: 'RESTRICT',
+    onUpdate: 'RESTRICT',
+  })
+  @JoinColumn({
+    name: 'id_tipo_espacio_fisico',
+    referencedColumnName: 'id',
+    foreignKeyConstraintName: 'fk_espacios_fisicos_tipos_espacio_fisico',
+  })
+  tipoEspacioFisico!: TipoEspacioFisicoTypeormEntidad;
   @Column({
     name: 'area_m2',
     type: 'numeric',

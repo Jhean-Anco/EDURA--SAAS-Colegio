@@ -23,4 +23,12 @@ describe('Arquitectura', () => {
       );
     }
   });
+
+  it('no usa BaseEntity ni Prisma', () => {
+    const codigo = archivosTs(join(process.cwd(), 'src'))
+      .map((archivo) => readFileSync(archivo, 'utf8'))
+      .join('\n');
+    expect(codigo).not.toMatch(/\bBaseEntity\b/);
+    expect(codigo).not.toMatch(/\bprisma\b/i);
+  });
 });

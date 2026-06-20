@@ -1,20 +1,38 @@
-# Diagrama ER
+# Diagrama ER lógico
 
-```mermaid
-erDiagram
-  INSTITUCIONES_EDUCATIVAS ||--o{ SEDES : tiene
-  SEDES ||--o| DIRECCIONES_SEDE : posee
-  UBIGEOS ||--o{ UBIGEOS : padre
-  UBIGEOS ||--o{ DIRECCIONES_SEDE : referencia
-  SEDES ||--o{ SERVICIOS_BASICOS_SEDE : dispone
-  TIPOS_SERVICIO_BASICO ||--o{ SERVICIOS_BASICOS_SEDE : clasifica
-  SEDES ||--o{ ELEMENTOS_INFRAESTRUCTURA : contiene
-  TIPOS_ELEMENTO_INFRAESTRUCTURA ||--o{ ELEMENTOS_INFRAESTRUCTURA : clasifica
-  ESTADOS_CONSERVACION ||--o{ ELEMENTOS_INFRAESTRUCTURA : evalua
-  ELEMENTOS_INFRAESTRUCTURA ||--o| PREDIOS : especializa
-  ELEMENTOS_INFRAESTRUCTURA ||--o| EDIFICACIONES : especializa
-  ELEMENTOS_INFRAESTRUCTURA ||--o| NIVELES : especializa
-  ELEMENTOS_INFRAESTRUCTURA ||--o| ESPACIOS_FISICOS : especializa
-  ELEMENTOS_INFRAESTRUCTURA ||--o| ESPACIOS_EXTERIORES : especializa
-  ELEMENTOS_INFRAESTRUCTURA ||--o| COMPONENTES_INFRAESTRUCTURA : especializa
-```
+## Estructura institucional
+
+- `instituciones_educativas` 1---n `sedes`
+- `sedes` 1---1 `direcciones_sede`
+- `ubigeos` 1---n `ubigeos` por `id_ubigeo_padre`
+- `ubigeos` 1---n `direcciones_sede`
+- `sedes` 1---n `servicios_basicos_sede`
+- `tipos_servicio_basico` 1---n `servicios_basicos_sede`
+
+## Infraestructura física
+
+- `sedes` 1---n `elementos_infraestructura`
+- `tipos_elemento_infraestructura` 1---n `elementos_infraestructura`
+- `estados_conservacion` 1---n `elementos_infraestructura`
+- `elementos_infraestructura` 1---n `elementos_infraestructura` por `id_elemento_padre`
+- `elementos_infraestructura` 1---0..1 `predios`
+- `elementos_infraestructura` 1---0..1 `edificaciones`
+- `elementos_infraestructura` 1---0..1 `niveles`
+- `elementos_infraestructura` 1---0..1 `espacios_fisicos`
+- `elementos_infraestructura` 1---0..1 `espacios_exteriores`
+- `elementos_infraestructura` 1---0..1 `componentes_infraestructura`
+
+## Catálogos
+
+- `tipos_tenencia_predio` -> `predios`
+- `tipos_edificacion` -> `edificaciones`
+- `tipos_espacio_fisico` -> `espacios_fisicos`
+- `tipos_espacio_exterior` -> `espacios_exteriores`
+- `tipos_componente_infraestructura` -> `componentes_infraestructura`
+- `unidades_medida` -> `componentes_infraestructura`
+
+## Notas
+
+- La jerarquía física se expresa por `elementos_infraestructura.id_elemento_padre`.
+- Las especializaciones comparten la PK/FK `id_elemento_infraestructura`.
+- No se modelan tablas adicionales fuera de las 21 entidades registradas.
