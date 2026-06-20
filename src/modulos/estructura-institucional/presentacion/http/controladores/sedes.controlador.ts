@@ -1,5 +1,7 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { CambiarEstadoSedeCasoUso } from '../../../aplicacion/sedes/cambiar-estado-sede.caso-uso';
 import { CrearSedeCasoUso } from '../../../aplicacion/sedes/crear-sede.caso-uso';
+import { EstablecerSedePrincipalCasoUso } from '../../../aplicacion/sedes/establecer-sede-principal.caso-uso';
 import { ListarSedesInstitucionConsulta } from '../../../aplicacion/sedes/listar-sedes-institucion.consulta';
 import { ObtenerSedeConsulta } from '../../../aplicacion/sedes/obtener-sede.consulta';
 import { CrearSedeSolicitud } from '../solicitudes/crear-sede.solicitud';
@@ -11,6 +13,8 @@ export class SedesControlador {
     private readonly crearSede: CrearSedeCasoUso,
     private readonly listarSedes: ListarSedesInstitucionConsulta,
     private readonly obtenerSede: ObtenerSedeConsulta,
+    private readonly establecerPrincipal: EstablecerSedePrincipalCasoUso,
+    private readonly cambiarEstado: CambiarEstadoSedeCasoUso,
   ) {}
 
   @Post()
@@ -47,9 +51,8 @@ export class SedesControlador {
   async obtener(
     @Param('idInstitucion') idInstitucion: string,
     @Param('idSede') idSede: string,
-  ): Promise<SedeRespuesta | null> {
-    const sede = await this.obtenerSede.ejecutar(idSede);
-    if (!sede || sede.institucionId !== idInstitucion) return null;
+  ): Promise<SedeRespuesta> {
+    const sede = await this.obtenerSede.ejecutar(idInstitucion, idSede);
     return {
       id: sede.id,
       institucionId: sede.institucionId,
@@ -58,5 +61,22 @@ export class SedesControlador {
       esPrincipal: sede.esPrincipal,
       estado: sede.estado,
     };
+  }
+
+  @Post(':idSede/establecer-principal')
+  async establecerPrincipalSede(
+    @Param('idInstitucion') idInstitucion: string,
+    @Param('idSede') idSede: string,
+  ): Promise<void> {
+    await this.establecerPrincipal.ejecutar(idInstitucion, idSede);
+  }
+
+  @Patch(':idSede/estado')
+  async cambiarEstadoSede(
+    @Param('idInstitucion') idInstitucion: string,
+    @Param('idSede') idSede: string,
+    @Body() solicitud: { estado: 'ACTIVA' | 'INACTIVA' | 'BAJA' },
+  ): Promise<void> {
+    await this.cambiarEstado.ejecutar(idInstitucion, idSede, solicitud.estado);
   }
 }

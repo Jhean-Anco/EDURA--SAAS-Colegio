@@ -1,17 +1,24 @@
 import { RecursoNoEncontradoError } from '../../../../compartido/dominio/errores-dominio';
 import { SedeTypeormRepositorio } from '../../infraestructura/persistencia/typeorm/repositorios/sede.typeorm-repositorio';
 
-export class ObtenerSedeConsulta {
+export interface ActualizarSedeEntrada {
+  institucionId: string;
+  sedeId: string;
+  nombre: string;
+}
+
+export class ActualizarSedeCasoUso {
   constructor(private readonly repositorio: SedeTypeormRepositorio) {}
 
-  async ejecutar(institucionId: string, id: string) {
+  async ejecutar(entrada: ActualizarSedeEntrada): Promise<void> {
     const sede = await this.repositorio.buscarPorInstitucionYId(
-      institucionId,
-      id,
+      entrada.institucionId,
+      entrada.sedeId,
     );
     if (!sede) {
       throw new RecursoNoEncontradoError('La sede solicitada no existe.');
     }
-    return sede;
+    (sede as unknown as { nombre: string }).nombre = entrada.nombre.trim();
+    await this.repositorio.guardar(sede);
   }
 }

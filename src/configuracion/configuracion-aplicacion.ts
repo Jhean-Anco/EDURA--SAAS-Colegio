@@ -31,8 +31,8 @@ export class ConfiguracionAplicacion {
       .filter(Boolean);
     this.bdHost = process.env.BD_HOST ?? 'localhost';
     this.bdPuerto = Number(process.env.BD_PUERTO ?? 5432);
-    this.bdUsuario = process.env.BD_USUARIO ?? 'edura';
-    this.bdClave = process.env.BD_CLAVE ?? 'edura_desarrollo';
+    this.bdUsuario = process.env.BD_USUARIO ?? 'postgres';
+    this.bdClave = process.env.BD_CLAVE ?? 'postgres';
     this.bdNombre = process.env.BD_NOMBRE ?? 'edura';
     this.bdSsl = (process.env.BD_SSL ?? 'false') === 'true';
     this.bdRegistroConsultas =

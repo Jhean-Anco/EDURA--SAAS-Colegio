@@ -1,4 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { ActualizarInstitucionCasoUso } from '../../../aplicacion/instituciones/actualizar-institucion.caso-uso';
+import { CambiarEstadoInstitucionCasoUso } from '../../../aplicacion/instituciones/cambiar-estado-institucion.caso-uso';
 import { CrearInstitucionCasoUso } from '../../../aplicacion/instituciones/crear-institucion.caso-uso';
 import { ListarInstitucionesConsulta } from '../../../aplicacion/instituciones/listar-instituciones.consulta';
 import { ObtenerInstitucionConsulta } from '../../../aplicacion/instituciones/obtener-institucion.consulta';
@@ -11,6 +13,8 @@ export class InstitucionesControlador {
     private readonly crearInstitucion: CrearInstitucionCasoUso,
     private readonly listarInstituciones: ListarInstitucionesConsulta,
     private readonly obtenerInstitucion: ObtenerInstitucionConsulta,
+    private readonly actualizarInstitucion: ActualizarInstitucionCasoUso,
+    private readonly cambiarEstadoInstitucion: CambiarEstadoInstitucionCasoUso,
   ) {}
 
   @Post()
@@ -52,27 +56,39 @@ export class InstitucionesControlador {
   @Get(':idInstitucion')
   async obtener(
     @Param('idInstitucion') idInstitucion: string,
-  ): Promise<InstitucionRespuesta | null> {
+  ): Promise<InstitucionRespuesta> {
     const institucion = await this.obtenerInstitucion.ejecutar(idInstitucion);
-    return institucion
-      ? {
-          id: institucion.id,
-          codigo: institucion.codigo,
-          nombreLegal: institucion.nombreLegal,
-          nombreCorto: institucion.nombreCorto,
-          tipoGestion: institucion.tipoGestion,
-          estado: institucion.estado,
-        }
-      : null;
+    return {
+      id: institucion.id,
+      codigo: institucion.codigo,
+      nombreLegal: institucion.nombreLegal,
+      nombreCorto: institucion.nombreCorto,
+      tipoGestion: institucion.tipoGestion,
+      estado: institucion.estado,
+    };
   }
 
   @Patch(':idInstitucion')
-  actualizar(): void {
-    return undefined;
+  async actualizar(
+    @Param('idInstitucion') idInstitucion: string,
+    @Body() solicitud: CrearInstitucionSolicitud,
+  ): Promise<void> {
+    await this.actualizarInstitucion.ejecutar({
+      id: idInstitucion,
+      nombreLegal: solicitud.nombreLegal,
+      nombreCorto: solicitud.nombreCorto ?? null,
+      tipoGestion: solicitud.tipoGestion ?? null,
+    });
   }
 
   @Patch(':idInstitucion/estado')
-  cambiarEstado(): void {
-    return undefined;
+  async cambiarEstado(
+    @Param('idInstitucion') idInstitucion: string,
+    @Body() solicitud: { estado: 'ACTIVA' | 'INACTIVA' | 'BAJA' },
+  ): Promise<void> {
+    await this.cambiarEstadoInstitucion.ejecutar(
+      idInstitucion,
+      solicitud.estado,
+    );
   }
 }

@@ -17,12 +17,22 @@ import { TipoEspacioFisicoTypeormEntidad } from './infraestructura/persistencia/
 import { TipoServicioBasicoTypeormEntidad } from './infraestructura/persistencia/typeorm/entidades/tipo-servicio-basico.typeorm-entidad';
 import { TipoTenenciaPredioTypeormEntidad } from './infraestructura/persistencia/typeorm/entidades/tipo-tenencia-predio.typeorm-entidad';
 import { UnidadMedidaTypeormEntidad } from './infraestructura/persistencia/typeorm/entidades/unidad-medida.typeorm-entidad';
+import { SedeTypeormEntidad } from '../estructura-institucional/infraestructura/persistencia/typeorm/entidades/sede.typeorm-entidad';
+import { ServiciosBasicosControlador } from './presentacion/http/controladores/servicios-basicos.controlador';
+import { InfraestructuraControlador } from './presentacion/http/controladores/infraestructura.controlador';
+import { ServicioBasicoTypeormRepositorio } from './infraestructura/persistencia/typeorm/repositorios/servicio-basico.typeorm-repositorio';
+import { RepositorioElementosInfraestructuraTypeormConsulta } from './infraestructura/persistencia/typeorm/consultas/repositorio-elementos-infraestructura.typeorm-consulta';
+import { RegistrarServicioBasicoSedeCasoUso } from './aplicacion/servicios-basicos/registrar-servicio-basico-sede.caso-uso';
+import { ListarServiciosBasicosSedeConsulta } from './aplicacion/servicios-basicos/listar-servicios-basicos-sede.consulta';
+import { CambiarEstadoServicioBasicoCasoUso } from './aplicacion/servicios-basicos/cambiar-estado-servicio-basico.caso-uso';
+import { ListarElementosInfraestructuraConsulta } from './aplicacion/consultas/listar-elementos-infraestructura.consulta';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       TipoServicioBasicoTypeormEntidad,
       ServicioBasicoSedeTypeormEntidad,
+      SedeTypeormEntidad,
       TipoElementoInfraestructuraTypeormEntidad,
       EstadoConservacionTypeormEntidad,
       TipoTenenciaPredioTypeormEntidad,
@@ -40,6 +50,15 @@ import { UnidadMedidaTypeormEntidad } from './infraestructura/persistencia/typeo
       ComponenteInfraestructuraTypeormEntidad,
     ]),
   ],
+  providers: [
+    ServicioBasicoTypeormRepositorio,
+    RepositorioElementosInfraestructuraTypeormConsulta,
+    RegistrarServicioBasicoSedeCasoUso,
+    ListarServiciosBasicosSedeConsulta,
+    CambiarEstadoServicioBasicoCasoUso,
+    ListarElementosInfraestructuraConsulta,
+  ],
+  controllers: [ServiciosBasicosControlador, InfraestructuraControlador],
   exports: [TypeOrmModule],
 })
 export class InfraestructuraFisicaModule {}

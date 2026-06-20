@@ -2,9 +2,10 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { App } from 'supertest/types';
+import { configurarAplicacion } from '../src/configuracion/configurar-aplicacion';
 import { AppModule } from '../src/app.module';
 
-describe.skip('AppController (e2e)', () => {
+describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
 
   beforeEach(async () => {
@@ -13,6 +14,7 @@ describe.skip('AppController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    configurarAplicacion(app, true);
     await app.init();
   });
 
@@ -25,6 +27,8 @@ describe.skip('AppController (e2e)', () => {
   });
 
   afterEach(async () => {
-    await app.close();
+    if (app) {
+      await app.close();
+    }
   });
 });

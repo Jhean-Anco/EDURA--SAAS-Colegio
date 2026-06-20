@@ -1,10 +1,6 @@
-import { Inject } from '@nestjs/common';
 import { CodigoDuplicadoError } from '../../../../compartido/dominio/errores-dominio';
 import { InstitucionEducativa } from '../../dominio/instituciones/institucion-educativa.entidad';
-import {
-  REPOSITORIO_INSTITUCIONES,
-  RepositorioInstituciones,
-} from '../../dominio/instituciones/repositorio-instituciones.puerto';
+import { InstitucionTypeormRepositorio } from '../../infraestructura/persistencia/typeorm/repositorios/institucion.typeorm-repositorio';
 
 export interface CrearInstitucionEntrada {
   id: string;
@@ -19,10 +15,7 @@ export interface CrearInstitucionSalida {
 }
 
 export class CrearInstitucionCasoUso {
-  constructor(
-    @Inject(REPOSITORIO_INSTITUCIONES)
-    private readonly repositorio: RepositorioInstituciones,
-  ) {}
+  constructor(private readonly repositorio: InstitucionTypeormRepositorio) {}
 
   async ejecutar(
     entrada: CrearInstitucionEntrada,

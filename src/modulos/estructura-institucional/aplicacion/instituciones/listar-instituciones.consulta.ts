@@ -1,14 +1,7 @@
-import { Inject } from '@nestjs/common';
-import {
-  REPOSITORIO_INSTITUCIONES,
-  RepositorioInstituciones,
-} from '../../dominio/instituciones/repositorio-instituciones.puerto';
+import { InstitucionTypeormRepositorio } from '../../infraestructura/persistencia/typeorm/repositorios/institucion.typeorm-repositorio';
 
 export class ListarInstitucionesConsulta {
-  constructor(
-    @Inject(REPOSITORIO_INSTITUCIONES)
-    private readonly repositorio: RepositorioInstituciones,
-  ) {}
+  constructor(private readonly repositorio: InstitucionTypeormRepositorio) {}
 
   async ejecutar() {
     return this.repositorio.listarPaginado();

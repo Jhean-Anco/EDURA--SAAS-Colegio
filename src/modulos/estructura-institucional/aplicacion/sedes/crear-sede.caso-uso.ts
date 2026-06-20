@@ -1,18 +1,11 @@
-import { Inject } from '@nestjs/common';
 import {
   CodigoDuplicadoError,
   EstadoIncompatibleError,
   RecursoNoEncontradoError,
 } from '../../../../compartido/dominio/errores-dominio';
 import { Sede } from '../../dominio/sedes/sede.entidad';
-import {
-  REPOSITORIO_SEDES,
-  RepositorioSedes,
-} from '../../dominio/sedes/repositorio-sedes.puerto';
-import {
-  REPOSITORIO_INSTITUCIONES,
-  RepositorioInstituciones,
-} from '../../dominio/instituciones/repositorio-instituciones.puerto';
+import { InstitucionTypeormRepositorio } from '../../infraestructura/persistencia/typeorm/repositorios/institucion.typeorm-repositorio';
+import { SedeTypeormRepositorio } from '../../infraestructura/persistencia/typeorm/repositorios/sede.typeorm-repositorio';
 
 export interface CrearSedeEntrada {
   id: string;
@@ -32,10 +25,8 @@ export interface CrearSedeSalida {
 
 export class CrearSedeCasoUso {
   constructor(
-    @Inject(REPOSITORIO_INSTITUCIONES)
-    private readonly instituciones: RepositorioInstituciones,
-    @Inject(REPOSITORIO_SEDES)
-    private readonly repositorio: RepositorioSedes,
+    private readonly instituciones: InstitucionTypeormRepositorio,
+    private readonly repositorio: SedeTypeormRepositorio,
   ) {}
 
   async ejecutar(entrada: CrearSedeEntrada): Promise<CrearSedeSalida> {

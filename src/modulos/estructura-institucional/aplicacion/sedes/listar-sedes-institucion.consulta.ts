@@ -1,14 +1,7 @@
-import { Inject } from '@nestjs/common';
-import {
-  REPOSITORIO_SEDES,
-  RepositorioSedes,
-} from '../../dominio/sedes/repositorio-sedes.puerto';
+import { SedeTypeormRepositorio } from '../../infraestructura/persistencia/typeorm/repositorios/sede.typeorm-repositorio';
 
 export class ListarSedesInstitucionConsulta {
-  constructor(
-    @Inject(REPOSITORIO_SEDES)
-    private readonly repositorio: RepositorioSedes,
-  ) {}
+  constructor(private readonly repositorio: SedeTypeormRepositorio) {}
 
   async ejecutar(institucionId: string) {
     return this.repositorio.listarPorInstitucion(institucionId);

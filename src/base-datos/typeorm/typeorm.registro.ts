@@ -14,6 +14,7 @@ import { ElementoInfraestructuraTypeormEntidad } from '../../modulos/infraestruc
 import { EspacioExteriorTypeormEntidad } from '../../modulos/infraestructura-fisica/infraestructura/persistencia/typeorm/entidades/espacio-exterior.typeorm-entidad';
 import { EspacioFisicoTypeormEntidad } from '../../modulos/infraestructura-fisica/infraestructura/persistencia/typeorm/entidades/espacio-fisico.typeorm-entidad';
 import { EstadoConservacionTypeormEntidad } from '../../modulos/infraestructura-fisica/infraestructura/persistencia/typeorm/entidades/estado-conservacion.typeorm-entidad';
+import { EvaluacionConservacionElementoTypeormEntidad } from '../../modulos/infraestructura-fisica/infraestructura/persistencia/typeorm/entidades/evaluacion-conservacion-elemento.typeorm-entidad';
 import { NivelTypeormEntidad } from '../../modulos/infraestructura-fisica/infraestructura/persistencia/typeorm/entidades/nivel.typeorm-entidad';
 import { PredioTypeormEntidad } from '../../modulos/infraestructura-fisica/infraestructura/persistencia/typeorm/entidades/predio.typeorm-entidad';
 import { ServicioBasicoSedeTypeormEntidad } from '../../modulos/infraestructura-fisica/infraestructura/persistencia/typeorm/entidades/servicio-basico-sede.typeorm-entidad';
@@ -41,6 +42,7 @@ export const entidadesTypeOrm = [
   ServicioBasicoSedeTypeormEntidad,
   TipoElementoInfraestructuraTypeormEntidad,
   EstadoConservacionTypeormEntidad,
+  EvaluacionConservacionElementoTypeormEntidad,
   TipoTenenciaPredioTypeormEntidad,
   TipoEdificacionTypeormEntidad,
   TipoEspacioFisicoTypeormEntidad,
