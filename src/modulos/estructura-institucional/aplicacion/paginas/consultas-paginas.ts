@@ -1,9 +1,10 @@
 import { RepositorioPaginas } from '../../dominio/paginas/repositorio-paginas.puerto';
-import { PaginaRespuesta } from '../../presentacion/http/respuestas/pagina.respuesta';
+import { PaginaSalida } from './contratos/pagina.salida';
+import { SeccionPaginaSalida } from './contratos/seccion-pagina.salida';
 
 interface ConsultadorPaginasAplicacion {
-  listarPorSede(sedeId: string): Promise<PaginaRespuesta[]>;
-  obtenerPorSlug(sedeId: string, slug: string): Promise<PaginaRespuesta | null>;
+  listarPorSede(sedeId: string): Promise<PaginaSalida[]>;
+  obtenerPorSlug(sedeId: string, slug: string): Promise<PaginaSalida | null>;
 }
 
 export interface CrearPaginaEntrada {
@@ -15,7 +16,7 @@ export interface CrearPaginaEntrada {
 export class CrearPaginaSedeCasoUso {
   constructor(private readonly repositorio: RepositorioPaginas) {}
 
-  ejecutar(entrada: CrearPaginaEntrada): Promise<PaginaRespuesta> {
+  ejecutar(entrada: CrearPaginaEntrada): Promise<PaginaSalida> {
     return this.repositorio.crear({
       sedeId: entrada.sedeId,
       slug: entrada.slug,
@@ -35,7 +36,7 @@ export class CrearPaginaSedeCasoUso {
 export class ListarPaginasSedeConsulta {
   constructor(private readonly consultador: ConsultadorPaginasAplicacion) {}
 
-  ejecutar(sedeId: string): Promise<PaginaRespuesta[]> {
+  ejecutar(sedeId: string): Promise<PaginaSalida[]> {
     return this.consultador.listarPorSede(sedeId);
   }
 }
@@ -43,7 +44,7 @@ export class ListarPaginasSedeConsulta {
 export class ObtenerPaginaSedeConsulta {
   constructor(private readonly consultador: ConsultadorPaginasAplicacion) {}
 
-  ejecutar(sedeId: string, slug: string): Promise<PaginaRespuesta | null> {
+  ejecutar(sedeId: string, slug: string): Promise<PaginaSalida | null> {
     return this.consultador.obtenerPorSlug(sedeId, slug);
   }
 }
@@ -58,7 +59,7 @@ export interface AgregarSeccionPaginaEntrada {
 export class AgregarSeccionPaginaCasoUso {
   constructor(private readonly repositorio: RepositorioPaginas) {}
 
-  ejecutar(entrada: AgregarSeccionPaginaEntrada) {
+  ejecutar(entrada: AgregarSeccionPaginaEntrada): Promise<SeccionPaginaSalida> {
     return this.repositorio.agregarSeccion({
       paginaSedeId: entrada.paginaSedeId,
       tipoSeccion: entrada.tipoSeccion,
@@ -75,7 +76,7 @@ export class AgregarSeccionPaginaCasoUso {
 export class PublicarPaginaCasoUso {
   constructor(private readonly repositorio: RepositorioPaginas) {}
 
-  ejecutar(id: string) {
+  ejecutar(id: string): Promise<PaginaSalida | null> {
     return this.repositorio.publicar(id);
   }
 }
@@ -83,7 +84,7 @@ export class PublicarPaginaCasoUso {
 export class ArchivarPaginaCasoUso {
   constructor(private readonly repositorio: RepositorioPaginas) {}
 
-  ejecutar(id: string) {
+  ejecutar(id: string): Promise<PaginaSalida | null> {
     return this.repositorio.archivar(id);
   }
 }
@@ -91,7 +92,7 @@ export class ArchivarPaginaCasoUso {
 export class RestaurarPaginaCasoUso {
   constructor(private readonly repositorio: RepositorioPaginas) {}
 
-  ejecutar(id: string) {
+  ejecutar(id: string): Promise<PaginaSalida | null> {
     return this.repositorio.restaurar(id);
   }
 }
@@ -99,7 +100,7 @@ export class RestaurarPaginaCasoUso {
 export class CambiarEstadoSeccionCasoUso {
   constructor(private readonly repositorio: RepositorioPaginas) {}
 
-  ejecutar(id: string) {
+  ejecutar(id: string): Promise<SeccionPaginaSalida | null> {
     return this.repositorio.publicarSeccion(id);
   }
 }

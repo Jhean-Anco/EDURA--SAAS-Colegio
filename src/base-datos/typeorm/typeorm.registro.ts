@@ -26,6 +26,20 @@ import { TipoEspacioFisicoTypeormEntidad } from '../../modulos/infraestructura-f
 import { TipoServicioBasicoTypeormEntidad } from '../../modulos/infraestructura-fisica/infraestructura/persistencia/typeorm/entidades/tipo-servicio-basico.typeorm-entidad';
 import { TipoTenenciaPredioTypeormEntidad } from '../../modulos/infraestructura-fisica/infraestructura/persistencia/typeorm/entidades/tipo-tenencia-predio.typeorm-entidad';
 import { UnidadMedidaTypeormEntidad } from '../../modulos/infraestructura-fisica/infraestructura/persistencia/typeorm/entidades/unidad-medida.typeorm-entidad';
+import {
+  AsignacionRolUsuarioTypeormEntidad,
+  ConfiguracionInstitucionTypeormEntidad,
+  CredencialUsuarioTypeormEntidad,
+  EventoAuditoriaTypeormEntidad,
+  InvitacionAccesoTypeormEntidad,
+  MembresiaInstitucionTypeormEntidad,
+  PermisoTypeormEntidad,
+  RolPermisoTypeormEntidad,
+  RolTypeormEntidad,
+  SesionUsuarioTypeormEntidad,
+  TokenSeguridadUsuarioTypeormEntidad,
+  UsuarioTypeormEntidad,
+} from '../../modulos/identidad-acceso/infraestructura/persistencia/typeorm/entidades/seguridad.typeorm-entidades';
 
 export const entidadesTypeOrm = [
   InstitucionEducativaTypeormEntidad,
@@ -56,5 +70,17 @@ export const entidadesTypeOrm = [
   EspacioFisicoTypeormEntidad,
   EspacioExteriorTypeormEntidad,
   ComponenteInfraestructuraTypeormEntidad,
+  UsuarioTypeormEntidad,
+  CredencialUsuarioTypeormEntidad,
+  MembresiaInstitucionTypeormEntidad,
+  RolTypeormEntidad,
+  PermisoTypeormEntidad,
+  RolPermisoTypeormEntidad,
+  AsignacionRolUsuarioTypeormEntidad,
+  InvitacionAccesoTypeormEntidad,
+  SesionUsuarioTypeormEntidad,
+  TokenSeguridadUsuarioTypeormEntidad,
+  EventoAuditoriaTypeormEntidad,
+  ConfiguracionInstitucionTypeormEntidad,
 ] as unknown as ConstructorEntidad[];
 type ConstructorEntidad = new (...argumentos: never[]) => unknown;

@@ -26,6 +26,13 @@ import { RegistrarServicioBasicoSedeCasoUso } from './aplicacion/servicios-basic
 import { ListarServiciosBasicosSedeConsulta } from './aplicacion/servicios-basicos/listar-servicios-basicos-sede.consulta';
 import { CambiarEstadoServicioBasicoCasoUso } from './aplicacion/servicios-basicos/cambiar-estado-servicio-basico.caso-uso';
 import { ListarElementosInfraestructuraConsulta } from './aplicacion/consultas/listar-elementos-infraestructura.consulta';
+import { CONSULTADOR_INFRAESTRUCTURA } from './dominio/infraestructura/consultador-infraestructura.puerto';
+import {
+  CONSULTADOR_SERVICIOS_BASICOS,
+  RepositorioServiciosBasicos,
+  ConsultadorServiciosBasicos,
+} from './aplicacion/servicios-basicos/puertos';
+import { REPOSITORIO_SERVICIOS_BASICOS } from './dominio/servicios-basicos/repositorio-servicios-basicos.puerto';
 
 @Module({
   imports: [
@@ -53,10 +60,43 @@ import { ListarElementosInfraestructuraConsulta } from './aplicacion/consultas/l
   providers: [
     ServicioBasicoTypeormRepositorio,
     RepositorioElementosInfraestructuraTypeormConsulta,
-    RegistrarServicioBasicoSedeCasoUso,
-    ListarServiciosBasicosSedeConsulta,
-    CambiarEstadoServicioBasicoCasoUso,
-    ListarElementosInfraestructuraConsulta,
+    {
+      provide: REPOSITORIO_SERVICIOS_BASICOS,
+      useExisting: ServicioBasicoTypeormRepositorio,
+    },
+    {
+      provide: CONSULTADOR_SERVICIOS_BASICOS,
+      useExisting: ServicioBasicoTypeormRepositorio,
+    },
+    {
+      provide: CONSULTADOR_INFRAESTRUCTURA,
+      useExisting: RepositorioElementosInfraestructuraTypeormConsulta,
+    },
+    {
+      provide: RegistrarServicioBasicoSedeCasoUso,
+      useFactory: (repositorio: RepositorioServiciosBasicos) =>
+        new RegistrarServicioBasicoSedeCasoUso(repositorio),
+      inject: [REPOSITORIO_SERVICIOS_BASICOS],
+    },
+    {
+      provide: ListarServiciosBasicosSedeConsulta,
+      useFactory: (consultador: ConsultadorServiciosBasicos) =>
+        new ListarServiciosBasicosSedeConsulta(consultador),
+      inject: [CONSULTADOR_SERVICIOS_BASICOS],
+    },
+    {
+      provide: CambiarEstadoServicioBasicoCasoUso,
+      useFactory: (repositorio: RepositorioServiciosBasicos) =>
+        new CambiarEstadoServicioBasicoCasoUso(repositorio),
+      inject: [REPOSITORIO_SERVICIOS_BASICOS],
+    },
+    {
+      provide: ListarElementosInfraestructuraConsulta,
+      useFactory: (
+        consultador: import('./dominio/infraestructura/consultador-infraestructura.puerto').ConsultadorInfraestructura,
+      ) => new ListarElementosInfraestructuraConsulta(consultador),
+      inject: [CONSULTADOR_INFRAESTRUCTURA],
+    },
   ],
   controllers: [ServiciosBasicosControlador, InfraestructuraControlador],
   exports: [TypeOrmModule],

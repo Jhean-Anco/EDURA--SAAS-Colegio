@@ -9,6 +9,8 @@ import {
   PublicarPaginaCasoUso,
   RestaurarPaginaCasoUso,
 } from '../../../aplicacion/paginas/consultas-paginas';
+import { PaginaSalida } from '../../../aplicacion/paginas/contratos/pagina.salida';
+import { SeccionPaginaSalida } from '../../../aplicacion/paginas/contratos/seccion-pagina.salida';
 import { PaginaRespuesta } from '../respuestas/pagina.respuesta';
 import {
   CrearPaginaSolicitud,
@@ -30,26 +32,29 @@ export class PaginasControlador {
 
   @Get()
   async listar(@Param('idSede') idSede: string): Promise<PaginaRespuesta[]> {
-    return this.consulta.ejecutar(idSede);
+    const paginas = await this.consulta.ejecutar(idSede);
+    return paginas.map((pagina) => this.mapearPagina(pagina));
   }
 
   @Post()
   async crear(
     @Param('idSede') idSede: string,
     @Body() solicitud: CrearPaginaSolicitud,
-  ) {
-    return this.crearPagina.ejecutar({
-      sedeId: idSede,
-      slug: solicitud.slug,
-      titulo: solicitud.titulo,
-    });
+  ): Promise<PaginaRespuesta> {
+    return this.mapearPagina(
+      await this.crearPagina.ejecutar({
+        sedeId: idSede,
+        slug: solicitud.slug,
+        titulo: solicitud.titulo,
+      }),
+    );
   }
 
   @Post(':idPagina/secciones')
   async agregar(
     @Param('idPagina') idPagina: string,
     @Body() solicitud: AgregarSeccionPaginaSolicitud,
-  ) {
+  ): Promise<SeccionPaginaSalida> {
     return this.agregarSeccion.ejecutar({
       paginaSedeId: idPagina,
       tipoSeccion: solicitud.tipoSeccion,
@@ -59,30 +64,49 @@ export class PaginasControlador {
   }
 
   @Post(':idPagina/publicar')
-  publicar(@Param('idPagina') idPagina: string) {
-    return this.publicarPagina.ejecutar(idPagina);
+  async publicar(
+    @Param('idPagina') idPagina: string,
+  ): Promise<PaginaRespuesta | null> {
+    const pagina = await this.publicarPagina.ejecutar(idPagina);
+    return pagina ? this.mapearPagina(pagina) : null;
   }
 
   @Post(':idPagina/archivar')
-  archivar(@Param('idPagina') idPagina: string) {
-    return this.archivarPagina.ejecutar(idPagina);
+  async archivar(
+    @Param('idPagina') idPagina: string,
+  ): Promise<PaginaRespuesta | null> {
+    const pagina = await this.archivarPagina.ejecutar(idPagina);
+    return pagina ? this.mapearPagina(pagina) : null;
   }
 
   @Post(':idPagina/restaurar')
-  restaurar(@Param('idPagina') idPagina: string) {
-    return this.restaurarPagina.ejecutar(idPagina);
+  async restaurar(
+    @Param('idPagina') idPagina: string,
+  ): Promise<PaginaRespuesta | null> {
+    const pagina = await this.restaurarPagina.ejecutar(idPagina);
+    return pagina ? this.mapearPagina(pagina) : null;
   }
 
   @Patch(':idPagina/secciones/:idSeccion')
-  cambiarSeccion(@Param('idSeccion') idSeccion: string) {
+  async cambiarSeccion(
+    @Param('idSeccion') idSeccion: string,
+  ): Promise<SeccionPaginaSalida | null> {
     return this.cambiarEstadoSeccion.ejecutar(idSeccion);
   }
 
   @Get(':slugPagina')
-  obtenerPagina(
+  async obtenerPagina(
     @Param('idSede') idSede: string,
     @Param('slugPagina') slugPagina: string,
-  ) {
-    return this.obtener.ejecutar(idSede, slugPagina);
+  ): Promise<PaginaRespuesta | null> {
+    const pagina = await this.obtener.ejecutar(idSede, slugPagina);
+    return pagina ? this.mapearPagina(pagina) : null;
+  }
+
+  private mapearPagina(pagina: PaginaSalida): PaginaRespuesta {
+    return {
+      ...pagina,
+      fechaPublicacion: pagina.fechaPublicacion,
+    };
   }
 }

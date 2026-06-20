@@ -2,6 +2,7 @@ import {
   EstadoIncompatibleError,
   RecursoNoEncontradoError,
 } from '../../../../compartido/dominio/errores-dominio';
+import { CrearServicioBasicoEntrada } from '../../dominio/servicios-basicos/repositorio-servicios-basicos.puerto';
 import { ServicioBasicoSedeRespuesta } from '../../dominio/servicios-basicos/servicio-basico.respuesta';
 import { RepositorioServiciosBasicos } from './puertos';
 
@@ -33,7 +34,7 @@ export class RegistrarServicioBasicoSedeCasoUso {
         'El tipo de servicio básico no existe o está inactivo.',
       );
     }
-    return this.repositorio.crear({
+    const entradaPersistencia: CrearServicioBasicoEntrada = {
       id: entrada.id,
       sedeId: entrada.sedeId,
       tipoServicioBasicoId: tipo.id,
@@ -43,6 +44,7 @@ export class RegistrarServicioBasicoSedeCasoUso {
       fechaInicio: null,
       fechaFin: null,
       observaciones: null,
-    });
+    };
+    return this.repositorio.crear(entradaPersistencia);
   }
 }
