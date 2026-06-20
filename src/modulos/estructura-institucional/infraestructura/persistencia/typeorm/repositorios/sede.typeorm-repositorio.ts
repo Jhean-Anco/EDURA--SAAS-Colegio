@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Sede } from '../../../../dominio/sedes/sede.entidad';
 import { RepositorioSedes } from '../../../../dominio/sedes/repositorio-sedes.puerto';
 import { SedeMapeador } from '../mapeadores/sede.mapeador';
@@ -11,19 +11,20 @@ export class SedeTypeormRepositorio implements RepositorioSedes {
   constructor(
     @InjectRepository(SedeTypeormEntidad)
     private readonly repositorio: Repository<SedeTypeormEntidad>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async guardar(sede: Sede): Promise<void> {
-    await this.repositorio.save(
-      this.repositorio.create({
+    await this.dataSource.transaction(async (manager) => {
+      await manager.save(SedeTypeormEntidad, {
         id: sede.id,
         institucionEducativaId: sede.institucionId,
         codigo: sede.codigo,
         nombre: sede.nombre,
         esPrincipal: sede.esPrincipal,
         estado: sede.estadoCompleto,
-      }),
-    );
+      });
+    });
   }
 
   async buscarPorId(id: string): Promise<Sede | null> {
@@ -70,18 +71,23 @@ export class SedeTypeormRepositorio implements RepositorioSedes {
     institucionId: string,
     sedeId: string,
   ): Promise<void> {
-    await this.repositorio.update(
-      { institucionEducativaId: institucionId },
-      { esPrincipal: false },
-    );
-    await this.repositorio.update({ id: sedeId }, { esPrincipal: true });
-  }
-
-  guardarDireccion(): Promise<void> {
-    return Promise.resolve();
+    await this.dataSource.transaction(async (manager) => {
+      const sedes = await manager.find(SedeTypeormEntidad, {
+        where: { institucionEducativaId: institucionId },
+      });
+      for (const sede of sedes) {
+        sede.esPrincipal = sede.id === sedeId;
+      }
+      await manager.save(SedeTypeormEntidad, sedes);
+    });
   }
 
   async cambiarEstado(sedeId: string, estado: Sede['estado']): Promise<void> {
-    await this.repositorio.update({ id: sedeId }, { estado });
+    const entidad = await this.repositorio.findOne({ where: { id: sedeId } });
+    if (!entidad) {
+      return;
+    }
+    entidad.estado = estado;
+    await this.repositorio.save(entidad);
   }
 }

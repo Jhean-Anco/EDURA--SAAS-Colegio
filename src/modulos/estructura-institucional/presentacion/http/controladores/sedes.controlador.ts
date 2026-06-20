@@ -18,21 +18,12 @@ export class SedesControlador {
     @Param('idInstitucion') idInstitucion: string,
     @Body() solicitud: CrearSedeSolicitud,
   ): Promise<SedeRespuesta> {
-    const resultado = await this.crearSede.ejecutar({
+    return this.crearSede.ejecutar({
       id: crypto.randomUUID(),
       institucionId: idInstitucion,
       codigo: solicitud.codigo,
       nombre: solicitud.nombre,
-      institucionActiva: solicitud.institucionActiva,
     });
-    return {
-      id: resultado.id,
-      institucionId: idInstitucion,
-      codigo: solicitud.codigo,
-      nombre: solicitud.nombre,
-      esPrincipal: false,
-      estado: 'ACTIVA',
-    };
   }
 
   @Get()

@@ -1,27 +1,80 @@
 import { Inject } from '@nestjs/common';
+import {
+  CodigoDuplicadoError,
+  EstadoIncompatibleError,
+  RecursoNoEncontradoError,
+} from '../../../../compartido/dominio/errores-dominio';
 import { Sede } from '../../dominio/sedes/sede.entidad';
 import {
   REPOSITORIO_SEDES,
   RepositorioSedes,
 } from '../../dominio/sedes/repositorio-sedes.puerto';
+import {
+  REPOSITORIO_INSTITUCIONES,
+  RepositorioInstituciones,
+} from '../../dominio/instituciones/repositorio-instituciones.puerto';
 
 export interface CrearSedeEntrada {
   id: string;
   institucionId: string;
   codigo: string;
   nombre: string;
-  institucionActiva: boolean;
+}
+
+export interface CrearSedeSalida {
+  id: string;
+  institucionId: string;
+  codigo: string;
+  nombre: string;
+  esPrincipal: boolean;
+  estado: 'ACTIVA' | 'INACTIVA' | 'BAJA';
 }
 
 export class CrearSedeCasoUso {
   constructor(
+    @Inject(REPOSITORIO_INSTITUCIONES)
+    private readonly instituciones: RepositorioInstituciones,
     @Inject(REPOSITORIO_SEDES)
     private readonly repositorio: RepositorioSedes,
   ) {}
 
-  async ejecutar(entrada: CrearSedeEntrada): Promise<{ id: string }> {
-    const sede = Sede.crear(entrada);
+  async ejecutar(entrada: CrearSedeEntrada): Promise<CrearSedeSalida> {
+    const codigo = entrada.codigo.trim().toUpperCase();
+    const institucion = await this.instituciones.buscarPorId(
+      entrada.institucionId,
+    );
+    if (!institucion) {
+      throw new RecursoNoEncontradoError(
+        'La institucion solicitada no existe.',
+      );
+    }
+    if (institucion.estado !== 'ACTIVA') {
+      throw new EstadoIncompatibleError(
+        'La institucion debe estar activa para crear una sede.',
+      );
+    }
+    const existe = await this.repositorio.buscarPorInstitucionYCodigo(
+      entrada.institucionId,
+      codigo,
+    );
+    if (existe) {
+      throw new CodigoDuplicadoError('El codigo de sede ya existe.');
+    }
+    const sede = Sede.crear({ ...entrada, codigo });
+    const sedesExistentes = await this.repositorio.listarPorInstitucion(
+      entrada.institucionId,
+    );
+    if (sedesExistentes.length === 0) {
+      sede.establecerPrincipal();
+    }
     await this.repositorio.guardar(sede);
-    return { id: sede.id };
+    return {
+      id: sede.id,
+      institucionId: sede.institucionId,
+      codigo: sede.codigo,
+      nombre: sede.nombre,
+      esPrincipal: sede.esPrincipal,
+      estado: sede.estado,
+    };
   }
 }

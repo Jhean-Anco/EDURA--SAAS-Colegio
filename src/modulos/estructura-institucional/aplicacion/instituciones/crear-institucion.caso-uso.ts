@@ -1,4 +1,5 @@
 import { Inject } from '@nestjs/common';
+import { CodigoDuplicadoError } from '../../../../compartido/dominio/errores-dominio';
 import { InstitucionEducativa } from '../../dominio/instituciones/institucion-educativa.entidad';
 import {
   REPOSITORIO_INSTITUCIONES,
@@ -28,7 +29,7 @@ export class CrearInstitucionCasoUso {
   ): Promise<CrearInstitucionSalida> {
     const existe = await this.repositorio.existeCodigo(entrada.codigo);
     if (existe) {
-      throw new Error('codigo-duplicado');
+      throw new CodigoDuplicadoError('El codigo de institucion ya existe.');
     }
     const institucion = InstitucionEducativa.crear(entrada);
     await this.repositorio.guardar(institucion);

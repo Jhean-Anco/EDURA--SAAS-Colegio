@@ -19,6 +19,5 @@ export interface RepositorioSedes {
     institucionId: string,
     sedeId: string,
   ): Promise<void>;
-  guardarDireccion(sedeId: string, direccionId: string): Promise<void>;
   cambiarEstado(sedeId: string, estado: Sede['estado']): Promise<void>;
 }

@@ -26,16 +26,10 @@ export class Sede {
     institucionId: string;
     codigo: string;
     nombre: string;
-    institucionActiva: boolean;
   }): Sede {
-    if (!input.institucionActiva) {
-      throw new EstadoIncompatibleError(
-        'La institución debe estar activa para crear una sede.',
-      );
-    }
     const codigo = input.codigo.trim().toUpperCase();
     if (!codigo) {
-      throw new ReglaNegocioError('El código de sede no puede quedar vacío.');
+      throw new ReglaNegocioError('El codigo de sede no puede quedar vacio.');
     }
     if (!input.nombre.trim()) {
       throw new ReglaNegocioError('El nombre de sede es obligatorio.');
