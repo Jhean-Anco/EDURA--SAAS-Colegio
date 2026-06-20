@@ -18,7 +18,7 @@ import { RucNoDisponible } from './infraestructura/proveedores-no-disponibles/ru
 import { RutasNoDisponible } from './infraestructura/proveedores-no-disponibles/rutas-no-disponible';
 import { ApisperuDniAdaptador } from './infraestructura/apisperu/apisperu-dni.adaptador';
 import { ApisperuRucAdaptador } from './infraestructura/apisperu/apisperu-ruc.adaptador';
-import { GoogleDirectionsLegacyAdaptador } from './infraestructura/google/google-directions-legacy.adaptador';
+import { GoogleRoutesApiAdaptador } from './infraestructura/google/google-routes-api.adaptador';
 import { ConsultarDniCasoUso } from './aplicacion/consultar-dni.caso-uso';
 import { ConsultarRucCasoUso } from './aplicacion/consultar-ruc.caso-uso';
 import { CalcularRutaCasoUso } from './aplicacion/calcular-ruta.caso-uso';
@@ -33,7 +33,7 @@ import { IntegracionesControlador } from './presentacion/http/integraciones.cont
     RutasNoDisponible,
     ApisperuDniAdaptador,
     ApisperuRucAdaptador,
-    GoogleDirectionsLegacyAdaptador,
+    GoogleRoutesApiAdaptador,
     {
       provide: CONSULTADOR_DNI,
       useFactory: (
@@ -58,13 +58,13 @@ import { IntegracionesControlador } from './presentacion/http/integraciones.cont
       provide: CALCULADOR_RUTAS,
       useFactory: (
         config: ConfiguracionAplicacion,
-        google: GoogleDirectionsLegacyAdaptador,
+        google: GoogleRoutesApiAdaptador,
         noDisponible: RutasNoDisponible,
       ): CalculadorRutas =>
         config.integracionRutasHabilitada ? google : noDisponible,
       inject: [
         ConfiguracionAplicacion,
-        GoogleDirectionsLegacyAdaptador,
+        GoogleRoutesApiAdaptador,
         RutasNoDisponible,
       ],
     },

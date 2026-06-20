@@ -46,6 +46,10 @@ export class ConfiguracionAplicacion {
 
   readonly googleMapsTimeoutMs: number;
 
+  readonly googleRoutesApiKey: string;
+
+  readonly googleRoutesUrlBase: string;
+
   constructor() {
     this.entorno = process.env.ENTORNO ?? 'desarrollo';
     this.puertoApi = Number(process.env.PUERTO_API ?? 3000);
@@ -82,5 +86,9 @@ export class ConfiguracionAplicacion {
     this.googleMapsTimeoutMs = Number(
       process.env.GOOGLE_MAPS_TIMEOUT_MS ?? 4000,
     );
+    this.googleRoutesApiKey = process.env.GOOGLE_ROUTES_API_KEY ?? '';
+    this.googleRoutesUrlBase =
+      process.env.GOOGLE_ROUTES_URL_BASE ??
+      'https://routes.googleapis.com/directions/v2:computeRoutes';
   }
 }
