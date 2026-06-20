@@ -40,6 +40,8 @@ export class ConfiguracionAplicacion {
 
   readonly apisperuUrlBase: string;
 
+  readonly apisperuToken: string;
+
   readonly apisperuTimeoutMs: number;
 
   readonly integracionRutasHabilitada: boolean;
@@ -80,6 +82,7 @@ export class ConfiguracionAplicacion {
     this.proveedorDocumentos = process.env.PROVEEDOR_DOCUMENTOS ?? 'APISPERU';
     this.apisperuUrlBase =
       process.env.APISPERU_URL_BASE ?? 'https://dniruc.apisperu.com/api/v1';
+    this.apisperuToken = process.env.APISPERU_TOKEN ?? '';
     this.apisperuTimeoutMs = Number(process.env.APISPERU_TIMEOUT_MS ?? 3000);
     this.integracionRutasHabilitada =
       (process.env.INTEGRACION_RUTAS_HABILITADA ?? 'false') === 'true';

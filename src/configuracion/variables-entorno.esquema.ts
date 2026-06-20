@@ -33,4 +33,33 @@ export const variablesEntornoEsquema = Joi.object({
     .truthy('true')
     .falsy('false')
     .default(false),
+  // Integraciones externas — Documentos (APIsPeru)
+  INTEGRACION_DOCUMENTOS_HABILITADA: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+  PROVEEDOR_DOCUMENTOS: Joi.string().default('APISPERU'),
+  APISPERU_URL_BASE: Joi.string()
+    .uri()
+    .default('https://dniruc.apisperu.com/api/v1'),
+  APISPERU_TOKEN: Joi.string().when('INTEGRACION_DOCUMENTOS_HABILITADA', {
+    is: true,
+    then: Joi.required(),
+    otherwise: Joi.optional().allow(''),
+  }),
+  APISPERU_TIMEOUT_MS: Joi.number().integer().positive().default(3000),
+  // Integraciones externas — Rutas (Google)
+  INTEGRACION_RUTAS_HABILITADA: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+  GOOGLE_MAPS_TIMEOUT_MS: Joi.number().integer().positive().default(4000),
+  GOOGLE_ROUTES_API_KEY: Joi.string().when('INTEGRACION_RUTAS_HABILITADA', {
+    is: true,
+    then: Joi.required(),
+    otherwise: Joi.optional().allow(''),
+  }),
+  GOOGLE_ROUTES_URL_BASE: Joi.string()
+    .uri()
+    .default('https://routes.googleapis.com/directions/v2:computeRoutes'),
 }).unknown(true);

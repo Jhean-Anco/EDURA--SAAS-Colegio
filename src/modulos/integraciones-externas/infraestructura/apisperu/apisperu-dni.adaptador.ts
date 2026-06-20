@@ -18,7 +18,7 @@ export class ApisperuDniAdaptador implements ConsultadorDni {
   constructor(private readonly config: ConfiguracionAplicacion) {}
 
   async consultar(numeroDni: string): Promise<ResultadoConsultaDni> {
-    const token = process.env['APISPERU_TOKEN'];
+    const token = this.config.apisperuToken;
     if (!token) {
       return {
         disponible: false,

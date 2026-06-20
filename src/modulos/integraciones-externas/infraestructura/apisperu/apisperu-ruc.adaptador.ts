@@ -19,7 +19,7 @@ export class ApisperuRucAdaptador implements ConsultadorRuc {
   constructor(private readonly config: ConfiguracionAplicacion) {}
 
   async consultar(ruc: string): Promise<ResultadoConsultaRuc> {
-    const token = process.env['APISPERU_TOKEN'];
+    const token = this.config.apisperuToken;
     if (!token) {
       return {
         disponible: false,

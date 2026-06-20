@@ -8,13 +8,15 @@ on:
       - 'fix/**'
       - 'feat/**'
       - 'ci/**'
+      - 'chore/**'
+      - 'test/**'
   pull_request:
     branches:
       - main
       - 'release/**'
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '24'
   POSTGRES_VERSION: '16'
 
 jobs:
