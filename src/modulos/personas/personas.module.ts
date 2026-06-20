@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { IdentidadAccesoModule } from '../identidad-acceso/identidad-acceso.module';
 import { PersonasControlador } from './presentacion/http/controladores/personas.controlador';
 import {
   PersonaTypeormEntidad,
@@ -29,9 +30,12 @@ import {
   REPOSITORIO_DIRECCIONES_PERSONA,
   REPOSITORIO_VINCULOS_PERSONA_MEMBRESIA,
 } from './dominio/puertos/indice';
+import { GuardiaJwt } from '../identidad-acceso/presentacion/http/guardias/guardia-jwt';
+import { GuardiaPermisos } from '../../compartido/presentacion/http/guardias/guardia-permisos';
 
 @Module({
   imports: [
+    IdentidadAccesoModule,
     TypeOrmModule.forFeature([
       PersonaTypeormEntidad,
       TipoDocumentoIdentidadTypeormEntidad,
@@ -47,6 +51,8 @@ import {
     MediosContactoTypeormRepositorio,
     DireccionesPersonaTypeormRepositorio,
     VinculosPersonaMembresiaTypeormRepositorio,
+    GuardiaJwt,
+    GuardiaPermisos,
     {
       provide: REPOSITORIO_PERSONAS,
       useExisting: PersonasTypeormRepositorio,

@@ -228,6 +228,7 @@ import { ConfiguracionAplicacion } from '../../configuracion/configuracion-aplic
     CerrarTodasSesionesCasoUso,
     SeleccionarContextoCasoUso,
     ListarContextosUsuarioConsulta,
+    ServicioTokenAccesoJwt,
   ],
 })
 export class IdentidadAccesoModule {}
