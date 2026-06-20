@@ -1,4 +1,5 @@
 import { Controller, Get, Param } from '@nestjs/common';
+import { Permisos } from '../../../../../compartido/presentacion/http/decoradores/permisos.decorador';
 import { ListarRecursosIdentidadConsulta } from '../../../aplicacion/identidad/listar-recursos-identidad.consulta';
 import { RecursoIdentidadRespuesta } from '../respuestas/recurso-identidad.respuesta';
 
@@ -8,6 +9,7 @@ export class RecursosIdentidadControlador {
     private readonly listarRecursosIdentidad: ListarRecursosIdentidadConsulta,
   ) {}
 
+  @Permisos('SEDES.LEER')
   @Get()
   async listar(
     @Param('idSede') idSede: string,

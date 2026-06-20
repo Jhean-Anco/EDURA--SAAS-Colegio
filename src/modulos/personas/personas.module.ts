@@ -37,12 +37,6 @@ import {
   RepositorioDireccionesPersona,
   RepositorioVinculosPersonaMembresia,
 } from './dominio/puertos/repositorios';
-import { GuardiaPermisos } from '../../compartido/presentacion/http/guardias/guardia-permisos';
-import { AsignacionRolUsuarioTypeormEntidad } from '../identidad-acceso/infraestructura/persistencia/typeorm/entidades/seguridad.typeorm-entidades';
-import {
-  CONSULTADOR_PERMISOS_EFECTIVOS,
-  ConsultadorPermisosEfectivosTypeorm,
-} from '../../compartido/infraestructura/persistencia/consultador-permisos.typeorm';
 
 @Module({
   imports: [
@@ -53,7 +47,6 @@ import {
       DocumentoIdentidadPersonaTypeormEntidad,
       MedioContactoPersonaTypeormEntidad,
       DireccionPersonaTypeormEntidad,
-      AsignacionRolUsuarioTypeormEntidad,
     ]),
   ],
   controllers: [PersonasControlador],
@@ -63,12 +56,6 @@ import {
     MediosContactoTypeormRepositorio,
     DireccionesPersonaTypeormRepositorio,
     VinculosPersonaMembresiaTypeormRepositorio,
-    ConsultadorPermisosEfectivosTypeorm,
-    {
-      provide: CONSULTADOR_PERMISOS_EFECTIVOS,
-      useExisting: ConsultadorPermisosEfectivosTypeorm,
-    },
-    GuardiaPermisos,
     { provide: REPOSITORIO_PERSONAS, useExisting: PersonasTypeormRepositorio },
     {
       provide: REPOSITORIO_DOCUMENTOS_IDENTIDAD_PERSONA,

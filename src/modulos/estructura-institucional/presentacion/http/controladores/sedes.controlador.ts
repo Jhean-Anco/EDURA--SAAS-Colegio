@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { Permisos } from '../../../../../compartido/presentacion/http/decoradores/permisos.decorador';
 import { CambiarEstadoSedeCasoUso } from '../../../aplicacion/sedes/cambiar-estado-sede.caso-uso';
 import { CrearSedeCasoUso } from '../../../aplicacion/sedes/crear-sede.caso-uso';
 import { EstablecerSedePrincipalCasoUso } from '../../../aplicacion/sedes/establecer-sede-principal.caso-uso';
@@ -17,6 +18,7 @@ export class SedesControlador {
     private readonly cambiarEstado: CambiarEstadoSedeCasoUso,
   ) {}
 
+  @Permisos('SEDES.CREAR')
   @Post()
   async crear(
     @Param('idInstitucion') idInstitucion: string,
@@ -30,6 +32,7 @@ export class SedesControlador {
     });
   }
 
+  @Permisos('SEDES.LEER')
   @Get()
   async listar(
     @Param('idInstitucion') idInstitucion: string,
@@ -47,6 +50,7 @@ export class SedesControlador {
     };
   }
 
+  @Permisos('SEDES.LEER')
   @Get(':idSede')
   async obtener(
     @Param('idInstitucion') idInstitucion: string,
@@ -63,6 +67,7 @@ export class SedesControlador {
     };
   }
 
+  @Permisos('SEDES.ACTUALIZAR')
   @Post(':idSede/establecer-principal')
   async establecerPrincipalSede(
     @Param('idInstitucion') idInstitucion: string,
@@ -71,6 +76,7 @@ export class SedesControlador {
     await this.establecerPrincipal.ejecutar(idInstitucion, idSede);
   }
 
+  @Permisos('SEDES.ACTUALIZAR')
   @Patch(':idSede/estado')
   async cambiarEstadoSede(
     @Param('idInstitucion') idInstitucion: string,

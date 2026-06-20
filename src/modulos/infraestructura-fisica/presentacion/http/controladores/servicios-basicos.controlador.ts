@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { Permisos } from '../../../../../compartido/presentacion/http/decoradores/permisos.decorador';
 import { CambiarEstadoServicioBasicoCasoUso } from '../../../aplicacion/servicios-basicos/cambiar-estado-servicio-basico.caso-uso';
 import { ListarServiciosBasicosSedeConsulta } from '../../../aplicacion/servicios-basicos/listar-servicios-basicos-sede.consulta';
 import { RegistrarServicioBasicoSedeCasoUso } from '../../../aplicacion/servicios-basicos/registrar-servicio-basico-sede.caso-uso';
@@ -14,6 +15,7 @@ export class ServiciosBasicosControlador {
     private readonly cambiarEstadoServicioBasico: CambiarEstadoServicioBasicoCasoUso,
   ) {}
 
+  @Permisos('INFRAESTRUCTURA.LEER')
   @Get()
   async listar(
     @Param('idSede') idSede: string,
@@ -21,6 +23,7 @@ export class ServiciosBasicosControlador {
     return this.listarServiciosBasicos.ejecutar(idSede);
   }
 
+  @Permisos('INFRAESTRUCTURA.GESTIONAR')
   @Post()
   async crear(
     @Param('idSede') idSede: string,
@@ -35,6 +38,7 @@ export class ServiciosBasicosControlador {
     });
   }
 
+  @Permisos('INFRAESTRUCTURA.GESTIONAR')
   @Patch(':idServicio')
   async cambiarEstado(
     @Param('idServicio') idServicio: string,

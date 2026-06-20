@@ -1,4 +1,5 @@
 import { Body, Controller, Param, Put } from '@nestjs/common';
+import { Permisos } from '../../../../../compartido/presentacion/http/decoradores/permisos.decorador';
 import { RegistrarDireccionSedeCasoUso } from '../../../aplicacion/direcciones-sede/registrar-direccion-sede.caso-uso';
 import { RegistrarDireccionSedeSolicitud } from '../solicitudes/registrar-direccion-sede.solicitud';
 
@@ -6,6 +7,7 @@ import { RegistrarDireccionSedeSolicitud } from '../solicitudes/registrar-direcc
 export class DireccionesControlador {
   constructor(private readonly registrar: RegistrarDireccionSedeCasoUso) {}
 
+  @Permisos('SEDES.ACTUALIZAR')
   @Put()
   async registrarDireccion(
     @Param('idInstitucion') idInstitucion: string,

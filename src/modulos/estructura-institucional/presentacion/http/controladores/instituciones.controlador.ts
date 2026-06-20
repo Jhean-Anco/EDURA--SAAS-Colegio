@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { Permisos } from '../../../../../compartido/presentacion/http/decoradores/permisos.decorador';
 import { ActualizarInstitucionCasoUso } from '../../../aplicacion/instituciones/actualizar-institucion.caso-uso';
 import { CambiarEstadoInstitucionCasoUso } from '../../../aplicacion/instituciones/cambiar-estado-institucion.caso-uso';
 import { CrearInstitucionCasoUso } from '../../../aplicacion/instituciones/crear-institucion.caso-uso';
@@ -17,6 +18,7 @@ export class InstitucionesControlador {
     private readonly cambiarEstadoInstitucion: CambiarEstadoInstitucionCasoUso,
   ) {}
 
+  @Permisos('INSTITUCIONES.CREAR')
   @Post()
   async crear(
     @Body() solicitud: CrearInstitucionSolicitud,
@@ -38,6 +40,7 @@ export class InstitucionesControlador {
     };
   }
 
+  @Permisos('INSTITUCIONES.LEER')
   @Get()
   async listar(): Promise<{ datos: InstitucionRespuesta[] }> {
     const instituciones = await this.listarInstituciones.ejecutar();
@@ -53,6 +56,7 @@ export class InstitucionesControlador {
     };
   }
 
+  @Permisos('INSTITUCIONES.LEER')
   @Get(':idInstitucion')
   async obtener(
     @Param('idInstitucion') idInstitucion: string,
@@ -68,6 +72,7 @@ export class InstitucionesControlador {
     };
   }
 
+  @Permisos('INSTITUCIONES.ACTUALIZAR')
   @Patch(':idInstitucion')
   async actualizar(
     @Param('idInstitucion') idInstitucion: string,
@@ -81,6 +86,7 @@ export class InstitucionesControlador {
     });
   }
 
+  @Permisos('INSTITUCIONES.ACTUALIZAR')
   @Patch(':idInstitucion/estado')
   async cambiarEstado(
     @Param('idInstitucion') idInstitucion: string,

@@ -1,4 +1,5 @@
 import { Controller, Get, Param } from '@nestjs/common';
+import { Permisos } from '../../../../../compartido/presentacion/http/decoradores/permisos.decorador';
 import { ListarElementosInfraestructuraConsulta } from '../../../aplicacion/consultas/listar-elementos-infraestructura.consulta';
 import { ElementosInfraestructuraListadoRespuesta } from '../respuestas/elementos-infraestructura-listado.respuesta';
 
@@ -8,6 +9,7 @@ export class InfraestructuraControlador {
     private readonly listarElementos: ListarElementosInfraestructuraConsulta,
   ) {}
 
+  @Permisos('INFRAESTRUCTURA.LEER')
   @Get('elementos')
   async listar(
     @Param('idSede') idSede: string,

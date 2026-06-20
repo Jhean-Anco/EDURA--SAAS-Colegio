@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { Permisos } from '../../../../../compartido/presentacion/http/decoradores/permisos.decorador';
 import {
   AgregarSeccionPaginaCasoUso,
   ArchivarPaginaCasoUso,
@@ -30,12 +31,14 @@ export class PaginasControlador {
     private readonly cambiarEstadoSeccion: CambiarEstadoSeccionCasoUso,
   ) {}
 
+  @Permisos('SEDES.LEER')
   @Get()
   async listar(@Param('idSede') idSede: string): Promise<PaginaRespuesta[]> {
     const paginas = await this.consulta.ejecutar(idSede);
     return paginas.map((pagina) => this.mapearPagina(pagina));
   }
 
+  @Permisos('SEDES.ACTUALIZAR')
   @Post()
   async crear(
     @Param('idSede') idSede: string,
@@ -50,6 +53,7 @@ export class PaginasControlador {
     );
   }
 
+  @Permisos('SEDES.ACTUALIZAR')
   @Post(':idPagina/secciones')
   async agregar(
     @Param('idPagina') idPagina: string,
@@ -63,6 +67,7 @@ export class PaginasControlador {
     });
   }
 
+  @Permisos('SEDES.ACTUALIZAR')
   @Post(':idPagina/publicar')
   async publicar(
     @Param('idPagina') idPagina: string,
@@ -71,6 +76,7 @@ export class PaginasControlador {
     return pagina ? this.mapearPagina(pagina) : null;
   }
 
+  @Permisos('SEDES.ACTUALIZAR')
   @Post(':idPagina/archivar')
   async archivar(
     @Param('idPagina') idPagina: string,
@@ -79,6 +85,7 @@ export class PaginasControlador {
     return pagina ? this.mapearPagina(pagina) : null;
   }
 
+  @Permisos('SEDES.ACTUALIZAR')
   @Post(':idPagina/restaurar')
   async restaurar(
     @Param('idPagina') idPagina: string,
@@ -87,6 +94,7 @@ export class PaginasControlador {
     return pagina ? this.mapearPagina(pagina) : null;
   }
 
+  @Permisos('SEDES.ACTUALIZAR')
   @Patch(':idPagina/secciones/:idSeccion')
   async cambiarSeccion(
     @Param('idSeccion') idSeccion: string,
@@ -94,6 +102,7 @@ export class PaginasControlador {
     return this.cambiarEstadoSeccion.ejecutar(idSeccion);
   }
 
+  @Permisos('SEDES.LEER')
   @Get(':slugPagina')
   async obtenerPagina(
     @Param('idSede') idSede: string,
