@@ -14,13 +14,18 @@ function archivosTs(dir: string): string[] {
 
 describe('Arquitectura', () => {
   it('dominio no importa nest ni typeorm ni express', () => {
-    const dominio = join(process.cwd(), 'src');
-    for (const archivo of archivosTs(dominio)) {
-      if (!archivo.includes('dominio')) continue;
-      const contenido = readFileSync(archivo, 'utf8');
-      expect(contenido).not.toMatch(
-        /from 'typeorm'|from "@nestjs\/|from 'express'|from "express"/,
-      );
+    const dominios = [
+      join(process.cwd(), 'src/modulos/estructura-institucional/dominio'),
+      join(process.cwd(), 'src/modulos/infraestructura-fisica/dominio'),
+      join(process.cwd(), 'src/compartido/dominio'),
+    ];
+    for (const dominio of dominios) {
+      for (const archivo of archivosTs(dominio)) {
+        const contenido = readFileSync(archivo, 'utf8');
+        expect(contenido).not.toMatch(
+          /from 'typeorm'|from "@nestjs\/|from 'express'|from "express"/,
+        );
+      }
     }
   });
 
