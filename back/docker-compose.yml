@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${BD_NOMBRE:-edura}
+      POSTGRES_USER: ${BD_USUARIO:-edura}
+      POSTGRES_PASSWORD: ${BD_CLAVE:-edura_desarrollo}
+    ports:
+      - "${BD_PUERTO:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${BD_USUARIO:-edura} -d ${BD_NOMBRE:-edura}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+volumes:
+  postgres_data:
