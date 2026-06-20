@@ -31,10 +31,10 @@ jobs:
       BD_CLAVE: edura_ci
       BD_NOMBRE: edura_test
       BD_SSL: 'false'
-      JWT_SECRETO: ci-secret-no-produccion
+      JWT_SECRETO: ci-secret-no-produccion-32-chars-minimo
       JWT_EMISOR: EDURA_CI
       JWT_AUDIENCIA: EDURA_CI_WEB
-      HASH_TOKEN_SECRETO: ci-hash-secret-no-produccion
+      HASH_TOKEN_SECRETO: ci-hash-secret-no-produccion-32-chars-minimo
       INTEGRACION_DOCUMENTOS_HABILITADA: 'false'
       INTEGRACION_RUTAS_HABILITADA: 'false'
     steps:
@@ -86,10 +86,10 @@ jobs:
       BD_CLAVE: edura_ci
       BD_NOMBRE: edura_test
       BD_SSL: 'false'
-      JWT_SECRETO: ci-secret-no-produccion
+      JWT_SECRETO: ci-secret-no-produccion-32-chars-minimo
       JWT_EMISOR: EDURA_CI
       JWT_AUDIENCIA: EDURA_CI_WEB
-      HASH_TOKEN_SECRETO: ci-hash-secret-no-produccion
+      HASH_TOKEN_SECRETO: ci-hash-secret-no-produccion-32-chars-minimo
       INTEGRACION_DOCUMENTOS_HABILITADA: 'false'
       INTEGRACION_RUTAS_HABILITADA: 'false'
 
@@ -148,10 +148,10 @@ jobs:
       BD_CLAVE: edura_ci
       BD_NOMBRE: edura_test
       BD_SSL: 'false'
-      JWT_SECRETO: ci-secret-no-produccion
+      JWT_SECRETO: ci-secret-no-produccion-32-chars-minimo
       JWT_EMISOR: EDURA_CI
       JWT_AUDIENCIA: EDURA_CI_WEB
-      HASH_TOKEN_SECRETO: ci-hash-secret-no-produccion
+      HASH_TOKEN_SECRETO: ci-hash-secret-no-produccion-32-chars-minimo
       INTEGRACION_DOCUMENTOS_HABILITADA: 'false'
       INTEGRACION_RUTAS_HABILITADA: 'false'
 
