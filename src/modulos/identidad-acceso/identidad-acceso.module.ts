@@ -9,6 +9,7 @@ import {
   RepositorioAuditoria,
   RepositorioUsuarios,
 } from './dominio/puertos/repositorios';
+import { AutenticacionControlador } from './presentacion/http/controladores/autenticacion.controlador';
 
 class UsuarioMemoryRepositorio implements RepositorioUsuarios {
   buscarPorCorreoNormalizado() {
@@ -44,7 +45,7 @@ class AuditoriaMemoryRepositorio implements RepositorioAuditoria {
     },
     ListarContextosUsuarioConsulta,
   ],
-  controllers: [],
+  controllers: [AutenticacionControlador],
   exports: [IniciarSesionCasoUso, ListarContextosUsuarioConsulta],
 })
 export class IdentidadAccesoModule {}
