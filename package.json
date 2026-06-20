@@ -5,6 +5,10 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "engines": {
+    "node": ">=24",
+    "npm": ">=10"
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -14,11 +18,12 @@
     "start:prod": "node dist/main",
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint:fix": "eslint \"src/**/*.ts\" \"test/**/*.ts\" --fix",
-    "test": "jest",
+    "test": "jest --config ./test/jest-unit.json",
+    "test:unit": "jest --config ./test/jest-unit.json --runInBand",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:e2e": "jest --config ./test/jest-e2e.json --runInBand",
     "db:migration:create": "typeorm-ts-node-commonjs migration:create src/base-datos/typeorm/migraciones/$npm_config_name",
     "db:migration:generate": "typeorm-ts-node-commonjs migration:generate src/base-datos/typeorm/migraciones/$npm_config_name -d src/base-datos/typeorm/fuente-datos.ts",
     "db:migration:run": "typeorm-ts-node-commonjs migration:run -d src/base-datos/typeorm/fuente-datos.ts",
@@ -87,6 +92,9 @@
     ],
     "rootDir": ".",
     "testRegex": ".+\\.spec\\.ts$",
+    "testPathIgnorePatterns": [
+      ".e2e-spec.ts$"
+    ],
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
