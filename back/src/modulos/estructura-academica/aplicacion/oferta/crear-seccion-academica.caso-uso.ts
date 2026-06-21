@@ -6,11 +6,13 @@ import {
   EspacioInactivoError,
   EspacioNoEsAulaError,
   OfertaGradoSedeNoEncontradaError,
+  OfertaNoPermiteSeccionesError,
   SeccionNombreDuplicadoError,
   TutorFueraDeSedeError,
 } from '../../dominio/errores-estructura-academica';
 import {
   AlcanceAcceso,
+  EstadoOferta,
   RepositorioOfertaAcademica,
 } from '../../dominio/puertos/estructura-academica.puerto';
 
@@ -22,6 +24,49 @@ export interface EntradaCrearSeccionAcademica {
   capacidadMaxima: number;
   idDocenteTutor?: string | null;
   idEspacioFisico?: string | null;
+}
+
+const ESTADOS_OFERTA_SIN_SECCIONES = new Set<EstadoOferta>([
+  'CERRADA',
+  'CANCELADA',
+]);
+
+async function validarEspacio(
+  repositorio: RepositorioOfertaAcademica,
+  idEspacioFisico: string,
+  idSede: string,
+  capacidadMaxima: number,
+): Promise<void> {
+  const espacio = await repositorio.verificarEspacioFisicoEnSede(
+    idEspacioFisico,
+    idSede,
+  );
+  if (!espacio) throw new EspacioFisicoFueraDeSedeError();
+  if (!espacio.esAula) throw new EspacioNoEsAulaError();
+  if (!espacio.estaActivo) throw new EspacioInactivoError();
+  if (
+    capacidadMaxima &&
+    espacio.aforo !== null &&
+    capacidadMaxima > espacio.aforo
+  ) {
+    throw new CapacidadSuperaAforoError();
+  }
+}
+
+async function validarDocente(
+  repositorio: RepositorioOfertaAcademica,
+  idDocenteTutor: string,
+  idSede: string,
+  institucionId: string,
+): Promise<void> {
+  const tutor = await repositorio.verificarDocenteTutorEnSede(
+    idDocenteTutor,
+    idSede,
+    institucionId,
+  );
+  if (!tutor.estaActivo) throw new DocenteTutorInactivoError();
+  if (tutor.estaCesado) throw new DocenteTutorCesadoError();
+  if (!tutor.tieneAsignacion) throw new TutorFueraDeSedeError();
 }
 
 export class CrearSeccionAcademicaCasoUso {
@@ -45,6 +90,10 @@ export class CrearSeccionAcademicaCasoUso {
       throw new OfertaGradoSedeNoEncontradaError();
     }
 
+    if (ESTADOS_OFERTA_SIN_SECCIONES.has(oferta.estado)) {
+      throw new OfertaNoPermiteSeccionesError();
+    }
+
     const codigoNormalizado = entrada.codigo.trim().toUpperCase();
     const existe = await this.repositorio.existeSeccionEnOferta(
       codigoNormalizado,
@@ -54,31 +103,21 @@ export class CrearSeccionAcademicaCasoUso {
     if (existe) throw new SeccionNombreDuplicadoError();
 
     if (entrada.idEspacioFisico) {
-      const espacio = await this.repositorio.verificarEspacioFisicoEnSede(
+      await validarEspacio(
+        this.repositorio,
         entrada.idEspacioFisico,
         oferta.idSede,
+        entrada.capacidadMaxima,
       );
-      if (!espacio) throw new EspacioFisicoFueraDeSedeError();
-      if (!espacio.esAula) throw new EspacioNoEsAulaError();
-      if (!espacio.estaActivo) throw new EspacioInactivoError();
-      if (
-        entrada.capacidadMaxima &&
-        espacio.aforo !== null &&
-        entrada.capacidadMaxima > espacio.aforo
-      ) {
-        throw new CapacidadSuperaAforoError();
-      }
     }
 
     if (entrada.idDocenteTutor) {
-      const tutor = await this.repositorio.verificarDocenteTutorEnSede(
+      await validarDocente(
+        this.repositorio,
         entrada.idDocenteTutor,
         oferta.idSede,
         alcance.institucionId,
       );
-      if (!tutor.estaActivo) throw new DocenteTutorInactivoError();
-      if (tutor.estaCesado) throw new DocenteTutorCesadoError();
-      if (!tutor.tieneAsignacion) throw new TutorFueraDeSedeError();
     }
 
     return this.repositorio.crearSeccionAcademica({

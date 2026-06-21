@@ -147,7 +147,10 @@ export class OfertaControlador {
   ) {
     const alcance = alcanceDesdeContexto(ctx);
     alcance.correlationId = req.correlationId;
-    await this.actualizarSeccion.ejecutar({ id, ...body }, alcance);
+    await this.actualizarSeccion.ejecutar(
+      { id, idOfertaGradoSede: idOferta, ...body },
+      alcance,
+    );
   }
 
   @Permisos('ESTRUCTURA_ACADEMICA.SECCIONES.GESTIONAR')

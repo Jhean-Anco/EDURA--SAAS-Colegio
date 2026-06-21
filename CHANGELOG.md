@@ -15,6 +15,25 @@ Este archivo registra la evolucion visible del backend para que una IA o una per
 - Se alineo la documentacion del backend con el indice raiz.
 - Se mantuvo la separacion documental entre vision global y detalle del backend.
 
+## [0.2.2] - 2026-06-21
+
+### Added
+
+- 6 nuevos errores de dominio: `SedeAcademicaNoDisponibleError`, `GradoAcademicoNoDisponibleError`, `NivelAcademicoNoDisponibleError`, `AnioAcademicoNoDisponibleError`, `OfertaNoPermiteSeccionesError`, `OfertaNoActivaError`.
+- Validación de referencias al crear oferta: sede ACTIVA, grado ACTIVO, nivel ACTIVO, año no CERRADO/ANULADO.
+- Validación de contexto al activar oferta (PLANIFICADA→ACTIVA): año ACTIVO, grado ACTIVO, nivel ACTIVO, sede ACTIVA.
+- Validación de oferta no CERRADA/CANCELADA al crear sección.
+- Validación de oferta ACTIVA al activar sección (PLANIFICADA→ACTIVA).
+- Ruta anidada `PATCH /ofertas/:idOferta/secciones/:id` valida coherencia padre-hijo.
+- E2E reescrito con usuarios aislados: admin, directorA1, directorA2 — cada uno con roles exclusivos.
+- Nuevos escenarios E2E: aislamiento por sede, validaciones de contrato, oferta con año cerrado, sección sobre oferta cancelada.
+
+### Fixed
+
+- `capacidadMaxima?: number | null` → `capacidadMaxima?: number` en `ActualizarSeccionAcademicaSolicitud`, puerto y repositorio.
+- Factories del módulo correctamente tipadas.
+- Tests unitarios: 179/179 pasan (13 nuevos casos).
+
 ## [0.2.1] - 2026-06-21
 
 ### Fixed

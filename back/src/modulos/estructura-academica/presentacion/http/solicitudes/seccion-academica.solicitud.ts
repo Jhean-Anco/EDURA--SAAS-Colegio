@@ -70,7 +70,7 @@ export class ActualizarSeccionAcademicaSolicitud {
   @IsOptional()
   @IsInt()
   @IsPositive()
-  capacidadMaxima?: number | null;
+  capacidadMaxima?: number;
 }
 
 export class CambiarEstadoSeccionSolicitud {

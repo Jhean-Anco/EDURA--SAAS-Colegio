@@ -429,7 +429,7 @@ export interface RepositorioOfertaAcademica {
     codigoNormalizado?: string;
     nombre?: string;
     turno?: string;
-    capacidadMaxima?: number | null;
+    capacidadMaxima?: number;
     idDocenteTutor?: string | null;
     idEspacioFisico?: string | null;
     estado?: EstadoSeccion;
@@ -459,6 +459,31 @@ export interface RepositorioOfertaAcademica {
     estaCesado: boolean;
     tieneAsignacion: boolean;
   }>;
+
+  obtenerContextoReferenciasOferta(entrada: {
+    idSede: string;
+    idGrado: string;
+    idAnio: string;
+    institucionId: string;
+  }): Promise<{
+    sede: { id: string; estado: string } | null;
+    grado: { id: string; estado: string } | null;
+    nivel: { id: string; estado: string } | null;
+    anioAcademico: { id: string; estado: EstadoCalendario } | null;
+  }>;
+
+  obtenerOfertaConContexto(
+    id: string,
+    institucionId: string,
+  ): Promise<{
+    id: string;
+    estado: EstadoOferta;
+    idSede: string;
+    estadoSede: string;
+    estadoGrado: string;
+    estadoNivel: string;
+    estadoAnio: EstadoCalendario;
+  } | null>;
 }
 
 // ── Consultador Estructura Académica ─────────────────────────────────────────

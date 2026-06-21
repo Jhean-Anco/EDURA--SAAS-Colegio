@@ -1,4 +1,5 @@
 import {
+  OfertaNoActivaError,
   SeccionAcademicaNoEncontradaError,
   TransicionSeccionInvalidaError,
 } from '../../dominio/errores-estructura-academica';
@@ -40,6 +41,19 @@ export class CambiarEstadoSeccionAcademicaCasoUso {
     const permitidos = TRANSICIONES_SECCION[seccion.estado] ?? [];
     if (!permitidos.includes(nuevoEstado)) {
       throw new TransicionSeccionInvalidaError(seccion.estado, nuevoEstado);
+    }
+
+    if (nuevoEstado === 'ACTIVA') {
+      if (!seccion.capacidadMaxima || seccion.capacidadMaxima <= 0) {
+        throw new TransicionSeccionInvalidaError(seccion.estado, nuevoEstado);
+      }
+      const oferta = await this.repositorio.obtenerOfertaBase(
+        seccion.idOfertaGradoSede,
+        alcance.institucionId,
+      );
+      if (oferta?.estado !== 'ACTIVA') {
+        throw new OfertaNoActivaError();
+      }
     }
 
     await this.repositorio.cambiarEstadoSeccion(
