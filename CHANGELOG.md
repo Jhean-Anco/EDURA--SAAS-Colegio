@@ -15,6 +15,18 @@ Este archivo registra la evolucion visible del backend para que una IA o una per
 - Se alineo la documentacion del backend con el indice raiz.
 - Se mantuvo la separacion documental entre vision global y detalle del backend.
 
+## [0.2.1] - 2026-06-21
+
+### Fixed
+
+- Semilla demo fallaba en `db:seed:demo` porque `periodos_academicos` omitía `orden` (DEFAULT 0 violaba `ck_periodos_orden_pos`) y `secciones_academicas` omitía `capacidad_maxima` (NOT NULL de V17).
+- Migración V18 elimina los DEFAULT 0 en columnas `orden` que contradicen los CHECKs de V17, y actualiza el DEFAULT de `estado` en `secciones_academicas` a `PLANIFICADA`.
+- `capacidadMaxima` ahora obligatorio en `CrearSeccionAcademicaSolicitud` y en la entrada del caso de uso y repositorio.
+- La inserción de sección académica siempre establece `estado = 'PLANIFICADA'` explícitamente en el repositorio.
+- `ListarSeccionesCasoUso` ahora propaga `sedeId` al consultador cuando el alcance es `SEDE`, cerrando la brecha de aislamiento multisede.
+- Factories del módulo tipadas con las interfaces de puerto en lugar de `any`.
+- CI: `PREVIOUS_RELEASE_SHA` actualizado a `b449cf4245681cf945f7d317086bfe3dbe182cf5` (base de REL-006.1).
+
 ## [0.2.0] - 2026-06-21
 
 ### Added

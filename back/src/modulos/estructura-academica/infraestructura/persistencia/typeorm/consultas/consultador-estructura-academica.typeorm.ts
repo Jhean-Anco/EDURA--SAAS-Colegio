@@ -243,6 +243,7 @@ export class ConsultadorEstructuraAcademicaTypeorm implements ConsultadorEstruct
   async listarSecciones(
     idOferta: string,
     institucionId: string,
+    sedeId?: string | null,
   ): Promise<SeccionAcademicaResumen[]> {
     const rows = await this.ds.query<FilaSeccion[]>(
       `SELECT sa.id, sa.codigo, sa.nombre, sa.turno, sa.capacidad_maxima, sa.estado,
@@ -253,6 +254,9 @@ export class ConsultadorEstructuraAcademicaTypeorm implements ConsultadorEstruct
               END AS nombre_docente_tutor,
               sa.id_espacio_fisico, ei.nombre AS nombre_espacio_fisico
        FROM secciones_academicas sa
+       JOIN ofertas_grado_sede ogs
+         ON ogs.id = sa.id_oferta_grado_sede
+        AND ($3::uuid IS NULL OR ogs.id_sede = $3)
        LEFT JOIN docentes d
          ON d.id = sa.id_docente_tutor
         AND d.id_institucion_educativa = sa.id_institucion_educativa
@@ -261,7 +265,7 @@ export class ConsultadorEstructuraAcademicaTypeorm implements ConsultadorEstruct
        WHERE sa.id_oferta_grado_sede = $1
          AND sa.id_institucion_educativa = $2
        ORDER BY sa.nombre ASC`,
-      [idOferta, institucionId],
+      [idOferta, institucionId, sedeId ?? null],
     );
     return rows.map((r) => ({
       id: r.id,
