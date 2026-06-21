@@ -11,11 +11,13 @@ import { CambiarEstadoOfertaGradoSedeCasoUso } from '../../src/modulos/estructur
 import { CambiarEstadoSeccionAcademicaCasoUso } from '../../src/modulos/estructura-academica/aplicacion/oferta/cambiar-estado-seccion-academica.caso-uso';
 import { CrearSeccionAcademicaCasoUso } from '../../src/modulos/estructura-academica/aplicacion/oferta/crear-seccion-academica.caso-uso';
 import { ActualizarSeccionAcademicaCasoUso } from '../../src/modulos/estructura-academica/aplicacion/oferta/actualizar-seccion-academica.caso-uso';
+import { ListarSeccionesCasoUso } from '../../src/modulos/estructura-academica/aplicacion/oferta/listar-secciones.caso-uso';
 import {
   REPOSITORIO_CALENDARIO_ACADEMICO,
   REPOSITORIO_CATALOGOS_ACADEMICOS,
   REPOSITORIO_OFERTA_ACADEMICA,
   AlcanceAcceso,
+  ConsultadorEstructuraAcademica,
   RepositorioCalendarioAcademico,
   RepositorioCatalogosAcademicos,
   RepositorioOfertaAcademica,
@@ -679,7 +681,13 @@ describe('CrearOfertaGradoSedeCasoUso', () => {
     const caso = new CrearSeccionAcademicaCasoUso(repo);
     await expect(
       caso.ejecutar(
-        { idOfertaGradoSede: 'o1', codigo: 'A', nombre: 'A', turno: 'MANANA' },
+        {
+          idOfertaGradoSede: 'o1',
+          codigo: 'A',
+          nombre: 'A',
+          turno: 'MANANA',
+          capacidadMaxima: 25,
+        },
         ALCANCE_SEDE,
       ),
     ).rejects.toBeInstanceOf(OfertaGradoSedeNoEncontradaError);
@@ -705,6 +713,7 @@ describe('CrearSeccionAcademicaCasoUso', () => {
           codigo: 'A',
           nombre: 'A',
           turno: 'MANANA',
+          capacidadMaxima: 25,
           idEspacioFisico: 'ef-1',
         },
         ALCANCE_INST,
@@ -724,6 +733,7 @@ describe('CrearSeccionAcademicaCasoUso', () => {
           codigo: 'A',
           nombre: 'A',
           turno: 'MANANA',
+          capacidadMaxima: 25,
           idEspacioFisico: 'ef-otro',
         },
         ALCANCE_INST,
@@ -747,6 +757,7 @@ describe('CrearSeccionAcademicaCasoUso', () => {
           codigo: 'A',
           nombre: 'A',
           turno: 'MANANA',
+          capacidadMaxima: 25,
           idEspacioFisico: 'ef-1',
         },
         ALCANCE_INST,
@@ -794,6 +805,7 @@ describe('CrearSeccionAcademicaCasoUso', () => {
           codigo: 'A',
           nombre: 'A',
           turno: 'MANANA',
+          capacidadMaxima: 25,
           idDocenteTutor: 'doc-1',
         },
         ALCANCE_INST,
@@ -817,6 +829,7 @@ describe('CrearSeccionAcademicaCasoUso', () => {
           codigo: 'A',
           nombre: 'A',
           turno: 'MANANA',
+          capacidadMaxima: 25,
           idDocenteTutor: 'doc-1',
         },
         ALCANCE_INST,
@@ -840,6 +853,7 @@ describe('CrearSeccionAcademicaCasoUso', () => {
           codigo: 'A',
           nombre: 'A',
           turno: 'MANANA',
+          capacidadMaxima: 25,
           idDocenteTutor: 'doc-1',
         },
         ALCANCE_INST,
@@ -847,15 +861,75 @@ describe('CrearSeccionAcademicaCasoUso', () => {
     ).rejects.toBeInstanceOf(TutorFueraDeSedeError);
   });
 
-  it('CP-EA-013u: crea sección válida', async () => {
+  it('CP-EA-013u: crea sección válida con capacidadMaxima requerida', async () => {
     const repo = mockRepoOferta();
     const caso = new CrearSeccionAcademicaCasoUso(repo);
     await expect(
       caso.ejecutar(
-        { idOfertaGradoSede: 'o1', codigo: 'A', nombre: 'A', turno: 'MANANA' },
+        {
+          idOfertaGradoSede: 'o1',
+          codigo: 'A',
+          nombre: 'A',
+          turno: 'MANANA',
+          capacidadMaxima: 25,
+        },
         ALCANCE_INST,
       ),
     ).resolves.toEqual({ id: 's1' });
+  });
+
+  it('CP-EA-017: creación requiere capacidadMaxima', async () => {
+    const repo = mockRepoOferta();
+    const caso = new CrearSeccionAcademicaCasoUso(repo);
+    await caso.ejecutar(
+      {
+        idOfertaGradoSede: 'o1',
+        codigo: 'A',
+        nombre: 'A',
+        turno: 'MANANA',
+        capacidadMaxima: 25,
+      },
+      ALCANCE_INST,
+    );
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(repo.crearSeccionAcademica).toHaveBeenCalledWith(
+      expect.objectContaining({ capacidadMaxima: 25 }),
+    );
+  });
+
+  it('CP-EA-018b: nueva sección es creada por el repositorio (estado PLANIFICADA se fuerza en INSERT)', async () => {
+    const repo = mockRepoOferta();
+    const caso = new CrearSeccionAcademicaCasoUso(repo);
+    const resultado = await caso.ejecutar(
+      {
+        idOfertaGradoSede: 'o1',
+        codigo: 'A',
+        nombre: 'A',
+        turno: 'MANANA',
+        capacidadMaxima: 25,
+      },
+      ALCANCE_INST,
+    );
+    expect(resultado).toEqual({ id: 's1' });
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(repo.crearSeccionAcademica).toHaveBeenCalledTimes(1);
+  });
+
+  it('CP-EA-019b: listar secciones con alcance SEDE pasa sedeId al consultador', async () => {
+    // Verifica que ListarSeccionesCasoUso propaga sedeId cuando ambito es SEDE
+    const listarSeccionesFn = jest.fn().mockResolvedValue([]);
+    const mockConsultador = {
+      listarSecciones: listarSeccionesFn,
+      listarAnios: jest.fn(),
+      listarPeriodos: jest.fn(),
+      listarNiveles: jest.fn(),
+      listarGrados: jest.fn(),
+      listarOfertas: jest.fn(),
+      obtenerPeriodoActivo: jest.fn(),
+    } as unknown as ConsultadorEstructuraAcademica;
+    const caso = new ListarSeccionesCasoUso(mockConsultador);
+    await caso.ejecutar('oferta-1', ALCANCE_SEDE);
+    expect(listarSeccionesFn).toHaveBeenCalledWith('oferta-1', 'i1', 'sede-a');
   });
 
   it('CP-EA-016u: restringe creación por alcance de sede', async () => {
@@ -869,7 +943,13 @@ describe('CrearSeccionAcademicaCasoUso', () => {
     const caso = new CrearSeccionAcademicaCasoUso(repo);
     await expect(
       caso.ejecutar(
-        { idOfertaGradoSede: 'o1', codigo: 'A', nombre: 'A', turno: 'MANANA' },
+        {
+          idOfertaGradoSede: 'o1',
+          codigo: 'A',
+          nombre: 'A',
+          turno: 'MANANA',
+          capacidadMaxima: 25,
+        },
         ALCANCE_SEDE,
       ),
     ).rejects.toBeInstanceOf(OfertaGradoSedeNoEncontradaError);

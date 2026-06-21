@@ -406,7 +406,7 @@ export interface RepositorioOfertaAcademica {
     codigoNormalizado: string;
     nombre: string;
     turno: string;
-    capacidadMaxima?: number | null;
+    capacidadMaxima: number;
     idDocenteTutor?: string | null;
     idEspacioFisico?: string | null;
   }): Promise<{ id: string }>;
@@ -496,6 +496,7 @@ export interface ConsultadorEstructuraAcademica {
   listarSecciones(
     idOferta: string,
     institucionId: string,
+    sedeId?: string | null,
   ): Promise<SeccionAcademicaResumen[]>;
 
   obtenerPeriodoActivo(

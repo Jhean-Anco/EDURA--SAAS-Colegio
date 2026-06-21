@@ -31,9 +31,9 @@ defaults:
 
 env:
   NODE_VERSION: '24'
-  # SHA del último commit en main antes de este fix release (REL-006.1).
+  # SHA del último commit en main antes de este fix release (REL-006.2).
   # Actualizar en cada release al SHA del commit que entra en main.
-  PREVIOUS_RELEASE_SHA: '259880406d84faaaf652612f9d034b8d8ac775ab'
+  PREVIOUS_RELEASE_SHA: 'b449cf4245681cf945f7d317086bfe3dbe182cf5'
 
 jobs:
   calidad-estatica:

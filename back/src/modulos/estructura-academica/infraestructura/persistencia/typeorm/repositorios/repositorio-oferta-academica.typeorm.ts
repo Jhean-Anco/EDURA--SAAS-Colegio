@@ -190,15 +190,15 @@ export class RepositorioOfertaAcademicaTypeorm implements RepositorioOfertaAcade
     codigoNormalizado: string;
     nombre: string;
     turno: string;
-    capacidadMaxima?: number | null;
+    capacidadMaxima: number;
     idDocenteTutor?: string | null;
     idEspacioFisico?: string | null;
   }): Promise<{ id: string }> {
     const rows = await this.ds.query<FilaId[]>(
       `INSERT INTO secciones_academicas
          (id_institucion_educativa, id_oferta_grado_sede, codigo, codigo_normalizado, nombre, turno,
-          capacidad_maxima, id_docente_tutor, id_espacio_fisico)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          capacidad_maxima, estado, id_docente_tutor, id_espacio_fisico)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'PLANIFICADA', $8, $9)
        RETURNING id`,
       [
         entrada.institucionId,
@@ -207,7 +207,7 @@ export class RepositorioOfertaAcademicaTypeorm implements RepositorioOfertaAcade
         entrada.codigoNormalizado,
         entrada.nombre,
         entrada.turno,
-        entrada.capacidadMaxima ?? null,
+        entrada.capacidadMaxima,
         entrada.idDocenteTutor ?? null,
         entrada.idEspacioFisico ?? null,
       ],

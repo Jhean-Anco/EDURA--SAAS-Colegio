@@ -69,9 +69,9 @@ async function sembrarEstructuraAcademica(
   await manager.query(
     `INSERT INTO periodos_academicos
        (id, id_institucion_educativa, id_anio_academico, codigo, codigo_normalizado, nombre, tipo,
-        fecha_inicio, fecha_fin, estado, fecha_creacion, fecha_modificacion)
+        orden, fecha_inicio, fecha_fin, estado, fecha_creacion, fecha_modificacion)
      VALUES (gen_random_uuid(), $1, $2, 'B1', 'B1', 'Primer Bimestre', 'BIMESTRE',
-             $3, $4, 'ACTIVO', now(), now())
+             1, $3, $4, 'ACTIVO', now(), now())
      ON CONFLICT (id_anio_academico, codigo_normalizado) DO NOTHING`,
     [institucionId, anio.id, `${anioActual}-03-01`, `${anioActual}-04-30`],
   );
@@ -86,8 +86,8 @@ async function sembrarEstructuraAcademica(
   await manager.query(
     `INSERT INTO ofertas_grado_sede
        (id, id_institucion_educativa, id_sede, id_grado_educativo, id_anio_academico,
-        estado, fecha_creacion, fecha_modificacion)
-     VALUES (gen_random_uuid(), $1, $2, $3, $4, 'ACTIVA', now(), now())
+        capacidad_referencial, estado, fecha_creacion, fecha_modificacion)
+     VALUES (gen_random_uuid(), $1, $2, $3, $4, 30, 'ACTIVA', now(), now())
      ON CONFLICT (id_institucion_educativa, id_sede, id_grado_educativo, id_anio_academico)
      DO NOTHING`,
     [institucionId, sedeId, grado.id, anio.id],
@@ -104,8 +104,8 @@ async function sembrarEstructuraAcademica(
   await manager.query(
     `INSERT INTO secciones_academicas
        (id, id_institucion_educativa, id_oferta_grado_sede, codigo, codigo_normalizado, nombre, turno,
-        estado, fecha_creacion, fecha_modificacion)
-     VALUES (gen_random_uuid(), $1, $2, 'A', 'A', 'A', 'MANANA', 'ACTIVA', now(), now())
+        capacidad_maxima, estado, fecha_creacion, fecha_modificacion)
+     VALUES (gen_random_uuid(), $1, $2, 'A', 'A', 'A', 'MANANA', 25, 'PLANIFICADA', now(), now())
      ON CONFLICT (id_institucion_educativa, id_oferta_grado_sede, codigo_normalizado) DO NOTHING`,
     [institucionId, oferta.id],
   );

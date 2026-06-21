@@ -33,10 +33,9 @@ export class CrearSeccionAcademicaSolicitud {
   @IsIn(TURNOS_SECCION)
   turno!: TurnoSeccion;
 
-  @IsOptional()
   @IsInt()
   @IsPositive()
-  capacidadMaxima?: number | null;
+  capacidadMaxima!: number;
 
   @IsOptional()
   @IsUUID()

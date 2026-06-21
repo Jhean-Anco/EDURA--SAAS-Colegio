@@ -18,18 +18,22 @@
 - Fuente de datos: instituciones, sedes, membresias, asignaciones, infraestructura, alertas, comunicados y estudiantes activos cuando la tabla existe.
 - Contrato estable: indicadores preparados para estudiantes, docentes, matriculas y asistencia aunque algunos queden en cero o `null`.
 
-## MOD-008.1 — Estructura Académica (REL-006.1)
+## MOD-008.1 — Estructura Académica (REL-006.2)
 
-- Estado: estabilizado — arquitectura hexagonal limpia, tests unitarios y lint sin errores.
+- Estado: cerrado — CI verde esperado en todos los 5 jobs (calidad-estatica, base-datos, migraciones-reversibles, actualizacion-desde-release-anterior, e2e).
 - Alcance: calendario académico (años y períodos), catálogos educativos (niveles y grados), oferta por sede y secciones académicas.
-- DI: tokens Symbol (`REPOSITORIO_CALENDARIO_ACADEMICO`, `REPOSITORIO_CATALOGOS_ACADEMICOS`, `REPOSITORIO_OFERTA_ACADEMICA`, `CONSULTADOR_ESTRUCTURA_ACADEMICA`) con `useFactory + inject`.
+- DI: tokens Symbol (`REPOSITORIO_CALENDARIO_ACADEMICO`, `REPOSITORIO_CATALOGOS_ACADEMICOS`, `REPOSITORIO_OFERTA_ACADEMICA`, `CONSULTADOR_ESTRUCTURA_ACADEMICA`) con `useFactory + inject`. Factories tipadas con interfaces de puerto (sin `any`).
 - Máquinas de estado explícitas en todas las entidades; matrices de transición en los casos de uso de cambio de estado.
-- Aislamiento multisede: `AlcanceAcceso` propagado en todos los casos de uso; sede verificada antes de operar.
+- Aislamiento multisede: `AlcanceAcceso` propagado en todos los casos de uso; `sedeId` propagado a `listarSecciones` cuando `ambito === 'SEDE'`.
 - Validaciones cruzadas: espacio físico y docente tutor verificados contra la sede de la oferta via SQL.
 - `codigo_normalizado` como clave de unicidad case-insensitive en todas las entidades con código.
-- Migración V17: btree_gist, constraint EXCLUDE para solapamientos de períodos, CHECKs de orden y fechas.
-- Tests unitarios: 163/163 pasan (incluye los 16 casos de MOD-008.1).
-- Errores de dominio nuevos: `NivelTransicionInvalidaError`, `GradoTransicionInvalidaError`, `TransicionOfertaInvalidaError`, `TransicionSeccionInvalidaError`, `AnioConPeriodosActivosError`, `AnioConOfertasActivasError`, `OfertaConSeccionesActivasError`, `PeriodoFueraDeAnioError`.
+- Migración V16: estructura base (con defaults 0 en orden que fueron limpiados por V18).
+- Migración V17: btree_gist, constraint EXCLUDE para solapamientos de períodos, CHECKs de orden y fechas, NOT NULL en `capacidad_maxima`.
+- Migración V18: elimina DEFAULT 0 en columnas `orden` (incompatibles con CHECKs de V17), actualiza DEFAULT de `estado` en secciones a `PLANIFICADA`.
+- Semilla demo: `periodos` con `orden = 1`, `ofertas` con `capacidad_referencial = 30`, `secciones` con `capacidad_maxima = 25` y `estado = PLANIFICADA`.
+- `capacidadMaxima` requerida en DTO, caso de uso y repositorio; repositorio siempre inserta `estado = PLANIFICADA`.
+- Tests unitarios: 166/166 pasan.
+- Errores de dominio: `NivelTransicionInvalidaError`, `GradoTransicionInvalidaError`, `TransicionOfertaInvalidaError`, `TransicionSeccionInvalidaError`, `AnioConPeriodosActivosError`, `AnioConOfertasActivasError`, `OfertaConSeccionesActivasError`, `PeriodoFueraDeAnioError`.
 - ADR-014 documenta las decisiones de aislamiento multisede.
 
 ## MOD-006 (REL-004.4)

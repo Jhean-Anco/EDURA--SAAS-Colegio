@@ -19,7 +19,7 @@ export interface EntradaCrearSeccionAcademica {
   codigo: string;
   nombre: string;
   turno: string;
-  capacidadMaxima?: number | null;
+  capacidadMaxima: number;
   idDocenteTutor?: string | null;
   idEspacioFisico?: string | null;
 }

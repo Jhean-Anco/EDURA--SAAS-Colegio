@@ -14,6 +14,7 @@ export class ListarSeccionesCasoUso {
     return this.consultador.listarSecciones(
       idOfertaGradoSede,
       alcance.institucionId,
+      alcance.ambito === 'SEDE' ? alcance.sedeId : null,
     );
   }
 }
