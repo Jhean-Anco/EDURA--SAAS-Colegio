@@ -472,8 +472,28 @@ describeE2E('Flujo estructura académica E2E (requiere BD)', () => {
     let ofertaA1Id: string;
     let ofertaA2Id: string;
     let seccionA1Id: string;
+    let tokenDirA1: string;
+    let tokenDirA2: string;
 
     beforeAll(async () => {
+      // Tokens de directores con usuarios aislados por sede
+      [tokenDirA1, tokenDirA2] = await Promise.all([
+        obtenerToken(
+          app,
+          setup.directorA1Correo,
+          setup.directorA1Clave,
+          setup.institucionId,
+          setup.sedeA1Id,
+        ),
+        obtenerToken(
+          app,
+          setup.directorA2Correo,
+          setup.directorA2Clave,
+          setup.institucionId,
+          setup.sedeA2Id,
+        ),
+      ]);
+
       // Año, nivel, grado compartidos para este suite
       const [anioRes, nivelRes] = await Promise.all([
         request(app.getHttpServer())
@@ -583,28 +603,6 @@ describeE2E('Flujo estructura académica E2E (requiere BD)', () => {
     // ── Aislamiento por sede ────────────────────────────────────────────────
 
     describe('Aislamiento por sede', () => {
-      let tokenDirA1: string;
-      let tokenDirA2: string;
-
-      beforeAll(async () => {
-        [tokenDirA1, tokenDirA2] = await Promise.all([
-          obtenerToken(
-            app,
-            setup.directorA1Correo,
-            setup.directorA1Clave,
-            setup.institucionId,
-            setup.sedeA1Id,
-          ),
-          obtenerToken(
-            app,
-            setup.directorA2Correo,
-            setup.directorA2Clave,
-            setup.institucionId,
-            setup.sedeA2Id,
-          ),
-        ]);
-      });
-
       it('Director A1 lista secciones de su sede (200)', async () => {
         const res = await request(app.getHttpServer())
           .get(`/api/v1/estructura-academica/ofertas/${ofertaA1Id}/secciones`)
@@ -768,7 +766,9 @@ describeE2E('Flujo estructura académica E2E (requiere BD)', () => {
             idSede: setup.sedeA1Id,
             idGradoEducativo: gradoFreshId,
             idAnioAcademico: anioFreshId,
-          });
+            capacidadReferencial: 20,
+          })
+          .expect(201);
         const ofertaCancelId = (ofertaCancelRes.body as IdResponse).id;
 
         await request(app.getHttpServer())
@@ -776,7 +776,8 @@ describeE2E('Flujo estructura académica E2E (requiere BD)', () => {
             `/api/v1/estructura-academica/ofertas/${ofertaCancelId}/estado`,
           )
           .set('Authorization', `Bearer ${tokenAdmin}`)
-          .send({ estado: 'CANCELADA' });
+          .send({ estado: 'CANCELADA' })
+          .expect(200);
 
         await request(app.getHttpServer())
           .post(
