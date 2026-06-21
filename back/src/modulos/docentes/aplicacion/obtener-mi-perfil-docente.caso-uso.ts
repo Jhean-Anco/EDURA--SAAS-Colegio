@@ -8,11 +8,11 @@ export class ObtenerMiPerfilDocenteCasoUso {
   constructor(private readonly consultador: ConsultadorDocentes) {}
 
   async ejecutar(
-    idPersona: string,
+    idUsuario: string,
     institucionId: string,
   ): Promise<FichaDocente> {
-    const ficha = await this.consultador.obtenerPorPersona(
-      idPersona,
+    const ficha = await this.consultador.obtenerPorUsuario(
+      idUsuario,
       institucionId,
     );
     if (!ficha) throw new PerfilDocenteNoVinculadoError();

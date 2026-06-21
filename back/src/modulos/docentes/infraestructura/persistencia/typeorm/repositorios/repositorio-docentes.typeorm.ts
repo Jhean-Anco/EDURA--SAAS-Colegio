@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, IsNull, Not, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import {
   AlcanceAcceso,
   DatosCreacionDocente,
@@ -73,10 +73,10 @@ export class RepositorioDocentesTypeorm implements RepositorioDocentes {
   ): Promise<boolean> {
     const qb = this.docentes
       .createQueryBuilder('d')
-      .where(
-        'd.personaId = :idPersona AND d.institucionId = :institucionId',
-        { idPersona, institucionId },
-      );
+      .where('d.personaId = :idPersona AND d.institucionId = :institucionId', {
+        idPersona,
+        institucionId,
+      });
     if (excluirId) qb.andWhere('d.id != :excluirId', { excluirId });
     return (await qb.getCount()) > 0;
   }
@@ -180,10 +180,7 @@ export class RepositorioDocentesTypeorm implements RepositorioDocentes {
     const updates: Partial<DocenteTypeormEntidad> = { estado };
     if (fechaCese !== undefined) updates.fechaCese = fechaCese;
 
-    const result = await this.docentes.update(
-      { id, institucionId },
-      updates,
-    );
+    const result = await this.docentes.update({ id, institucionId }, updates);
     return (result.affected ?? 0) > 0;
   }
 

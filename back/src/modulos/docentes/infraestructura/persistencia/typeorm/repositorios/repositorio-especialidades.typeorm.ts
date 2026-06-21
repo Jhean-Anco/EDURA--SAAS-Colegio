@@ -6,9 +6,7 @@ import { EspecialidadProfesionalTypeormEntidad } from '../entidades/especialidad
 import { DocenteEspecialidadTypeormEntidad } from '../entidades/docente-especialidad.typeorm-entidad';
 
 @Injectable()
-export class RepositorioEspecialidadesTypeorm
-  implements RepositorioEspecialidadesProfesionales
-{
+export class RepositorioEspecialidadesTypeorm implements RepositorioEspecialidadesProfesionales {
   constructor(
     @InjectRepository(EspecialidadProfesionalTypeormEntidad)
     private readonly especialidades: Repository<EspecialidadProfesionalTypeormEntidad>,

@@ -95,6 +95,11 @@ export interface ConsultadorDocentes {
     institucionId: string,
   ): Promise<FichaDocente | null>;
 
+  obtenerPorUsuario(
+    idUsuario: string,
+    institucionId: string,
+  ): Promise<FichaDocente | null>;
+
   listarEspecialidades(
     institucionId: string,
     estado?: string | null,

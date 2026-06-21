@@ -8,10 +8,7 @@ import {
 } from 'typeorm';
 
 @Entity({ name: 'docentes_especialidades_profesionales' })
-@Index(
-  'ix_docentes_esp_institucion_docente',
-  ['institucionId', 'docenteId'],
-)
+@Index('ix_docentes_esp_institucion_docente', ['institucionId', 'docenteId'])
 export class DocenteEspecialidadTypeormEntidad {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
   id!: string;

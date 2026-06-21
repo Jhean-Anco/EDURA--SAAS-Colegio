@@ -181,6 +181,12 @@ export const permisosSistema = [
   },
   {
     recurso: 'DOCENTES',
+    accion: 'MI_PERFIL.LEER',
+    codigo: 'DOCENTES.MI_PERFIL.LEER',
+    descripcion: 'Ver propio perfil de docente',
+  },
+  {
+    recurso: 'DOCENTES',
     accion: 'CREAR',
     codigo: 'DOCENTES.CREAR',
     descripcion: 'Registrar docentes',
@@ -320,7 +326,7 @@ export const permisosDirectorSede = [
 ] as const;
 
 export const permisosDocente = [
-  'DOCENTES.LEER',
+  'DOCENTES.MI_PERFIL.LEER',
   'ESPECIALIDADES_PROFESIONALES.LEER',
   'PANEL_INSTITUCIONAL.RESUMEN.LEER',
 ] as const;
