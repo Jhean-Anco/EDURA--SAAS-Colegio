@@ -32,18 +32,19 @@ export class EstablecerSedePrincipalDocenteCasoUso {
       throw new AsignacionDocenteSedNoEncontradaError();
     }
 
-    // Quitar principal de otras asignaciones y marcar esta como principal
-    await this.repositorio.quitarPrincipalAsignacionesSede(
-      entrada.idDocente,
-      alcance.institucionId,
-      entrada.idAsignacion,
-    );
+    if (
+      alcance.ambito === 'SEDE' &&
+      alcance.sedeId &&
+      asignacion.idSede !== alcance.sedeId
+    ) {
+      throw new AsignacionDocenteSedNoEncontradaError();
+    }
 
-    await this.repositorio.actualizarAsignacionSede({
-      idAsignacion: entrada.idAsignacion,
-      idDocente: entrada.idDocente,
-      institucionId: alcance.institucionId,
-      esPrincipal: true,
-    });
+    // Quitar principal de otras asignaciones y marcar esta como principal transaccionalmente
+    await this.repositorio.establecerAsignacionSedePrincipal(
+      entrada.idDocente,
+      entrada.idAsignacion,
+      alcance.institucionId,
+    );
   }
 }

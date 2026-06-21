@@ -35,7 +35,7 @@ export class CodigoDocenteDuplicadoError extends ErrorDominio {
 
 export class SedeFueraDeInstitucionDocenteError extends ErrorDominio {
   constructor() {
-    super('REGLA_NEGOCIO_INVALIDA', 'La sede no pertenece a esta institución');
+    super('ENTIDAD_NO_PROCESABLE', 'La sede no pertenece a esta institución');
   }
 }
 
@@ -120,5 +120,23 @@ export class PerfilDocenteNoVinculadoError extends ErrorDominio {
 export class AsignacionDocenteSedNoEncontradaError extends ErrorDominio {
   constructor() {
     super('RECURSO_NO_ENCONTRADO', 'Asignación de sede no encontrada');
+  }
+}
+
+export class FechaCeseRequeridaError extends ErrorDominio {
+  constructor() {
+    super(
+      'DATOS_INVALIDOS',
+      'La fecha de cese es obligatoria para cesar un docente',
+    );
+  }
+}
+
+export class ReactivacionSinSedeActivaError extends ErrorDominio {
+  constructor() {
+    super(
+      'REGLA_NEGOCIO_INVALIDA',
+      'No se puede reactivar un docente sin sedes activas asignadas',
+    );
   }
 }

@@ -28,6 +28,10 @@ export class AsignarDocenteSedeCasoUso {
     );
     if (!docente) throw new DocenteNoEncontradoError();
 
+    if (alcance.ambito === 'SEDE' && entrada.idSede !== alcance.sedeId) {
+      throw new SedeFueraDeInstitucionDocenteError();
+    }
+
     const sedeOk = await this.repositorio.verificarSedeEnInstitucion(
       entrada.idSede,
       alcance.institucionId,

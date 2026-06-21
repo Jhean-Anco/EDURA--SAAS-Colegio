@@ -115,6 +115,23 @@ async function asignarPermisos(
   codigoRol: string,
   codigosPermisos: readonly string[],
 ): Promise<void> {
+  if (codigosPermisos.length > 0) {
+    await manager.query(
+      `DELETE FROM roles_permisos
+       WHERE id_rol = (SELECT id FROM roles WHERE codigo = $1)
+         AND id_permiso NOT IN (
+           SELECT id FROM permisos WHERE codigo = ANY($2)
+         )`,
+      [codigoRol, codigosPermisos as string[]],
+    );
+  } else {
+    await manager.query(
+      `DELETE FROM roles_permisos
+       WHERE id_rol = (SELECT id FROM roles WHERE codigo = $1)`,
+      [codigoRol],
+    );
+  }
+
   for (const codigoPermiso of codigosPermisos) {
     await manager.query(
       `INSERT INTO roles_permisos (id_rol, id_permiso)

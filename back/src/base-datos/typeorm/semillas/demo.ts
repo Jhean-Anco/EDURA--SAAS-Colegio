@@ -1,10 +1,115 @@
 import * as argon2 from 'argon2';
-import { randomUUID } from 'crypto';
 import fuenteDatos from '../fuente-datos';
 import {
   entornoPermiteSemillasDemo,
   normalizarCorreo,
 } from './utilidades-semilla';
+
+const CODIGO_INST = 'DEMO';
+const CODIGO_SEDE = 'DEMO-001';
+const CORREO_ADMIN = normalizarCorreo('admin.demo@institucion.local');
+const CORREO_PERSONA = normalizarCorreo('persona.demo@institucion.local');
+
+type Manager = { query: <T>(sql: string, params?: unknown[]) => Promise<T> };
+
+async function sembrarEstructuraAcademica(
+  manager: Manager,
+  institucionId: string,
+  sedeId: string,
+): Promise<void> {
+  await manager.query(
+    `INSERT INTO niveles_educativos
+       (id, id_institucion_educativa, codigo, codigo_normalizado, nombre, orden, estado,
+        fecha_creacion, fecha_modificacion)
+     VALUES (gen_random_uuid(), $1, 'PRIMARIA', 'PRIMARIA', 'Educación Primaria', 1, 'ACTIVO', now(), now())
+     ON CONFLICT (id_institucion_educativa, codigo_normalizado) DO NOTHING`,
+    [institucionId],
+  );
+
+  const [nivel] = await manager.query<{ id: string }[]>(
+    `SELECT id FROM niveles_educativos
+     WHERE id_institucion_educativa = $1 AND codigo_normalizado = 'PRIMARIA' LIMIT 1`,
+    [institucionId],
+  );
+  if (!nivel) return;
+
+  await manager.query(
+    `INSERT INTO grados_educativos
+       (id, id_institucion_educativa, id_nivel_educativo, codigo, codigo_normalizado,
+        nombre, orden, estado, fecha_creacion, fecha_modificacion)
+     VALUES (gen_random_uuid(), $1, $2, '1ERO', '1ERO', 'Primer Grado', 1, 'ACTIVO', now(), now())
+     ON CONFLICT (id_nivel_educativo, codigo_normalizado) DO NOTHING`,
+    [institucionId, nivel.id],
+  );
+
+  const anioActual = new Date().getFullYear();
+  await manager.query(
+    `INSERT INTO anios_academicos
+       (id, id_institucion_educativa, anio, codigo, codigo_normalizado, nombre, fecha_inicio, fecha_fin,
+        estado, fecha_creacion, fecha_modificacion)
+     VALUES (gen_random_uuid(), $1, $2, $3, $3, $4, $5, $6, 'ACTIVO', now(), now())
+     ON CONFLICT (id_institucion_educativa, anio) DO NOTHING`,
+    [
+      institucionId,
+      anioActual,
+      anioActual.toString(),
+      `Año Académico ${anioActual}`,
+      `${anioActual}-03-01`,
+      `${anioActual}-12-20`,
+    ],
+  );
+
+  const [anio] = await manager.query<{ id: string }[]>(
+    `SELECT id FROM anios_academicos
+     WHERE id_institucion_educativa = $1 AND anio = $2 LIMIT 1`,
+    [institucionId, anioActual],
+  );
+  if (!anio) return;
+
+  await manager.query(
+    `INSERT INTO periodos_academicos
+       (id, id_institucion_educativa, id_anio_academico, codigo, codigo_normalizado, nombre, tipo,
+        fecha_inicio, fecha_fin, estado, fecha_creacion, fecha_modificacion)
+     VALUES (gen_random_uuid(), $1, $2, 'B1', 'B1', 'Primer Bimestre', 'BIMESTRE',
+             $3, $4, 'ACTIVO', now(), now())
+     ON CONFLICT (id_anio_academico, codigo_normalizado) DO NOTHING`,
+    [institucionId, anio.id, `${anioActual}-03-01`, `${anioActual}-04-30`],
+  );
+
+  const [grado] = await manager.query<{ id: string }[]>(
+    `SELECT id FROM grados_educativos
+     WHERE id_institucion_educativa = $1 AND codigo_normalizado = '1ERO' LIMIT 1`,
+    [institucionId],
+  );
+  if (!grado) return;
+
+  await manager.query(
+    `INSERT INTO ofertas_grado_sede
+       (id, id_institucion_educativa, id_sede, id_grado_educativo, id_anio_academico,
+        estado, fecha_creacion, fecha_modificacion)
+     VALUES (gen_random_uuid(), $1, $2, $3, $4, 'ACTIVA', now(), now())
+     ON CONFLICT (id_institucion_educativa, id_sede, id_grado_educativo, id_anio_academico)
+     DO NOTHING`,
+    [institucionId, sedeId, grado.id, anio.id],
+  );
+
+  const [oferta] = await manager.query<{ id: string }[]>(
+    `SELECT id FROM ofertas_grado_sede
+     WHERE id_institucion_educativa = $1 AND id_sede = $2
+       AND id_grado_educativo = $3 AND id_anio_academico = $4 LIMIT 1`,
+    [institucionId, sedeId, grado.id, anio.id],
+  );
+  if (!oferta) return;
+
+  await manager.query(
+    `INSERT INTO secciones_academicas
+       (id, id_institucion_educativa, id_oferta_grado_sede, codigo, codigo_normalizado, nombre, turno,
+        estado, fecha_creacion, fecha_modificacion)
+     VALUES (gen_random_uuid(), $1, $2, 'A', 'A', 'A', 'MANANA', 'ACTIVA', now(), now())
+     ON CONFLICT (id_institucion_educativa, id_oferta_grado_sede, codigo_normalizado) DO NOTHING`,
+    [institucionId, oferta.id],
+  );
+}
 
 async function ejecutarDemo(): Promise<void> {
   const entorno = process.env['NODE_ENV'] ?? 'development';
@@ -20,54 +125,63 @@ async function ejecutarDemo(): Promise<void> {
   }
 
   await fuenteDatos.transaction(async (manager) => {
-    const codigoDemo = 'DEMO';
-    const [instExistente] = await manager.query<{ id: string }[]>(
-      `SELECT id FROM instituciones_educativas WHERE codigo = $1 LIMIT 1`,
-      [codigoDemo],
-    );
-
-    if (instExistente) {
-      console.log('Datos demo ya existen. Sin cambios (idempotente).');
-      return;
-    }
-
-    const institucionId = randomUUID();
+    // ── Institución ───────────────────────────────────────────────────────────
     await manager.query(
       `INSERT INTO instituciones_educativas
-         (id, codigo, nombre, nombre_corto, ruc, estado, fecha_creacion, fecha_actualizacion)
-       VALUES ($1, $2, 'Institucion Demo', 'DEMO', '00000000000', 'ACTIVA', now(), now())`,
-      [institucionId, codigoDemo],
+         (id, codigo, nombre_legal, nombre_corto, estado, fecha_creacion, fecha_modificacion)
+       VALUES (gen_random_uuid(), $1, 'Institución Demo', 'DEMO', 'ACTIVA', now(), now())
+       ON CONFLICT (codigo) DO NOTHING`,
+      [CODIGO_INST],
     );
 
-    const sedeId = randomUUID();
+    const [inst] = await manager.query<{ id: string }[]>(
+      `SELECT id FROM instituciones_educativas WHERE codigo = $1 LIMIT 1`,
+      [CODIGO_INST],
+    );
+    const institucionId: string = inst.id;
+
+    // ── Sede ──────────────────────────────────────────────────────────────────
     await manager.query(
       `INSERT INTO sedes
-         (id, id_institucion_educativa, nombre, codigo, estado, fecha_creacion, fecha_actualizacion)
-       VALUES ($1, $2, 'Sede Principal Demo', 'DEMO-001', 'ACTIVA', now(), now())`,
-      [sedeId, institucionId],
+         (id, id_institucion_educativa, codigo, nombre, es_principal, estado, fecha_creacion, fecha_modificacion)
+       VALUES (gen_random_uuid(), $1, $2, 'Sede Principal Demo', true, 'ACTIVA', now(), now())
+       ON CONFLICT (id_institucion_educativa, codigo) DO NOTHING`,
+      [institucionId, CODIGO_SEDE],
     );
 
-    const usuarioAdminId = randomUUID();
-    const correoAdmin = normalizarCorreo('admin.demo@institucion.local');
-    const correoPersona = normalizarCorreo('persona.demo@institucion.local');
+    const [sede] = await manager.query<{ id: string }[]>(
+      `SELECT id FROM sedes WHERE id_institucion_educativa = $1 AND codigo = $2 LIMIT 1`,
+      [institucionId, CODIGO_SEDE],
+    );
+    const sedeId: string = sede.id;
+
+    // ── Usuario administrador ─────────────────────────────────────────────────
     const hashClave = await argon2.hash('Demo@2024!', {
       type: argon2.argon2id,
     });
+
     await manager.query(
       `INSERT INTO usuarios
-         (id, correo, correo_normalizado, nombre_mostrado, estado, correo_verificado, version_seguridad, fecha_creacion, fecha_modificacion)
-       VALUES ($1, $2, $3, 'Admin Demo', 'ACTIVO', false, 1, now(), now())
+         (id, correo, correo_normalizado, nombre_mostrado, estado, correo_verificado,
+          version_seguridad, fecha_creacion, fecha_modificacion)
+       VALUES (gen_random_uuid(), $1, $1, 'Admin Demo', 'ACTIVO', false, 1, now(), now())
        ON CONFLICT (correo_normalizado) DO UPDATE
-         SET correo = EXCLUDED.correo,
-             nombre_mostrado = EXCLUDED.nombre_mostrado,
+         SET nombre_mostrado = 'Admin Demo',
              estado = 'ACTIVO',
-             version_seguridad = GREATEST(usuarios.version_seguridad, EXCLUDED.version_seguridad),
              fecha_modificacion = now()`,
-      [usuarioAdminId, correoAdmin, correoAdmin],
+      [CORREO_ADMIN],
     );
+
+    const [usuario] = await manager.query<{ id: string }[]>(
+      `SELECT id FROM usuarios WHERE correo_normalizado = $1 LIMIT 1`,
+      [CORREO_ADMIN],
+    );
+    const usuarioAdminId: string = usuario.id;
+
     await manager.query(
       `INSERT INTO credenciales_usuario
-         (id_usuario, hash_clave, algoritmo, requiere_cambio, intentos_fallidos, fecha_cambio_clave, fecha_modificacion)
+         (id_usuario, hash_clave, algoritmo, requiere_cambio, intentos_fallidos,
+          fecha_cambio_clave, fecha_modificacion)
        VALUES ($1, $2, 'ARGON2ID', true, 0, now(), now())
        ON CONFLICT (id_usuario) DO UPDATE
          SET hash_clave = EXCLUDED.hash_clave,
@@ -79,16 +193,16 @@ async function ejecutarDemo(): Promise<void> {
       [usuarioAdminId, hashClave],
     );
 
-    const membresiaId = randomUUID();
+    // ── Membresía y rol ───────────────────────────────────────────────────────
     await manager.query(
       `INSERT INTO membresias_institucion
-         (id, id_usuario, id_institucion_educativa, estado, fecha_inicio, fecha_creacion, fecha_actualizacion)
-       VALUES ($1, $2, $3, 'ACTIVA', CURRENT_DATE, now(), now())
+         (id, id_usuario, id_institucion_educativa, estado, fecha_inicio,
+          fecha_creacion, fecha_modificacion)
+       VALUES (gen_random_uuid(), $1, $2, 'ACTIVA', CURRENT_DATE, now(), now())
        ON CONFLICT (id_usuario, id_institucion_educativa) DO UPDATE
          SET estado = 'ACTIVA',
-             fecha_inicio = COALESCE(membresias_institucion.fecha_inicio, CURRENT_DATE),
-             fecha_actualizacion = now()`,
-      [membresiaId, usuarioAdminId, institucionId],
+             fecha_modificacion = now()`,
+      [usuarioAdminId, institucionId],
     );
 
     const [rolAdmin] = await manager.query<{ id: string }[]>(
@@ -97,134 +211,237 @@ async function ejecutarDemo(): Promise<void> {
     if (rolAdmin) {
       await manager.query(
         `INSERT INTO asignaciones_rol_usuario
-           (id, id_usuario, id_rol, id_membresia_institucion, id_sede, estado, fecha_inicio, fecha_creacion)
-         SELECT $1, $2, $3, m.id, NULL, 'ACTIVA', CURRENT_DATE, now()
+           (id, id_usuario, id_rol, id_membresia_institucion, id_sede, estado,
+            fecha_inicio, fecha_creacion)
+         SELECT gen_random_uuid(), $1, $2, m.id, NULL, 'ACTIVA', CURRENT_DATE, now()
            FROM membresias_institucion m
-          WHERE m.id_usuario = $2 AND m.id_institucion_educativa = $4
-          ON CONFLICT DO NOTHING`,
-        [randomUUID(), usuarioAdminId, rolAdmin.id, institucionId],
+          WHERE m.id_usuario = $1 AND m.id_institucion_educativa = $3
+         ON CONFLICT DO NOTHING`,
+        [usuarioAdminId, rolAdmin.id, institucionId],
       );
     }
 
-    const [tipoDoc] = await manager.query<{ id: string }[]>(
-      `SELECT id FROM tipos_documento_identidad WHERE codigo = 'DNI' LIMIT 1`,
-    );
-
-    const personaId = randomUUID();
+    // ── Persona administrativa ────────────────────────────────────────────────
     await manager.query(
       `INSERT INTO personas
          (id, id_institucion_educativa, nombres, apellido_paterno, apellido_materno,
-          fecha_nacimiento, sexo, estado, fecha_creacion, fecha_actualizacion)
-       VALUES ($1, $2, 'Persona', 'Demo', 'Ejemplo', '1990-01-01', 'NO_ESPECIFICADO', 'ACTIVA', now(), now())`,
-      [personaId, institucionId],
-    );
-
-    if (tipoDoc) {
-      await manager.query(
-        `INSERT INTO documentos_identidad_persona
-           (id, id_persona, id_institucion_educativa, id_tipo_documento_identidad,
-            numero, numero_normalizado, es_principal, estado, fecha_creacion, fecha_actualizacion)
-         VALUES ($1, $2, $3, $4, '00000001', '00000001', true, 'ACTIVO', now(), now())
-         ON CONFLICT DO NOTHING`,
-        [randomUUID(), personaId, institucionId, tipoDoc.id],
-      );
-    }
-
-    await manager.query(
-      `INSERT INTO medios_contacto_persona
-         (id, id_persona, id_institucion_educativa, tipo, valor, valor_normalizado,
-          es_principal, estado, fecha_creacion, fecha_actualizacion)
-       VALUES ($1, $2, $3, 'CORREO', $4, $5, true, 'ACTIVO', now(), now())
+          fecha_nacimiento, sexo_registral, estado, fecha_creacion, fecha_modificacion)
+       VALUES (gen_random_uuid(), $1, 'Persona', 'Demo', 'Ejemplo',
+               '1990-01-01', 'NO_ESPECIFICADO', 'ACTIVA', now(), now())
        ON CONFLICT DO NOTHING`,
-      [randomUUID(), personaId, institucionId, correoPersona, correoPersona],
-    );
-
-    await manager.query(
-      `INSERT INTO direcciones_persona
-         (id, id_persona, id_institucion_educativa, direccion_linea, referencia,
-          es_principal, estado, fecha_creacion, fecha_actualizacion)
-       VALUES ($1, $2, $3, 'Av. Demo 000, Ciudad Demo', 'Referencia de ejemplo',
-               true, 'ACTIVA', now(), now())
-       ON CONFLICT DO NOTHING`,
-      [randomUUID(), personaId, institucionId],
-    );
-
-    const personaEstudiante1 = randomUUID();
-    const personaEstudiante2 = randomUUID();
-    const personaApoderado1 = randomUUID();
-    await manager.query(
-      `INSERT INTO personas
-         (id, id_institucion_educativa, nombres, apellido_paterno, apellido_materno, fecha_nacimiento, sexo, estado, fecha_creacion, fecha_actualizacion)
-       VALUES
-         ($1, $2, 'Ana', 'Perez', 'Lopez', '2010-02-01', 'FEMENINO', 'ACTIVA', now(), now()),
-         ($3, $2, 'Bruno', 'Diaz', 'Ruiz', '2011-03-01', 'MASCULINO', 'ACTIVA', now(), now()),
-         ($4, $2, 'Carlos', 'Gomez', 'Soto', '1985-04-01', 'MASCULINO', 'ACTIVA', now(), now())
-       ON CONFLICT DO NOTHING`,
-      [
-        personaEstudiante1,
-        institucionId,
-        personaEstudiante2,
-        personaApoderado1,
-      ],
-    );
-    await manager.query(
-      `INSERT INTO estudiantes
-         (id, id_institucion_educativa, id_sede, id_persona, codigo, estado, fecha_ingreso, observacion, fecha_creacion, fecha_modificacion)
-       VALUES
-         ($1, $2, $3, $4, 'EST-001', 'ACTIVO', CURRENT_DATE, NULL, now(), now()),
-         ($5, $2, $3, $6, 'EST-002', 'ACTIVO', CURRENT_DATE, NULL, now(), now())`,
-      [
-        randomUUID(),
-        institucionId,
-        sedeId,
-        personaEstudiante1,
-        randomUUID(),
-        personaEstudiante2,
-      ],
-    );
-    const [estudiantesDemo] = await manager.query<{ id: string }[]>(
-      `SELECT id FROM estudiantes WHERE id_institucion_educativa = $1 ORDER BY fecha_creacion ASC LIMIT 1`,
       [institucionId],
     );
-    if (estudiantesDemo) {
+
+    const [persona] = await manager.query<{ id: string }[]>(
+      `SELECT p.id FROM personas p
+       WHERE p.id_institucion_educativa = $1
+         AND p.nombres = 'Persona' AND p.apellido_paterno = 'Demo'
+       LIMIT 1`,
+      [institucionId],
+    );
+
+    if (persona) {
+      const personaId: string = persona.id;
+
+      const [tipoDoc] = await manager.query<{ id: string }[]>(
+        `SELECT id FROM tipos_documento_identidad WHERE codigo = 'DNI' LIMIT 1`,
+      );
+      if (tipoDoc) {
+        await manager.query(
+          `INSERT INTO documentos_identidad_persona
+             (id, id_persona, id_institucion_educativa, id_tipo_documento,
+              numero, numero_normalizado, es_principal, estado, fecha_creacion, fecha_modificacion)
+           VALUES (gen_random_uuid(), $1, $2, $3, '00000001', '00000001', true, 'ACTIVO', now(), now())
+           ON CONFLICT DO NOTHING`,
+          [personaId, institucionId, tipoDoc.id],
+        );
+      }
+
+      await manager.query(
+        `INSERT INTO medios_contacto_persona
+           (id, id_persona, id_institucion_educativa, tipo, valor, valor_normalizado,
+            es_principal, estado, fecha_creacion, fecha_modificacion)
+         VALUES (gen_random_uuid(), $1, $2, 'CORREO', $3, $3, true, 'ACTIVO', now(), now())
+         ON CONFLICT DO NOTHING`,
+        [personaId, institucionId, CORREO_PERSONA],
+      );
+
+      await manager.query(
+        `INSERT INTO direcciones_persona
+           (id, id_persona, id_institucion_educativa, direccion_linea, referencia,
+            es_principal, estado, fecha_creacion, fecha_modificacion)
+         VALUES (gen_random_uuid(), $1, $2,
+                 'Av. Demo 000, Ciudad Demo', 'Referencia de ejemplo',
+                 true, 'ACTIVA', now(), now())
+         ON CONFLICT DO NOTHING`,
+        [personaId, institucionId],
+      );
+
+      // Vincular la persona de admin al usuario administrador
+      await manager.query(
+        `UPDATE membresias_institucion
+           SET id_persona = $1, fecha_modificacion = now()
+         WHERE id_usuario = $2
+           AND id_institucion_educativa = $3
+           AND id_persona IS NULL`,
+        [personaId, usuarioAdminId, institucionId],
+      );
+
+      // ── Docente demo ──────────────────────────────────────────────────────────
+      await manager.query(
+        `INSERT INTO docentes
+           (id, id_institucion_educativa, id_persona, codigo, codigo_normalizado,
+            estado, fecha_ingreso, fecha_creacion, fecha_modificacion)
+         VALUES (gen_random_uuid(), $1, $2, 'DOC-001', 'DOC-001',
+                 'ACTIVO', CURRENT_DATE, now(), now())
+         ON CONFLICT (id_institucion_educativa, codigo_normalizado) DO NOTHING`,
+        [institucionId, personaId],
+      );
+
+      const [docente] = await manager.query<{ id: string }[]>(
+        `SELECT id FROM docentes WHERE id_institucion_educativa = $1 AND codigo_normalizado = 'DOC-001' LIMIT 1`,
+        [institucionId],
+      );
+      if (docente) {
+        await manager.query(
+          `INSERT INTO asignaciones_docente_sede
+             (id, id_institucion_educativa, id_docente, id_sede, es_principal,
+              estado, fecha_inicio, fecha_creacion, fecha_modificacion)
+           VALUES (gen_random_uuid(), $1, $2, $3, true, 'ACTIVA', CURRENT_DATE, now(), now())
+           ON CONFLICT DO NOTHING`,
+          [institucionId, docente.id, sedeId],
+        );
+      }
+    }
+
+    // ── Estudiantes demo ──────────────────────────────────────────────────────
+    const personasEst: Array<{
+      nombres: string;
+      ap: string;
+      am: string;
+      fn: string;
+      sexo: string;
+    }> = [
+      {
+        nombres: 'Ana',
+        ap: 'Perez',
+        am: 'Lopez',
+        fn: '2010-02-01',
+        sexo: 'FEMENINO',
+      },
+      {
+        nombres: 'Bruno',
+        ap: 'Diaz',
+        am: 'Ruiz',
+        fn: '2011-03-01',
+        sexo: 'MASCULINO',
+      },
+    ];
+
+    for (const [i, pe] of personasEst.entries()) {
+      await manager.query(
+        `INSERT INTO personas
+           (id, id_institucion_educativa, nombres, apellido_paterno, apellido_materno,
+            fecha_nacimiento, sexo_registral, estado, fecha_creacion, fecha_modificacion)
+         VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, 'ACTIVA', now(), now())
+         ON CONFLICT DO NOTHING`,
+        [institucionId, pe.nombres, pe.ap, pe.am, pe.fn, pe.sexo],
+      );
+
+      const [pEst] = await manager.query<{ id: string }[]>(
+        `SELECT id FROM personas WHERE id_institucion_educativa = $1
+           AND nombres = $2 AND apellido_paterno = $3 LIMIT 1`,
+        [institucionId, pe.nombres, pe.ap],
+      );
+      if (pEst) {
+        const codigo = `EST-00${i + 1}`;
+        await manager.query(
+          `INSERT INTO estudiantes
+             (id, id_institucion_educativa, id_sede, id_persona, codigo,
+              estado, fecha_ingreso, fecha_creacion, fecha_modificacion)
+           VALUES (gen_random_uuid(), $1, $2, $3, $4, 'ACTIVO', CURRENT_DATE, now(), now())
+           ON CONFLICT (id_institucion_educativa, codigo) DO NOTHING`,
+          [institucionId, sedeId, pEst.id, codigo],
+        );
+      }
+    }
+
+    // Apoderado para el primer estudiante
+    await manager.query(
+      `INSERT INTO personas
+         (id, id_institucion_educativa, nombres, apellido_paterno, apellido_materno,
+          fecha_nacimiento, sexo_registral, estado, fecha_creacion, fecha_modificacion)
+       VALUES (gen_random_uuid(), $1, 'Carlos', 'Gomez', 'Soto',
+               '1985-04-01', 'MASCULINO', 'ACTIVA', now(), now())
+       ON CONFLICT DO NOTHING`,
+      [institucionId],
+    );
+
+    const [apoderado] = await manager.query<{ id: string }[]>(
+      `SELECT id FROM personas WHERE id_institucion_educativa = $1
+         AND nombres = 'Carlos' AND apellido_paterno = 'Gomez' LIMIT 1`,
+      [institucionId],
+    );
+    const [estudiantePrincipal] = await manager.query<{ id: string }[]>(
+      `SELECT id FROM estudiantes WHERE id_institucion_educativa = $1
+         AND codigo = 'EST-001' LIMIT 1`,
+      [institucionId],
+    );
+    if (apoderado && estudiantePrincipal) {
       await manager.query(
         `INSERT INTO apoderados_estudiante
-           (id, id_institucion_educativa, id_estudiante, id_persona, parentesco, es_principal, puede_recoger, recibe_comunicaciones, estado, fecha_creacion, fecha_modificacion)
-         VALUES ($1, $2, $3, $4, 'MADRE', true, true, true, 'ACTIVO', now(), now())
+           (id, id_institucion_educativa, id_estudiante, id_persona, parentesco,
+            es_principal, puede_recoger, recibe_comunicaciones, estado,
+            fecha_creacion, fecha_modificacion)
+         VALUES (gen_random_uuid(), $1, $2, $3, 'PADRE', true, true, true, 'ACTIVO', now(), now())
          ON CONFLICT DO NOTHING`,
-        [randomUUID(), institucionId, estudiantesDemo.id, personaApoderado1],
-      );
-      await manager.query(
-        `INSERT INTO documentos_estudiante
-           (id, id_institucion_educativa, id_estudiante, tipo_documento, nombre, estado, fecha_creacion, fecha_modificacion)
-         VALUES ($1, $2, $3, 'Ficha de matrícula', 'Ficha de matrícula 2025', 'PENDIENTE', now(), now())
-         ON CONFLICT DO NOTHING`,
-        [randomUUID(), institucionId, estudiantesDemo.id],
+        [institucionId, estudiantePrincipal.id, apoderado.id],
       );
     }
 
+    // ── Estructura académica demo ─────────────────────────────────────────────
+    await sembrarEstructuraAcademica(manager, institucionId, sedeId);
+
+    // ── Alertas y comunicados demo ────────────────────────────────────────────
     await manager.query(
       `INSERT INTO alertas_institucionales
-         (id, id_institucion_educativa, id_sede, tipo, titulo, descripcion, prioridad, estado, modulo_origen, id_recurso_origen, fecha_generacion, fecha_creacion, fecha_modificacion)
+         (id, id_institucion_educativa, id_sede, tipo, titulo, descripcion, prioridad,
+          estado, modulo_origen, id_recurso_origen, fecha_generacion,
+          fecha_creacion, fecha_modificacion)
        VALUES
-         ($1, $2, $3, 'INFRAESTRUCTURA', 'Revisión de extintores pendiente', 'Se detectó revisión vencida en almacén principal', 'ALTA', 'PENDIENTE', 'infraestructura-fisica', NULL, now(), now(), now()),
-         ($4, $2, $3, 'SEGURIDAD', 'Sesión administrativa expirada', 'Se recomienda renovar la sesión del usuario administrador', 'MEDIA', 'EN_REVISION', 'identidad-acceso', NULL, now(), now(), now()),
-         ($5, $2, $3, 'SISTEMA', 'Sincronización de catálogo en cola', 'La sincronización de catálogos está programada para la noche', 'BAJA', 'PENDIENTE', 'base-datos', NULL, now(), now(), now())
+         (gen_random_uuid(), $1, $2, 'INFRAESTRUCTURA', 'Revisión de extintores pendiente',
+          'Se detectó revisión vencida en almacén principal', 'ALTA', 'PENDIENTE',
+          'infraestructura-fisica', NULL, now(), now(), now()),
+         (gen_random_uuid(), $1, $2, 'SEGURIDAD', 'Sesión administrativa expirada',
+          'Se recomienda renovar la sesión del usuario administrador', 'MEDIA', 'EN_REVISION',
+          'identidad-acceso', NULL, now(), now(), now()),
+         (gen_random_uuid(), $1, $2, 'SISTEMA', 'Sincronización de catálogo en cola',
+          'La sincronización de catálogos está programada para la noche', 'BAJA', 'PENDIENTE',
+          'base-datos', NULL, now(), now(), now())
        ON CONFLICT DO NOTHING`,
-      [randomUUID(), institucionId, sedeId, randomUUID(), randomUUID()],
+      [institucionId, sedeId],
     );
 
     await manager.query(
       `INSERT INTO comunicados_institucionales
-         (id, id_institucion_educativa, id_sede, titulo, contenido, tipo, prioridad, estado, fecha_publicacion, id_usuario_creador, fecha_creacion, fecha_modificacion)
+         (id, id_institucion_educativa, id_sede, titulo, contenido, tipo, prioridad,
+          estado, fecha_publicacion, id_usuario_creador, fecha_creacion, fecha_modificacion)
        VALUES
-         ($1, $2, $3, 'Inicio de proceso de matrícula', 'Se publicará el cronograma oficial durante la semana.', 'GENERAL', 'ALTA', 'PUBLICADO', now() - interval '2 days', $4, now(), now()),
-         ($5, $2, NULL, 'Mantenimiento programado', 'La plataforma tendrá mantenimiento el sábado a las 22:00.', 'SISTEMA', 'MEDIA', 'PUBLICADO', now() - interval '1 day', $4, now(), now())
+         (gen_random_uuid(), $1, $2,
+          'Inicio de proceso de matrícula',
+          'Se publicará el cronograma oficial durante la semana.',
+          'GENERAL', 'ALTA', 'PUBLICADO', now() - interval '2 days', $3, now(), now()),
+         (gen_random_uuid(), $1, NULL,
+          'Mantenimiento programado',
+          'La plataforma tendrá mantenimiento el sábado a las 22:00.',
+          'SISTEMA', 'MEDIA', 'PUBLICADO', now() - interval '1 day', $3, now(), now())
        ON CONFLICT DO NOTHING`,
-      [randomUUID(), institucionId, sedeId, usuarioAdminId, randomUUID()],
+      [institucionId, sedeId, usuarioAdminId],
     );
 
-    console.log(`Datos demo creados. Institucion id=${institucionId}`);
+    console.log(
+      `Semilla demo aplicada (idempotente). Institución codigo=${CODIGO_INST} id=${institucionId}`,
+    );
   });
 }
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, IsNull, Not, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import {
   AlcanceAcceso,
   DatosCreacionDocente,
@@ -73,10 +73,10 @@ export class RepositorioDocentesTypeorm implements RepositorioDocentes {
   ): Promise<boolean> {
     const qb = this.docentes
       .createQueryBuilder('d')
-      .where(
-        'd.personaId = :idPersona AND d.institucionId = :institucionId',
-        { idPersona, institucionId },
-      );
+      .where('d.personaId = :idPersona AND d.institucionId = :institucionId', {
+        idPersona,
+        institucionId,
+      });
     if (excluirId) qb.andWhere('d.id != :excluirId', { excluirId });
     return (await qb.getCount()) > 0;
   }
@@ -177,14 +177,25 @@ export class RepositorioDocentesTypeorm implements RepositorioDocentes {
     estado: string,
     fechaCese?: string | null,
   ): Promise<boolean> {
-    const updates: Partial<DocenteTypeormEntidad> = { estado };
-    if (fechaCese !== undefined) updates.fechaCese = fechaCese;
+    return this.dataSource.transaction(async (manager) => {
+      const updates: Partial<DocenteTypeormEntidad> = { estado };
+      if (fechaCese !== undefined) updates.fechaCese = fechaCese;
 
-    const result = await this.docentes.update(
-      { id, institucionId },
-      updates,
-    );
-    return (result.affected ?? 0) > 0;
+      if (estado === 'CESADO') {
+        await manager.update(
+          AsignacionDocenteSedeTypeormEntidad,
+          { docenteId: id, institucionId, estado: 'ACTIVA' },
+          { estado: 'INACTIVA', esPrincipal: false },
+        );
+      }
+
+      const result = await manager.update(
+        DocenteTypeormEntidad,
+        { id, institucionId },
+        updates,
+      );
+      return (result.affected ?? 0) > 0;
+    });
   }
 
   async inactivarAsignacionesDocente(
@@ -231,13 +242,19 @@ export class RepositorioDocentesTypeorm implements RepositorioDocentes {
     idAsignacion: string,
     idDocente: string,
     institucionId: string,
-  ): Promise<{ id: string; esPrincipal: boolean; estado: string } | null> {
+  ): Promise<{
+    id: string;
+    idSede: string;
+    esPrincipal: boolean;
+    estado: string;
+  } | null> {
     const entidad = await this.asignaciones.findOne({
       where: { id: idAsignacion, docenteId: idDocente, institucionId },
     });
     if (!entidad) return null;
     return {
       id: entidad.id,
+      idSede: entidad.sedeId,
       esPrincipal: entidad.esPrincipal,
       estado: entidad.estado,
     };
@@ -269,6 +286,30 @@ export class RepositorioDocentesTypeorm implements RepositorioDocentes {
       updates,
     );
     return (result.affected ?? 0) > 0;
+  }
+
+  async establecerAsignacionSedePrincipal(
+    idDocente: string,
+    idAsignacion: string,
+    institucionId: string,
+  ): Promise<void> {
+    await this.dataSource.transaction(async (manager) => {
+      await manager
+        .createQueryBuilder()
+        .update(AsignacionDocenteSedeTypeormEntidad)
+        .set({ esPrincipal: false })
+        .where(
+          'docenteId = :idDocente AND institucionId = :institucionId AND esPrincipal = true AND id != :idAsignacion',
+          { idDocente, institucionId, idAsignacion },
+        )
+        .execute();
+
+      await manager.update(
+        AsignacionDocenteSedeTypeormEntidad,
+        { id: idAsignacion, docenteId: idDocente, institucionId },
+        { esPrincipal: true },
+      );
+    });
   }
 
   async existeAsignacionActivaEnSede(

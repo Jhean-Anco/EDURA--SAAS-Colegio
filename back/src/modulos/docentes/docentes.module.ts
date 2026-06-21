@@ -30,6 +30,7 @@ import { ListarEspecialidadesCasoUso } from './aplicacion/listar-especialidades.
 import { ObtenerMiPerfilDocenteCasoUso } from './aplicacion/obtener-mi-perfil-docente.caso-uso';
 import { DocentesControlador } from './presentacion/http/controladores/docentes.controlador';
 import { EspecialidadesControlador } from './presentacion/http/controladores/especialidades.controlador';
+import { AuditoriaDocentesInterceptor } from './presentacion/http/interceptores/auditoria-docentes.interceptor';
 
 @Module({
   imports: [
@@ -143,6 +144,7 @@ import { EspecialidadesControlador } from './presentacion/http/controladores/esp
         new ObtenerMiPerfilDocenteCasoUso(consultador),
       inject: [ConsultadorDocentesTypeorm],
     },
+    AuditoriaDocentesInterceptor,
   ],
   controllers: [DocentesControlador, EspecialidadesControlador],
   exports: [REPOSITORIO_DOCENTES, CONSULTADOR_DOCENTES],

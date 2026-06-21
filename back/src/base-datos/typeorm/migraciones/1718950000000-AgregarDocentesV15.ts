@@ -165,6 +165,8 @@ export class AgregarDocentesV151718950000000 implements MigrationInterface {
     );
     await queryRunner.query(`DROP TABLE IF EXISTS asignaciones_docente_sede`);
     await queryRunner.query(`DROP TABLE IF EXISTS docentes`);
-    await queryRunner.query(`DROP TABLE IF EXISTS especialidades_profesionales`);
+    await queryRunner.query(
+      `DROP TABLE IF EXISTS especialidades_profesionales`,
+    );
   }
 }

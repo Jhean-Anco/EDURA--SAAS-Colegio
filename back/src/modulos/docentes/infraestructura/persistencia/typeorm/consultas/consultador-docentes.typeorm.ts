@@ -8,6 +8,68 @@ import {
   FichaDocente,
 } from '../../../../dominio/puertos/docentes.puerto';
 
+interface FilaDocenteResumen {
+  id: string;
+  codigo: string;
+  estado: string;
+  persona_id: string;
+  persona_nombres: string;
+  persona_apellido_paterno: string | null;
+  persona_apellido_materno: string | null;
+  sede_principal: { id: string; nombre: string } | null;
+  especialidad_principal: { id: string; nombre: string } | null;
+}
+
+interface FilaDocenteDetalle {
+  id: string;
+  codigo: string;
+  estado: string;
+  fecha_ingreso: string | null;
+  fecha_cese: string | null;
+  perfil_profesional: string | null;
+  observacion: string | null;
+  pid: string;
+  nombres: string;
+  apellido_paterno: string | null;
+  apellido_materno: string | null;
+  doc_principal: Array<{ tipo_documento: string; tipo_codigo: string; numero: string }> | null;
+  tiene_cuenta: boolean;
+}
+
+interface FilaAsignacionSede {
+  id: string;
+  id_sede: string;
+  nombre_sede: string;
+  es_principal: boolean;
+  estado: string;
+  fecha_inicio: string;
+  fecha_fin: string | null;
+}
+
+interface FilaAsignacionEspecialidad {
+  id: string;
+  id_especialidad_profesional: string;
+  nombre_especialidad: string;
+  es_principal: boolean;
+  anios_experiencia: number | null;
+  estado: string;
+}
+
+interface FilaConteo {
+  total: string;
+}
+
+interface FilaIdDocente {
+  id: string;
+}
+
+interface FilaEspecialidadResumen {
+  id: string;
+  codigo: string;
+  nombre: string;
+  estado: string;
+}
+
 @Injectable()
 export class ConsultadorDocentesTypeorm implements ConsultadorDocentes {
   constructor(private readonly ds: DataSource) {}
@@ -97,35 +159,25 @@ export class ConsultadorDocentesTypeorm implements ConsultadorDocentes {
     const countSql = `SELECT COUNT(*) AS total ${fullWhere}`;
     const countParams = params.slice(0, idx - 1);
 
-    const countResult: Array<{ total: string }> = await this.ds.query(
+    const countResult = await this.ds.query<FilaConteo[]>(
       countSql,
       countParams,
     );
-    const rows: Array<Record<string, unknown>> = await this.ds.query(
-      selectSql,
-      params,
-    );
+    const rows = await this.ds.query<FilaDocenteResumen[]>(selectSql, params);
 
     const total = Number.parseInt(countResult[0]?.total ?? '0', 10);
     const datos: DocenteResumen[] = rows.map((row) => ({
-      id: row.id as string,
-      codigo: row.codigo as string,
-      estado: row.estado as string,
+      id: row.id,
+      codigo: row.codigo,
+      estado: row.estado,
       persona: {
-        id: row.persona_id as string,
-        nombres: row.persona_nombres as string,
-        apellidoPaterno:
-          (row.persona_apellido_paterno as string | null) ?? null,
-        apellidoMaterno:
-          (row.persona_apellido_materno as string | null) ?? null,
+        id: row.persona_id,
+        nombres: row.persona_nombres,
+        apellidoPaterno: row.persona_apellido_paterno ?? null,
+        apellidoMaterno: row.persona_apellido_materno ?? null,
       },
-      sedePrincipal:
-        (row.sede_principal as { id: string; nombre: string } | null) ?? null,
-      especialidadPrincipal:
-        (row.especialidad_principal as {
-          id: string;
-          nombre: string;
-        } | null) ?? null,
+      sedePrincipal: row.sede_principal ?? null,
+      especialidadPrincipal: row.especialidad_principal ?? null,
     }));
 
     return { datos, total };
@@ -135,23 +187,44 @@ export class ConsultadorDocentesTypeorm implements ConsultadorDocentes {
     id: string,
     alcance: AlcanceAcceso,
   ): Promise<FichaDocente | null> {
-    const rows = await this.ds.query(
+    if (alcance.ambito === 'SEDE' && alcance.sedeId) {
+      const tieneAsignacion = await this.ds.query<{ existe: boolean }[]>(
+        `SELECT EXISTS (
+          SELECT 1 FROM asignaciones_docente_sede
+          WHERE id_docente = $1 AND id_sede = $2 AND estado = 'ACTIVA'
+        ) AS existe`,
+        [id, alcance.sedeId],
+      );
+      if (!tieneAsignacion[0]?.existe) {
+        return null;
+      }
+    }
+
+    const rows = await this.ds.query<FilaDocenteDetalle[]>(
       `SELECT
         d.id, d.codigo, d.estado, d.fecha_ingreso, d.fecha_cese,
         d.perfil_profesional, d.observacion,
         p.id AS pid, p.nombres, p.apellido_paterno, p.apellido_materno,
         (
-          SELECT json_agg(di ORDER BY di.es_principal DESC)
+          SELECT json_agg(di)
           FROM (
-            SELECT di2.tipo_documento AS tipo, di2.numero
+            SELECT
+              di2.id_tipo_documento AS tipo_documento,
+              tdi.codigo AS tipo_codigo,
+              di2.numero
             FROM documentos_identidad_persona di2
+            JOIN tipos_documento_identidad tdi ON tdi.id = di2.id_tipo_documento
             WHERE di2.id_persona = p.id AND di2.es_principal = true
-              AND di2.estado = 'ACTIVO'
+              AND di2.estado = 'ACTIVO' AND di2.id_institucion_educativa = $2
             LIMIT 1
           ) di
         ) AS doc_principal,
         EXISTS (
-          SELECT 1 FROM usuarios u WHERE u.id_persona = p.id
+          SELECT 1 FROM membresias_institucion mi
+          JOIN usuarios u ON u.id = mi.id_usuario
+          WHERE mi.id_persona = p.id
+            AND mi.id_institucion_educativa = $2
+            AND mi.estado = 'ACTIVA'
         ) AS tiene_cuenta
       FROM docentes d
       JOIN personas p ON p.id = d.id_persona
@@ -161,31 +234,35 @@ export class ConsultadorDocentesTypeorm implements ConsultadorDocentes {
 
     if (!rows.length) return null;
 
-    const row = rows[0] as Record<string, unknown>;
-    const sedes = await this.obtenerSedesDocente(id);
-    const especialidades = await this.obtenerEspecialidadesDocente(id);
+    const row = rows[0];
+    const sedes = await this.obtenerSedesDocente(id, alcance);
+    const especialidades = await this.obtenerEspecialidadesDocente(
+      id,
+      alcance.institucionId,
+    );
 
-    const docPpal = row.doc_principal
-      ? (row.doc_principal as Array<{ tipo: string; numero: string }>)[0]
-      : null;
+    const docPpal =
+      row.doc_principal && row.doc_principal.length > 0
+        ? row.doc_principal[0]
+        : null;
 
     return {
       docente: {
-        id: row.id as string,
-        codigo: row.codigo as string,
-        estado: row.estado as string,
-        fechaIngreso: (row.fecha_ingreso as string) ?? null,
-        fechaCese: (row.fecha_cese as string) ?? null,
-        perfilProfesional: (row.perfil_profesional as string) ?? null,
-        observacion: (row.observacion as string) ?? null,
+        id: row.id,
+        codigo: row.codigo,
+        estado: row.estado,
+        fechaIngreso: row.fecha_ingreso ?? null,
+        fechaCese: row.fecha_cese ?? null,
+        perfilProfesional: row.perfil_profesional ?? null,
+        observacion: row.observacion ?? null,
       },
       persona: {
-        id: row.pid as string,
-        nombres: row.nombres as string,
-        apellidoPaterno: (row.apellido_paterno as string) ?? null,
-        apellidoMaterno: (row.apellido_materno as string) ?? null,
+        id: row.pid,
+        nombres: row.nombres,
+        apellidoPaterno: row.apellido_paterno ?? null,
+        apellidoMaterno: row.apellido_materno ?? null,
         documentoPrincipal: docPpal
-          ? { tipo: docPpal.tipo, numero: docPpal.numero }
+          ? { tipo: docPpal.tipo_codigo, numero: docPpal.numero }
           : null,
       },
       sedes,
@@ -196,48 +273,55 @@ export class ConsultadorDocentesTypeorm implements ConsultadorDocentes {
 
   private async obtenerSedesDocente(
     idDocente: string,
+    alcance: AlcanceAcceso,
   ): Promise<FichaDocente['sedes']> {
-    const rows = await this.ds.query(
-      `SELECT
+    let sql = `SELECT
         ads.id, ads.id_sede, s.nombre AS nombre_sede,
         ads.es_principal, ads.estado, ads.fecha_inicio, ads.fecha_fin
       FROM asignaciones_docente_sede ads
       JOIN sedes s ON s.id = ads.id_sede
-      WHERE ads.id_docente = $1
-      ORDER BY ads.es_principal DESC, ads.fecha_inicio DESC`,
-      [idDocente],
-    );
-    return rows.map((r: Record<string, unknown>) => ({
-      id: r.id as string,
-      idSede: r.id_sede as string,
-      nombreSede: r.nombre_sede as string,
-      esPrincipal: r.es_principal as boolean,
-      estado: r.estado as string,
-      fechaInicio: r.fecha_inicio as string,
-      fechaFin: (r.fecha_fin as string) ?? null,
+      WHERE ads.id_docente = $1 AND ads.id_institucion_educativa = $2`;
+    const params: unknown[] = [idDocente, alcance.institucionId];
+
+    if (alcance.ambito === 'SEDE' && alcance.sedeId) {
+      sql += ` AND ads.id_sede = $3`;
+      params.push(alcance.sedeId);
+    }
+
+    sql += ` ORDER BY ads.es_principal DESC, ads.fecha_inicio DESC`;
+    const rows = await this.ds.query<FilaAsignacionSede[]>(sql, params);
+    return rows.map((r) => ({
+      id: r.id,
+      idSede: r.id_sede,
+      nombreSede: r.nombre_sede,
+      esPrincipal: r.es_principal,
+      estado: r.estado,
+      fechaInicio: r.fecha_inicio,
+      fechaFin: r.fecha_fin ?? null,
     }));
   }
 
   private async obtenerEspecialidadesDocente(
     idDocente: string,
+    institucionId: string,
   ): Promise<FichaDocente['especialidades']> {
-    const rows = await this.ds.query(
+    const rows = await this.ds.query<FilaAsignacionEspecialidad[]>(
       `SELECT
         dep.id, dep.id_especialidad_profesional, ep.nombre AS nombre_especialidad,
         dep.es_principal, dep.anios_experiencia, dep.estado
       FROM docentes_especialidades_profesionales dep
       JOIN especialidades_profesionales ep ON ep.id = dep.id_especialidad_profesional
-      WHERE dep.id_docente = $1
+      WHERE dep.id_docente = $1 AND dep.id_institucion_educativa = $2
       ORDER BY dep.es_principal DESC, ep.nombre ASC`,
-      [idDocente],
+      [idDocente, institucionId],
     );
-    return rows.map((r: Record<string, unknown>) => ({
-      id: r.id as string,
-      idEspecialidad: r.id_especialidad_profesional as string,
-      nombreEspecialidad: r.nombre_especialidad as string,
-      esPrincipal: r.es_principal as boolean,
-      aniosExperiencia: (r.anios_experiencia as number) ?? null,
-      estado: r.estado as string,
+    return rows.map((r) => ({
+      id: r.id,
+      idEspecialidad: r.id_especialidad_profesional,
+      nombreEspecialidad: r.nombre_especialidad,
+      esPrincipal: r.es_principal,
+      aniosExperiencia: r.anios_experiencia ?? null,
+      estado: r.estado,
     }));
   }
 
@@ -245,7 +329,7 @@ export class ConsultadorDocentesTypeorm implements ConsultadorDocentes {
     idPersona: string,
     institucionId: string,
   ): Promise<FichaDocente | null> {
-    const rows = await this.ds.query(
+    const rows = await this.ds.query<FilaIdDocente[]>(
       `SELECT d.id FROM docentes d
        WHERE d.id_persona = $1 AND d.id_institucion_educativa = $2
        LIMIT 1`,
@@ -253,12 +337,30 @@ export class ConsultadorDocentesTypeorm implements ConsultadorDocentes {
     );
     if (!rows.length) return null;
 
-    return this.obtener(rows[0].id as string, {
+    return this.obtener(rows[0].id, {
       usuarioId: '',
       institucionId,
       ambito: 'INSTITUCION',
       sedeId: null,
     });
+  }
+
+  async obtenerPorUsuario(
+    alcance: AlcanceAcceso,
+  ): Promise<FichaDocente | null> {
+    const rows = await this.ds.query<FilaIdDocente[]>(
+      `SELECT d.id FROM docentes d
+       JOIN membresias_institucion mi ON mi.id_persona = d.id_persona
+         AND mi.id_institucion_educativa = d.id_institucion_educativa
+         AND mi.estado = 'ACTIVA'
+       WHERE mi.id_usuario = $1
+         AND d.id_institucion_educativa = $2
+       LIMIT 1`,
+      [alcance.usuarioId, alcance.institucionId],
+    );
+    if (!rows.length) return null;
+
+    return this.obtener(rows[0].id, alcance);
   }
 
   async listarEspecialidades(
@@ -279,12 +381,12 @@ export class ConsultadorDocentesTypeorm implements ConsultadorDocentes {
 
     sql += ` ORDER BY nombre ASC`;
 
-    const rows = await this.ds.query(sql, params);
-    return rows.map((r: Record<string, unknown>) => ({
-      id: r.id as string,
-      codigo: r.codigo as string,
-      nombre: r.nombre as string,
-      estado: r.estado as string,
+    const rows = await this.ds.query<FilaEspecialidadResumen[]>(sql, params);
+    return rows.map((r) => ({
+      id: r.id,
+      codigo: r.codigo,
+      nombre: r.nombre,
+      estado: r.estado,
     }));
   }
 }

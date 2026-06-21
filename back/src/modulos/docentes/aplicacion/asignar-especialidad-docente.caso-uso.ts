@@ -31,10 +31,11 @@ export class AsignarEspecialidadDocenteCasoUso {
     );
     if (!docente) throw new DocenteNoEncontradoError();
 
-    const especialidad = await this.repositorioEspecialidades.obtenerEspecialidadBase(
-      entrada.idEspecialidad,
-      alcance.institucionId,
-    );
+    const especialidad =
+      await this.repositorioEspecialidades.obtenerEspecialidadBase(
+        entrada.idEspecialidad,
+        alcance.institucionId,
+      );
     if (!especialidad || especialidad.estado !== 'ACTIVA') {
       throw new EspecialidadNoEncontradaError();
     }

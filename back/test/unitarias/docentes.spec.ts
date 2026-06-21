@@ -58,7 +58,7 @@ function mockRepo(
     actualizarAsignacionSede: jest.fn().mockResolvedValue(true),
     existeAsignacionActivaEnSede: jest.fn().mockResolvedValue(false),
     existeSedePrincipalActiva: jest.fn().mockResolvedValue(false),
-    quitarPrincipalAsignacionesSede: jest.fn().mockResolvedValue(undefined),
+    establecerAsignacionSedePrincipal: jest.fn().mockResolvedValue(undefined),
     docenteTieneAsignacionEnSede: jest.fn().mockResolvedValue(false),
     ...overrides,
   } as jest.Mocked<RepositorioDocentes>;
@@ -317,10 +317,10 @@ describe('EstablecerSedePrincipalDocenteCasoUso', () => {
       }),
     ).resolves.toBeUndefined();
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    expect(repo.quitarPrincipalAsignacionesSede).toHaveBeenCalledWith(
+    expect(repo.establecerAsignacionSedePrincipal).toHaveBeenCalledWith(
       'd1',
-      'i1',
       'as1',
+      'i1',
     );
   });
 

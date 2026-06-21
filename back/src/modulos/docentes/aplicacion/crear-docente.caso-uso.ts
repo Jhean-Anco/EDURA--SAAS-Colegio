@@ -23,15 +23,10 @@ export class CrearDocenteCasoUso {
   }): Promise<{ id: string }> {
     const { alcance } = entrada;
 
-    // En contexto SEDE el id de sede debe ser el del alcance
     const idSede =
-      alcance.ambito === 'SEDE'
-        ? (alcance.sedeId ?? entrada.idSede)
+      alcance.ambito === 'SEDE' && alcance.sedeId
+        ? alcance.sedeId
         : entrada.idSede;
-
-    if (alcance.ambito === 'SEDE' && idSede !== alcance.sedeId) {
-      throw new SedeFueraDeInstitucionDocenteError();
-    }
 
     const personaOk = await this.repositorio.verificarPersonaEnInstitucion(
       entrada.idPersona,

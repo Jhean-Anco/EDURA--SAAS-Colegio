@@ -41,6 +41,6 @@ export class PersonaFueraDeInstitucionError extends ErrorDominio {
 
 export class SedeFueraDeInstitucionError extends ErrorDominio {
   constructor() {
-    super('CONTEXTO_NO_AUTORIZADO', 'La sede no pertenece a la institucion.');
+    super('ENTIDAD_NO_PROCESABLE', 'La sede no pertenece a la institucion.');
   }
 }

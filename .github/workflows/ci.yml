@@ -151,11 +151,71 @@ jobs:
       - run: npm run db:migration:revert
       - run: npm run db:migration:run
 
+  actualizacion-desde-release-anterior:
+    name: Actualizacion desde release anterior
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: edura
+          POSTGRES_PASSWORD: edura_ci
+          POSTGRES_DB: edura_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      NODE_ENV: test
+      BD_HOST: localhost
+      BD_PUERTO: 5432
+      BD_USUARIO: edura
+      BD_CLAVE: edura_ci
+      BD_NOMBRE: edura_test
+      BD_SSL: 'false'
+      JWT_SECRETO: ci-secret-no-produccion-32-chars-minimo
+      JWT_EMISOR: EDURA_CI
+      JWT_AUDIENCIA: EDURA_CI_WEB
+      HASH_TOKEN_SECRETO: ci-hash-secret-no-produccion-32-chars-minimo
+      INTEGRACION_DOCUMENTOS_HABILITADA: 'false'
+      INTEGRACION_RUTAS_HABILITADA: 'false'
+      SWAGGER_HABILITADO: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Checkout a la version previa
+        run: git checkout 76cdbe511b7adc3ec7aec707645b6848e98adda9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: back/package-lock.json
+      - run: npm ci
+      - name: Ejecutar migraciones version previa
+        run: npm run db:migration:run
+      - name: Volver a la rama actual
+        run: |
+          git restore .
+          git checkout -
+      - name: Instalar dependencias nuevas
+        run: npm ci
+      - name: Ejecutar migraciones pendientes
+        run: npm run db:migration:run
+      - name: Verificar tablas y restricciones
+        run: |
+          npm run db:migration:show
+          npm run test:unit
+
   e2e:
     name: Pruebas E2E
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: [calidad-estatica, base-datos, migraciones-reversibles]
+    needs: [calidad-estatica, base-datos, migraciones-reversibles, actualizacion-desde-release-anterior]
     services:
       postgres:
         image: postgres:16

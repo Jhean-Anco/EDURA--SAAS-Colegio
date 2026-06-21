@@ -1,4 +1,10 @@
-import { IsDateString, IsIn, IsOptional, IsString, Length } from 'class-validator';
+import {
+  IsDateString,
+  IsIn,
+  IsOptional,
+  IsString,
+  Length,
+} from 'class-validator';
 
 export class ActualizarAsignacionSedeSolicitud {
   @IsOptional()

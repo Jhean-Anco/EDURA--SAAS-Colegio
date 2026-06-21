@@ -203,10 +203,21 @@ export class PanelInstitucionalTypeormConsulta implements PanelInstitucionalCons
       [entrada.institucionId, sedeId],
     );
 
-    const periodoAcademico =
-      entrada.idPeriodoAcademico != null
-        ? { id: entrada.idPeriodoAcademico, nombre: 'Periodo académico' }
-        : null;
+    let periodoAcademico: { id: string; nombre: string } | null = null;
+    if (entrada.idPeriodoAcademico != null) {
+      const [periodoDb] = await this.dataSource.query<
+        Array<{ id: string; nombre: string }>
+      >(
+        `SELECT id, nombre
+         FROM periodos_academicos
+         WHERE id = $1 AND id_institucion_educativa = $2
+         LIMIT 1`,
+        [entrada.idPeriodoAcademico, entrada.institucionId],
+      );
+      if (periodoDb) {
+        periodoAcademico = { id: periodoDb.id, nombre: periodoDb.nombre };
+      }
+    }
 
     return {
       institucion,

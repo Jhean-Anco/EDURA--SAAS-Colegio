@@ -3,10 +3,13 @@ import {
   Controller,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
+  UseInterceptors,
 } from '@nestjs/common';
+import { AuditoriaDocentesInterceptor } from '../interceptores/auditoria-docentes.interceptor';
 import { Permisos } from '../../../../../compartido/presentacion/http/decoradores/permisos.decorador';
 import { ContextoActual } from '../../../../../compartido/presentacion/http/decoradores/contexto-actual.decorador';
 import { ContextoSolicitudAutenticada } from '../../../../../compartido/aplicacion/contexto-solicitud-autenticada';
@@ -30,6 +33,7 @@ import { ActualizarAsignacionSedeSolicitud } from '../solicitudes/actualizar-asi
 import { AsignarEspecialidadSolicitud } from '../solicitudes/asignar-especialidad.solicitud';
 import { ActualizarAsignacionEspecialidadSolicitud } from '../solicitudes/actualizar-asignacion-especialidad.solicitud';
 
+@UseInterceptors(AuditoriaDocentesInterceptor)
 @Controller('docentes')
 export class DocentesControlador {
   constructor(
@@ -71,19 +75,19 @@ export class DocentesControlador {
     });
   }
 
-  @Permisos('DOCENTES.LEER')
+  @Permisos('DOCENTES.MI_PERFIL.LEER')
   @Get('mi-perfil')
   async miPerfil(
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ) {
     const alcance = alcanceDesdeContexto(ctx);
-    return this.obtenerMiPerfil.ejecutar(alcance.usuarioId, alcance.institucionId);
+    return this.obtenerMiPerfil.ejecutar(alcance);
   }
 
   @Permisos('DOCENTES.LEER')
   @Get(':id')
   async obtener(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ) {
     const alcance = alcanceDesdeContexto(ctx);
@@ -113,7 +117,7 @@ export class DocentesControlador {
   @Permisos('DOCENTES.ACTUALIZAR')
   @Patch(':id')
   async actualizar(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() solicitud: ActualizarDocenteSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<void> {
@@ -128,7 +132,7 @@ export class DocentesControlador {
   @Permisos('DOCENTES.CAMBIAR_ESTADO')
   @Patch(':id/estado')
   async cambiarEstado(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() solicitud: CambiarEstadoDocenteSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<void> {
@@ -146,7 +150,7 @@ export class DocentesControlador {
   @Permisos('DOCENTES.GESTIONAR_SEDES')
   @Post(':id/sedes')
   async asignarSedeDocente(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() solicitud: AsignarSedeSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ) {
@@ -164,8 +168,8 @@ export class DocentesControlador {
   @Permisos('DOCENTES.GESTIONAR_SEDES')
   @Patch(':id/sedes/:idAsignacion')
   async actualizarAsignacionSedeDocente(
-    @Param('id') id: string,
-    @Param('idAsignacion') idAsignacion: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('idAsignacion', ParseUUIDPipe) idAsignacion: string,
     @Body() solicitud: ActualizarAsignacionSedeSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<void> {
@@ -181,8 +185,8 @@ export class DocentesControlador {
   @Permisos('DOCENTES.GESTIONAR_SEDES')
   @Post(':id/sedes/:idAsignacion/establecer-principal')
   async establecerSedePrincipalDocente(
-    @Param('id') id: string,
-    @Param('idAsignacion') idAsignacion: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('idAsignacion', ParseUUIDPipe) idAsignacion: string,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<void> {
     const alcance = alcanceDesdeContexto(ctx);
@@ -198,7 +202,7 @@ export class DocentesControlador {
   @Permisos('DOCENTES.GESTIONAR_ESPECIALIDADES')
   @Post(':id/especialidades')
   async asignarEspecialidadDocente(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() solicitud: AsignarEspecialidadSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ) {
@@ -215,8 +219,8 @@ export class DocentesControlador {
   @Permisos('DOCENTES.GESTIONAR_ESPECIALIDADES')
   @Patch(':id/especialidades/:idAsignacion')
   async actualizarEspecialidadDocente(
-    @Param('id') id: string,
-    @Param('idAsignacion') idAsignacion: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('idAsignacion', ParseUUIDPipe) idAsignacion: string,
     @Body() solicitud: ActualizarAsignacionEspecialidadSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<void> {

@@ -95,6 +95,8 @@ export interface ConsultadorDocentes {
     institucionId: string,
   ): Promise<FichaDocente | null>;
 
+  obtenerPorUsuario(alcance: AlcanceAcceso): Promise<FichaDocente | null>;
+
   listarEspecialidades(
     institucionId: string,
     estado?: string | null,
@@ -181,7 +183,12 @@ export interface RepositorioDocentes {
     idAsignacion: string,
     idDocente: string,
     institucionId: string,
-  ): Promise<{ id: string; esPrincipal: boolean; estado: string } | null>;
+  ): Promise<{
+    id: string;
+    idSede: string;
+    esPrincipal: boolean;
+    estado: string;
+  } | null>;
 
   actualizarAsignacionSede(entrada: {
     idAsignacion: string;
@@ -192,6 +199,12 @@ export interface RepositorioDocentes {
     estado?: string;
     observacion?: string | null;
   }): Promise<boolean>;
+
+  establecerAsignacionSedePrincipal(
+    idDocente: string,
+    idAsignacion: string,
+    institucionId: string,
+  ): Promise<void>;
 
   existeAsignacionActivaEnSede(
     idDocente: string,

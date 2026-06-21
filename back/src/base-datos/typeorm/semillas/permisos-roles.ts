@@ -181,6 +181,12 @@ export const permisosSistema = [
   },
   {
     recurso: 'DOCENTES',
+    accion: 'MI_PERFIL.LEER',
+    codigo: 'DOCENTES.MI_PERFIL.LEER',
+    descripcion: 'Ver propio perfil de docente',
+  },
+  {
+    recurso: 'DOCENTES',
     accion: 'CREAR',
     codigo: 'DOCENTES.CREAR',
     descripcion: 'Registrar docentes',
@@ -226,6 +232,49 @@ export const permisosSistema = [
     accion: 'ACTUALIZAR',
     codigo: 'ESPECIALIDADES_PROFESIONALES.ACTUALIZAR',
     descripcion: 'Actualizar especialidades profesionales',
+  },
+  {
+    recurso: 'ESTRUCTURA_ACADEMICA',
+    accion: 'LEER',
+    codigo: 'ESTRUCTURA_ACADEMICA.LEER',
+    descripcion:
+      'Ver estructura académica (años, períodos, niveles, grados, ofertas, secciones)',
+  },
+  {
+    recurso: 'ESTRUCTURA_ACADEMICA',
+    accion: 'CALENDARIO.GESTIONAR',
+    codigo: 'ESTRUCTURA_ACADEMICA.CALENDARIO.GESTIONAR',
+    descripcion: 'Crear y modificar años y períodos académicos',
+  },
+  {
+    recurso: 'ESTRUCTURA_ACADEMICA',
+    accion: 'CATALOGOS.GESTIONAR',
+    codigo: 'ESTRUCTURA_ACADEMICA.CATALOGOS.GESTIONAR',
+    descripcion: 'Crear y modificar niveles y grados educativos',
+  },
+  {
+    recurso: 'ESTRUCTURA_ACADEMICA',
+    accion: 'OFERTAS.GESTIONAR',
+    codigo: 'ESTRUCTURA_ACADEMICA.OFERTAS.GESTIONAR',
+    descripcion: 'Crear y modificar ofertas grado-sede',
+  },
+  {
+    recurso: 'ESTRUCTURA_ACADEMICA',
+    accion: 'SECCIONES.GESTIONAR',
+    codigo: 'ESTRUCTURA_ACADEMICA.SECCIONES.GESTIONAR',
+    descripcion: 'Crear y modificar secciones académicas',
+  },
+  {
+    recurso: 'ESTRUCTURA_ACADEMICA',
+    accion: 'SECCIONES.ASIGNAR_ESPACIO',
+    codigo: 'ESTRUCTURA_ACADEMICA.SECCIONES.ASIGNAR_ESPACIO',
+    descripcion: 'Asignar espacio físico a sección',
+  },
+  {
+    recurso: 'ESTRUCTURA_ACADEMICA',
+    accion: 'SECCIONES.ASIGNAR_TUTOR',
+    codigo: 'ESTRUCTURA_ACADEMICA.SECCIONES.ASIGNAR_TUTOR',
+    descripcion: 'Asignar docente tutor a sección',
   },
 ] as const;
 
@@ -294,6 +343,13 @@ export const permisosAdministradorInstitucion = [
   'ESPECIALIDADES_PROFESIONALES.LEER',
   'ESPECIALIDADES_PROFESIONALES.CREAR',
   'ESPECIALIDADES_PROFESIONALES.ACTUALIZAR',
+  'ESTRUCTURA_ACADEMICA.LEER',
+  'ESTRUCTURA_ACADEMICA.CALENDARIO.GESTIONAR',
+  'ESTRUCTURA_ACADEMICA.CATALOGOS.GESTIONAR',
+  'ESTRUCTURA_ACADEMICA.OFERTAS.GESTIONAR',
+  'ESTRUCTURA_ACADEMICA.SECCIONES.GESTIONAR',
+  'ESTRUCTURA_ACADEMICA.SECCIONES.ASIGNAR_ESPACIO',
+  'ESTRUCTURA_ACADEMICA.SECCIONES.ASIGNAR_TUTOR',
 ] as const;
 
 export const permisosDirectorSede = [
@@ -317,10 +373,16 @@ export const permisosDirectorSede = [
   'DOCENTES.ACTUALIZAR',
   'DOCENTES.GESTIONAR_SEDES',
   'ESPECIALIDADES_PROFESIONALES.LEER',
+  'ESTRUCTURA_ACADEMICA.LEER',
+  'ESTRUCTURA_ACADEMICA.OFERTAS.GESTIONAR',
+  'ESTRUCTURA_ACADEMICA.SECCIONES.GESTIONAR',
+  'ESTRUCTURA_ACADEMICA.SECCIONES.ASIGNAR_ESPACIO',
+  'ESTRUCTURA_ACADEMICA.SECCIONES.ASIGNAR_TUTOR',
 ] as const;
 
 export const permisosDocente = [
-  'DOCENTES.LEER',
+  'DOCENTES.MI_PERFIL.LEER',
   'ESPECIALIDADES_PROFESIONALES.LEER',
   'PANEL_INSTITUCIONAL.RESUMEN.LEER',
+  'ESTRUCTURA_ACADEMICA.LEER',
 ] as const;

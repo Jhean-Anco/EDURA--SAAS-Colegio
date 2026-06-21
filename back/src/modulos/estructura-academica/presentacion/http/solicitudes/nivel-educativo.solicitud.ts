@@ -1,0 +1,47 @@
+import {
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  Length,
+  Min,
+} from 'class-validator';
+import { EstadoNivel } from '../../../dominio/puertos/estructura-academica.puerto';
+
+export class CrearNivelEducativoSolicitud {
+  @IsString()
+  @Length(1, 30)
+  codigo!: string;
+
+  @IsString()
+  @Length(1, 100)
+  nombre!: string;
+
+  @IsOptional()
+  @IsString()
+  descripcion?: string | null;
+
+  @IsInt()
+  @Min(0)
+  orden!: number;
+}
+
+export class ActualizarNivelEducativoSolicitud {
+  @IsOptional()
+  @IsString()
+  @Length(1, 100)
+  nombre?: string;
+
+  @IsOptional()
+  @IsString()
+  descripcion?: string | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  orden?: number;
+
+  @IsOptional()
+  @IsEnum(['ACTIVO', 'INACTIVO'])
+  estado?: EstadoNivel;
+}
