@@ -68,9 +68,10 @@ export class ActualizarSeccionAcademicaSolicitud {
   turno?: TurnoSeccion;
 
   @IsOptional()
-  @Transform(({ value }: { value: unknown }) =>
-    value === null ? Number.NaN : value,
-  )
+  @Transform(({ value }: { value: unknown }) => {
+    if (value === null) return -1;
+    return value;
+  })
   @IsInt()
   @IsPositive()
   capacidadMaxima?: number;

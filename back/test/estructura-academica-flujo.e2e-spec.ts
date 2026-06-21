@@ -790,7 +790,7 @@ describeE2E('Flujo estructura académica E2E (requiere BD)', () => {
             turno: 'MANANA',
             capacidadMaxima: 20,
           })
-          .expect(409);
+          .expect(400);
       });
 
       it('POST espacio fuera de sede retorna 422', async () => {
