@@ -1,10 +1,10 @@
 import {
-  EspacioFisicoFueraDeSedeError,
-  EspacioInactivoError,
-  EspacioNoEsAulaError,
   CapacidadSuperaAforoError,
   DocenteTutorCesadoError,
   DocenteTutorInactivoError,
+  EspacioFisicoFueraDeSedeError,
+  EspacioInactivoError,
+  EspacioNoEsAulaError,
   SeccionAcademicaNoEncontradaError,
   SeccionNombreDuplicadoError,
   TutorFueraDeSedeError,
@@ -16,12 +16,51 @@ import {
 
 export interface EntradaActualizarSeccionAcademica {
   id: string;
+  idOfertaGradoSede?: string;
   codigo?: string;
   nombre?: string;
   turno?: string;
-  capacidadMaxima?: number | null;
+  capacidadMaxima?: number;
   idDocenteTutor?: string | null;
   idEspacioFisico?: string | null;
+}
+
+async function validarEspacioFisico(
+  repositorio: RepositorioOfertaAcademica,
+  idEspacioFisico: string,
+  idSede: string,
+  capacidadEfectiva: number | null,
+): Promise<void> {
+  const espacio = await repositorio.verificarEspacioFisicoEnSede(
+    idEspacioFisico,
+    idSede,
+  );
+  if (!espacio) throw new EspacioFisicoFueraDeSedeError();
+  if (!espacio.esAula) throw new EspacioNoEsAulaError();
+  if (!espacio.estaActivo) throw new EspacioInactivoError();
+  if (
+    capacidadEfectiva &&
+    espacio.aforo !== null &&
+    capacidadEfectiva > espacio.aforo
+  ) {
+    throw new CapacidadSuperaAforoError();
+  }
+}
+
+async function validarDocenteTutor(
+  repositorio: RepositorioOfertaAcademica,
+  idDocenteTutor: string,
+  idSede: string,
+  institucionId: string,
+): Promise<void> {
+  const tutor = await repositorio.verificarDocenteTutorEnSede(
+    idDocenteTutor,
+    idSede,
+    institucionId,
+  );
+  if (!tutor.estaActivo) throw new DocenteTutorInactivoError();
+  if (tutor.estaCesado) throw new DocenteTutorCesadoError();
+  if (!tutor.tieneAsignacion) throw new TutorFueraDeSedeError();
 }
 
 export class ActualizarSeccionAcademicaCasoUso {
@@ -38,6 +77,13 @@ export class ActualizarSeccionAcademicaCasoUso {
     if (!seccion) throw new SeccionAcademicaNoEncontradaError();
 
     if (
+      entrada.idOfertaGradoSede !== undefined &&
+      seccion.idOfertaGradoSede !== entrada.idOfertaGradoSede
+    ) {
+      throw new SeccionAcademicaNoEncontradaError();
+    }
+
+    if (
       alcance.ambito === 'SEDE' &&
       alcance.sedeId &&
       seccion.idSede !== alcance.sedeId
@@ -46,9 +92,9 @@ export class ActualizarSeccionAcademicaCasoUso {
     }
 
     if (entrada.codigo !== undefined) {
-      const codigoNormalizado = entrada.codigo.trim().toUpperCase();
+      const codigoNorm = entrada.codigo.trim().toUpperCase();
       const existe = await this.repositorio.existeSeccionEnOferta(
-        codigoNormalizado,
+        codigoNorm,
         seccion.idOfertaGradoSede,
         alcance.institucionId,
         entrada.id,
@@ -57,42 +103,34 @@ export class ActualizarSeccionAcademicaCasoUso {
     }
 
     if (entrada.idEspacioFisico) {
-      const espacio = await this.repositorio.verificarEspacioFisicoEnSede(
+      const capacidadEfectiva =
+        entrada.capacidadMaxima ?? seccion.capacidadMaxima;
+      await validarEspacioFisico(
+        this.repositorio,
         entrada.idEspacioFisico,
         seccion.idSede,
+        capacidadEfectiva,
       );
-      if (!espacio) throw new EspacioFisicoFueraDeSedeError();
-      if (!espacio.esAula) throw new EspacioNoEsAulaError();
-      if (!espacio.estaActivo) throw new EspacioInactivoError();
-      const cap =
-        entrada.capacidadMaxima !== undefined
-          ? entrada.capacidadMaxima
-          : seccion.capacidadMaxima;
-      if (cap && espacio.aforo !== null && cap > espacio.aforo) {
-        throw new CapacidadSuperaAforoError();
-      }
     }
 
     if (entrada.idDocenteTutor) {
-      const tutor = await this.repositorio.verificarDocenteTutorEnSede(
+      await validarDocenteTutor(
+        this.repositorio,
         entrada.idDocenteTutor,
         seccion.idSede,
         alcance.institucionId,
       );
-      if (!tutor.estaActivo) throw new DocenteTutorInactivoError();
-      if (tutor.estaCesado) throw new DocenteTutorCesadoError();
-      if (!tutor.tieneAsignacion) throw new TutorFueraDeSedeError();
     }
 
     const codigoNormalizado =
-      entrada.codigo !== undefined
-        ? entrada.codigo.trim().toUpperCase()
-        : undefined;
+      entrada.codigo === undefined
+        ? undefined
+        : entrada.codigo.trim().toUpperCase();
 
     await this.repositorio.actualizarSeccion({
       id: entrada.id,
       institucionId: alcance.institucionId,
-      codigo: entrada.codigo !== undefined ? entrada.codigo.trim() : undefined,
+      codigo: entrada.codigo === undefined ? undefined : entrada.codigo.trim(),
       codigoNormalizado,
       nombre: entrada.nombre,
       turno: entrada.turno,

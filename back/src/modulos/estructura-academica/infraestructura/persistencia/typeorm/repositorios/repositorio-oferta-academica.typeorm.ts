@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import {
+  EstadoCalendario,
   EstadoOferta,
   EstadoSeccion,
   RepositorioOfertaAcademica,
@@ -252,7 +253,7 @@ export class RepositorioOfertaAcademicaTypeorm implements RepositorioOfertaAcade
     codigoNormalizado?: string;
     nombre?: string;
     turno?: string;
-    capacidadMaxima?: number | null;
+    capacidadMaxima?: number;
     idDocenteTutor?: string | null;
     idEspacioFisico?: string | null;
     estado?: EstadoSeccion;
@@ -378,8 +379,110 @@ export class RepositorioOfertaAcademicaTypeorm implements RepositorioOfertaAcade
        WHERE id_docente = $1 AND id_sede = $2 AND id_institucion_educativa = $3 AND estado = 'ACTIVA'`,
       [idDocente, idSede, institucionId],
     );
-    const tieneAsignacion = parseInt(asignacionRows[0]?.total ?? '0', 10) > 0;
+    const tieneAsignacion =
+      Number.parseInt(asignacionRows[0]?.total ?? '0', 10) > 0;
 
     return { estaActivo, estaCesado, tieneAsignacion };
+  }
+
+  async obtenerContextoReferenciasOferta(entrada: {
+    idSede: string;
+    idGrado: string;
+    idAnio: string;
+    institucionId: string;
+  }): Promise<{
+    sede: { id: string; estado: string } | null;
+    grado: { id: string; estado: string } | null;
+    nivel: { id: string; estado: string } | null;
+    anioAcademico: { id: string; estado: EstadoCalendario } | null;
+  }> {
+    const [sedeRows, gradoRows, anioRows] = await Promise.all([
+      this.ds.query<Array<{ id: string; estado: string }>>(
+        `SELECT s.id, s.estado FROM sedes s WHERE s.id = $1 AND s.id_institucion_educativa = $2`,
+        [entrada.idSede, entrada.institucionId],
+      ),
+      this.ds.query<
+        Array<{
+          id: string;
+          estado: string;
+          nivel_id: string;
+          nivel_estado: string;
+        }>
+      >(
+        `SELECT g.id, g.estado, n.id AS nivel_id, n.estado AS nivel_estado
+         FROM grados_educativos g
+         JOIN niveles_educativos n ON n.id = g.id_nivel_educativo AND n.id_institucion_educativa = g.id_institucion_educativa
+         WHERE g.id = $1 AND g.id_institucion_educativa = $2`,
+        [entrada.idGrado, entrada.institucionId],
+      ),
+      this.ds.query<Array<{ id: string; estado: string }>>(
+        `SELECT id, estado FROM anios_academicos WHERE id = $1 AND id_institucion_educativa = $2`,
+        [entrada.idAnio, entrada.institucionId],
+      ),
+    ]);
+
+    return {
+      sede: sedeRows[0]
+        ? { id: sedeRows[0].id, estado: sedeRows[0].estado }
+        : null,
+      grado: gradoRows[0]
+        ? { id: gradoRows[0].id, estado: gradoRows[0].estado }
+        : null,
+      nivel: gradoRows[0]
+        ? { id: gradoRows[0].nivel_id, estado: gradoRows[0].nivel_estado }
+        : null,
+      anioAcademico: anioRows[0]
+        ? { id: anioRows[0].id, estado: anioRows[0].estado as EstadoCalendario }
+        : null,
+    };
+  }
+
+  async obtenerOfertaConContexto(
+    id: string,
+    institucionId: string,
+  ): Promise<{
+    id: string;
+    estado: EstadoOferta;
+    idSede: string;
+    estadoSede: string;
+    estadoGrado: string;
+    estadoNivel: string;
+    estadoAnio: EstadoCalendario;
+  } | null> {
+    const rows = await this.ds.query<
+      Array<{
+        id: string;
+        estado: string;
+        id_sede: string;
+        sede_estado: string;
+        grado_estado: string;
+        nivel_estado: string;
+        anio_estado: string;
+      }>
+    >(
+      `SELECT ogs.id, ogs.estado, ogs.id_sede,
+              s.estado AS sede_estado,
+              g.estado AS grado_estado,
+              n.estado AS nivel_estado,
+              a.estado AS anio_estado
+       FROM ofertas_grado_sede ogs
+       JOIN sedes s ON s.id = ogs.id_sede
+       JOIN grados_educativos g ON g.id = ogs.id_grado_educativo
+       JOIN niveles_educativos n ON n.id = g.id_nivel_educativo
+       JOIN anios_academicos a ON a.id = ogs.id_anio_academico
+       WHERE ogs.id = $1 AND ogs.id_institucion_educativa = $2`,
+      [id, institucionId],
+    );
+    if (!rows.length) return null;
+    const r = rows[0];
+    return {
+      id: r.id,
+      estado: r.estado as EstadoOferta,
+      idSede: r.id_sede,
+      estadoSede: r.sede_estado,
+      estadoGrado: r.grado_estado,
+      estadoNivel: r.nivel_estado,
+      estadoAnio: r.anio_estado as EstadoCalendario,
+    };
   }
 }

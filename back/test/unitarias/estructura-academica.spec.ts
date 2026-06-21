@@ -1,3 +1,5 @@
+import { validate } from 'class-validator';
+import { CrearSeccionAcademicaSolicitud } from '../../src/modulos/estructura-academica/presentacion/http/solicitudes/seccion-academica.solicitud';
 import { CrearAnioAcademicoCasoUso } from '../../src/modulos/estructura-academica/aplicacion/calendario/crear-anio-academico.caso-uso';
 import { CrearPeriodoAcademicoCasoUso } from '../../src/modulos/estructura-academica/aplicacion/calendario/crear-periodo-academico.caso-uso';
 import { ActualizarAnioAcademicoCasoUso } from '../../src/modulos/estructura-academica/aplicacion/calendario/actualizar-anio-academico.caso-uso';
@@ -23,6 +25,7 @@ import {
   RepositorioOfertaAcademica,
 } from '../../src/modulos/estructura-academica/dominio/puertos/estructura-academica.puerto';
 import {
+  AnioAcademicoNoDisponibleError,
   AnioAcademicoYaExisteError,
   AnioConOfertasActivasError,
   AnioConPeriodosActivosError,
@@ -32,12 +35,18 @@ import {
   EspacioFisicoFueraDeSedeError,
   EspacioInactivoError,
   EspacioNoEsAulaError,
+  GradoAcademicoNoDisponibleError,
   GradoEnUsoError,
+  NivelAcademicoNoDisponibleError,
   NivelEnUsoError,
   OfertaGradoSedeNoEncontradaError,
+  OfertaNoActivaError,
+  OfertaNoPermiteSeccionesError,
   PeriodoCodigoDuplicadoError,
   PeriodoEnCursoYaExisteError,
   PeriodoSolapamientoError,
+  SedeAcademicaNoDisponibleError,
+  SeccionAcademicaNoEncontradaError,
   TransicionAnioInvalidaError,
   TransicionOfertaInvalidaError,
   TransicionPeriodoInvalidaError,
@@ -141,7 +150,7 @@ function mockRepoOferta(
     crearSeccionAcademica: jest.fn().mockResolvedValue({ id: 's1' }),
     obtenerSeccionBase: jest.fn().mockResolvedValue({
       id: 's1',
-      estado: 'ACTIVA',
+      estado: 'PLANIFICADA',
       idOfertaGradoSede: 'o1',
       idSede: 'sede-a',
       capacidadMaxima: 30,
@@ -157,6 +166,21 @@ function mockRepoOferta(
       estaActivo: true,
       estaCesado: false,
       tieneAsignacion: true,
+    }),
+    obtenerContextoReferenciasOferta: jest.fn().mockResolvedValue({
+      sede: { id: 'sede-a', estado: 'ACTIVA' },
+      grado: { id: 'g1', estado: 'ACTIVO' },
+      nivel: { id: 'n1', estado: 'ACTIVO' },
+      anioAcademico: { id: 'a1', estado: 'PLANIFICADO' },
+    }),
+    obtenerOfertaConContexto: jest.fn().mockResolvedValue({
+      id: 'o1',
+      estado: 'PLANIFICADA',
+      idSede: 'sede-a',
+      estadoSede: 'ACTIVA',
+      estadoGrado: 'ACTIVO',
+      estadoNivel: 'ACTIVO',
+      estadoAnio: 'ACTIVO',
     }),
     ...overrides,
   } as unknown as jest.Mocked<RepositorioOfertaAcademica>;
@@ -987,10 +1011,14 @@ describe('ActualizarSeccionAcademicaCasoUso', () => {
 describe('CambiarEstadoOfertaGradoSedeCasoUso', () => {
   it('CP-EA-027: rechaza transición inválida de oferta (CERRADA → ACTIVA)', async () => {
     const repo = mockRepoOferta({
-      obtenerOfertaBase: jest.fn().mockResolvedValue({
+      obtenerOfertaConContexto: jest.fn().mockResolvedValue({
         id: 'o1',
         estado: 'CERRADA',
         idSede: 'sede-a',
+        estadoSede: 'ACTIVA',
+        estadoGrado: 'ACTIVO',
+        estadoNivel: 'ACTIVO',
+        estadoAnio: 'ACTIVO',
       }),
     });
     const caso = new CambiarEstadoOfertaGradoSedeCasoUso(repo);
@@ -1001,6 +1029,15 @@ describe('CambiarEstadoOfertaGradoSedeCasoUso', () => {
 
   it('CP-EA-027b: rechaza cerrar oferta con secciones activas', async () => {
     const repo = mockRepoOferta({
+      obtenerOfertaConContexto: jest.fn().mockResolvedValue({
+        id: 'o1',
+        estado: 'ACTIVA',
+        idSede: 'sede-a',
+        estadoSede: 'ACTIVA',
+        estadoGrado: 'ACTIVO',
+        estadoNivel: 'ACTIVO',
+        estadoAnio: 'ACTIVO',
+      }),
       tieneSeccionesActivasEnOferta: jest.fn().mockResolvedValue(true),
     });
     const caso = new CambiarEstadoOfertaGradoSedeCasoUso(repo);
@@ -1054,5 +1091,261 @@ describe('Tokens de inyección de dependencias', () => {
     ).not.toThrow();
     expect(() => new CrearPeriodoAcademicoCasoUso(repoC)).not.toThrow();
     expect(() => new CrearSeccionAcademicaCasoUso(repoO)).not.toThrow();
+  });
+});
+
+// ── REL-006.3: Validaciones de referencias activas ────────────────────────────
+
+describe('CrearOfertaGradoSedeCasoUso - validaciones REL-006.3', () => {
+  it('CP-EA-031: rechaza oferta con sede inactiva', async () => {
+    const repo = mockRepoOferta({
+      obtenerContextoReferenciasOferta: jest.fn().mockResolvedValue({
+        sede: { id: 'sede-a', estado: 'INACTIVA' },
+        grado: { id: 'g1', estado: 'ACTIVO' },
+        nivel: { id: 'n1', estado: 'ACTIVO' },
+        anioAcademico: { id: 'a1', estado: 'PLANIFICADO' },
+      }),
+    });
+    const caso = new CrearOfertaGradoSedeCasoUso(repo);
+    await expect(
+      caso.ejecutar(
+        { idSede: 'sede-a', idGradoEducativo: 'g1', idAnioAcademico: 'a1' },
+        ALCANCE_INST,
+      ),
+    ).rejects.toBeInstanceOf(SedeAcademicaNoDisponibleError);
+  });
+
+  it('CP-EA-032: rechaza oferta con grado inactivo', async () => {
+    const repo = mockRepoOferta({
+      obtenerContextoReferenciasOferta: jest.fn().mockResolvedValue({
+        sede: { id: 'sede-a', estado: 'ACTIVA' },
+        grado: { id: 'g1', estado: 'INACTIVO' },
+        nivel: { id: 'n1', estado: 'ACTIVO' },
+        anioAcademico: { id: 'a1', estado: 'PLANIFICADO' },
+      }),
+    });
+    const caso = new CrearOfertaGradoSedeCasoUso(repo);
+    await expect(
+      caso.ejecutar(
+        { idSede: 'sede-a', idGradoEducativo: 'g1', idAnioAcademico: 'a1' },
+        ALCANCE_INST,
+      ),
+    ).rejects.toBeInstanceOf(GradoAcademicoNoDisponibleError);
+  });
+
+  it('CP-EA-033: rechaza oferta con nivel inactivo', async () => {
+    const repo = mockRepoOferta({
+      obtenerContextoReferenciasOferta: jest.fn().mockResolvedValue({
+        sede: { id: 'sede-a', estado: 'ACTIVA' },
+        grado: { id: 'g1', estado: 'ACTIVO' },
+        nivel: { id: 'n1', estado: 'INACTIVO' },
+        anioAcademico: { id: 'a1', estado: 'PLANIFICADO' },
+      }),
+    });
+    const caso = new CrearOfertaGradoSedeCasoUso(repo);
+    await expect(
+      caso.ejecutar(
+        { idSede: 'sede-a', idGradoEducativo: 'g1', idAnioAcademico: 'a1' },
+        ALCANCE_INST,
+      ),
+    ).rejects.toBeInstanceOf(NivelAcademicoNoDisponibleError);
+  });
+
+  it('CP-EA-034: rechaza oferta con año cerrado', async () => {
+    const repo = mockRepoOferta({
+      obtenerContextoReferenciasOferta: jest.fn().mockResolvedValue({
+        sede: { id: 'sede-a', estado: 'ACTIVA' },
+        grado: { id: 'g1', estado: 'ACTIVO' },
+        nivel: { id: 'n1', estado: 'ACTIVO' },
+        anioAcademico: { id: 'a1', estado: 'CERRADO' },
+      }),
+    });
+    const caso = new CrearOfertaGradoSedeCasoUso(repo);
+    await expect(
+      caso.ejecutar(
+        { idSede: 'sede-a', idGradoEducativo: 'g1', idAnioAcademico: 'a1' },
+        ALCANCE_INST,
+      ),
+    ).rejects.toBeInstanceOf(AnioAcademicoNoDisponibleError);
+  });
+
+  it('CP-EA-035: permite crear oferta con año planificado (no cerrado/anulado)', async () => {
+    const repo = mockRepoOferta({
+      obtenerContextoReferenciasOferta: jest.fn().mockResolvedValue({
+        sede: { id: 'sede-a', estado: 'ACTIVA' },
+        grado: { id: 'g1', estado: 'ACTIVO' },
+        nivel: { id: 'n1', estado: 'ACTIVO' },
+        anioAcademico: { id: 'a1', estado: 'PLANIFICADO' },
+      }),
+    });
+    const caso = new CrearOfertaGradoSedeCasoUso(repo);
+    await expect(
+      caso.ejecutar(
+        { idSede: 'sede-a', idGradoEducativo: 'g1', idAnioAcademico: 'a1' },
+        ALCANCE_INST,
+      ),
+    ).resolves.toEqual({ id: 'o1' });
+  });
+});
+
+describe('CambiarEstadoOfertaGradoSedeCasoUso - validaciones REL-006.3', () => {
+  it('CP-EA-036: rechaza activar oferta con año planificado', async () => {
+    const repo = mockRepoOferta({
+      obtenerOfertaConContexto: jest.fn().mockResolvedValue({
+        id: 'o1',
+        estado: 'PLANIFICADA',
+        idSede: 'sede-a',
+        estadoSede: 'ACTIVA',
+        estadoGrado: 'ACTIVO',
+        estadoNivel: 'ACTIVO',
+        estadoAnio: 'PLANIFICADO',
+      }),
+    });
+    const caso = new CambiarEstadoOfertaGradoSedeCasoUso(repo);
+    await expect(
+      caso.ejecutar('o1', 'ACTIVA', ALCANCE_INST),
+    ).rejects.toBeInstanceOf(AnioAcademicoNoDisponibleError);
+  });
+
+  it('CP-EA-037: rechaza activar oferta con sede inactiva', async () => {
+    const repo = mockRepoOferta({
+      obtenerOfertaConContexto: jest.fn().mockResolvedValue({
+        id: 'o1',
+        estado: 'PLANIFICADA',
+        idSede: 'sede-a',
+        estadoSede: 'INACTIVA',
+        estadoGrado: 'ACTIVO',
+        estadoNivel: 'ACTIVO',
+        estadoAnio: 'ACTIVO',
+      }),
+    });
+    const caso = new CambiarEstadoOfertaGradoSedeCasoUso(repo);
+    await expect(
+      caso.ejecutar('o1', 'ACTIVA', ALCANCE_INST),
+    ).rejects.toBeInstanceOf(SedeAcademicaNoDisponibleError);
+  });
+});
+
+describe('CrearSeccionAcademicaCasoUso - validaciones REL-006.3', () => {
+  it('CP-EA-038: rechaza crear sección sobre oferta cerrada', async () => {
+    const repo = mockRepoOferta({
+      obtenerOfertaBase: jest.fn().mockResolvedValue({
+        id: 'o1',
+        estado: 'CERRADA',
+        idSede: 'sede-a',
+      }),
+    });
+    const caso = new CrearSeccionAcademicaCasoUso(repo);
+    await expect(
+      caso.ejecutar(
+        {
+          idOfertaGradoSede: 'o1',
+          codigo: 'A',
+          nombre: 'Sección A',
+          turno: 'MANANA',
+          capacidadMaxima: 25,
+        },
+        ALCANCE_INST,
+      ),
+    ).rejects.toBeInstanceOf(OfertaNoPermiteSeccionesError);
+  });
+
+  it('CP-EA-039: rechaza crear sección sobre oferta cancelada', async () => {
+    const repo = mockRepoOferta({
+      obtenerOfertaBase: jest.fn().mockResolvedValue({
+        id: 'o1',
+        estado: 'CANCELADA',
+        idSede: 'sede-a',
+      }),
+    });
+    const caso = new CrearSeccionAcademicaCasoUso(repo);
+    await expect(
+      caso.ejecutar(
+        {
+          idOfertaGradoSede: 'o1',
+          codigo: 'A',
+          nombre: 'Sección A',
+          turno: 'MANANA',
+          capacidadMaxima: 25,
+        },
+        ALCANCE_INST,
+      ),
+    ).rejects.toBeInstanceOf(OfertaNoPermiteSeccionesError);
+  });
+});
+
+describe('CambiarEstadoSeccionAcademicaCasoUso - validaciones REL-006.3', () => {
+  it('CP-EA-040: rechaza activar sección cuando oferta está planificada', async () => {
+    const repo = mockRepoOferta({
+      obtenerSeccionBase: jest.fn().mockResolvedValue({
+        id: 's1',
+        estado: 'PLANIFICADA',
+        idOfertaGradoSede: 'o1',
+        idSede: 'sede-a',
+        capacidadMaxima: 25,
+      }),
+      obtenerOfertaBase: jest.fn().mockResolvedValue({
+        id: 'o1',
+        estado: 'PLANIFICADA',
+        idSede: 'sede-a',
+      }),
+    });
+    const caso = new CambiarEstadoSeccionAcademicaCasoUso(repo);
+    await expect(
+      caso.ejecutar('s1', 'ACTIVA', ALCANCE_INST),
+    ).rejects.toBeInstanceOf(OfertaNoActivaError);
+  });
+
+  it('CP-EA-041: rechaza activar sección sin capacidadMaxima', async () => {
+    const repo = mockRepoOferta({
+      obtenerSeccionBase: jest.fn().mockResolvedValue({
+        id: 's1',
+        estado: 'PLANIFICADA',
+        idOfertaGradoSede: 'o1',
+        idSede: 'sede-a',
+        capacidadMaxima: null,
+      }),
+    });
+    const caso = new CambiarEstadoSeccionAcademicaCasoUso(repo);
+    await expect(
+      caso.ejecutar('s1', 'ACTIVA', ALCANCE_INST),
+    ).rejects.toBeInstanceOf(TransicionSeccionInvalidaError);
+  });
+});
+
+describe('ActualizarSeccionAcademicaCasoUso - validaciones REL-006.3', () => {
+  it('CP-EA-042: PATCH con idOfertaGradoSede incorrecto devuelve SeccionAcademicaNoEncontradaError', async () => {
+    const repo = mockRepoOferta({
+      obtenerSeccionBase: jest.fn().mockResolvedValue({
+        id: 's1',
+        estado: 'PLANIFICADA',
+        idOfertaGradoSede: 'o1',
+        idSede: 'sede-a',
+        capacidadMaxima: 30,
+      }),
+    });
+    const caso = new ActualizarSeccionAcademicaCasoUso(repo);
+    await expect(
+      caso.ejecutar(
+        { id: 's1', idOfertaGradoSede: 'o-wrong', nombre: 'B' },
+        ALCANCE_INST,
+      ),
+    ).rejects.toBeInstanceOf(SeccionAcademicaNoEncontradaError);
+  });
+});
+
+describe('CrearSeccionAcademicaSolicitud - validación DTO', () => {
+  it('CP-EA-043: capacidadMaxima null es rechazado por el validador', async () => {
+    const dto = Object.assign(new CrearSeccionAcademicaSolicitud(), {
+      codigo: 'A',
+      nombre: 'Sección A',
+      turno: 'MANANA',
+      capacidadMaxima: null,
+    });
+    const errores = await validate(dto);
+    const campoCapacidad = errores.find(
+      (e) => e.property === 'capacidadMaxima',
+    );
+    expect(campoCapacidad).toBeDefined();
   });
 });

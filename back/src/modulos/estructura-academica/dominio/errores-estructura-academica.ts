@@ -290,3 +290,57 @@ export class GradoTransicionInvalidaError extends ErrorDominio {
     );
   }
 }
+
+export class SedeAcademicaNoDisponibleError extends ErrorDominio {
+  constructor() {
+    super(
+      'ENTIDAD_NO_PROCESABLE',
+      'La sede no está disponible o no está activa',
+    );
+  }
+}
+
+export class GradoAcademicoNoDisponibleError extends ErrorDominio {
+  constructor() {
+    super(
+      'ENTIDAD_NO_PROCESABLE',
+      'El grado educativo no está disponible o no está activo',
+    );
+  }
+}
+
+export class NivelAcademicoNoDisponibleError extends ErrorDominio {
+  constructor() {
+    super(
+      'ENTIDAD_NO_PROCESABLE',
+      'El nivel educativo del grado no está disponible o no está activo',
+    );
+  }
+}
+
+export class AnioAcademicoNoDisponibleError extends ErrorDominio {
+  constructor() {
+    super(
+      'ENTIDAD_NO_PROCESABLE',
+      'El año académico no está disponible para esta operación',
+    );
+  }
+}
+
+export class OfertaNoPermiteSeccionesError extends ErrorDominio {
+  constructor() {
+    super(
+      'ESTADO_INCOMPATIBLE',
+      'La oferta no permite crear secciones en su estado actual',
+    );
+  }
+}
+
+export class OfertaNoActivaError extends ErrorDominio {
+  constructor() {
+    super(
+      'ESTADO_INCOMPATIBLE',
+      'La oferta debe estar activa para activar la sección',
+    );
+  }
+}

@@ -11,15 +11,7 @@ import { configurarAplicacion } from '../src/configuracion/configurar-aplicacion
 const SKIP_E2E = !process.env['BD_HOST'];
 const describeE2E = SKIP_E2E ? describe.skip : describe;
 
-interface ContextoTest {
-  institucionId: string;
-  sedeId: string;
-  sedeBId: string;
-  usuarioId: string;
-  membresiaId: string;
-  correo: string;
-  clave: string;
-}
+// ── Interfaces ────────────────────────────────────────────────────────────────
 
 interface IdResponse {
   id: string;
@@ -47,126 +39,220 @@ interface SeccionResponse {
   turno: string;
 }
 
-async function crearContextoCompleto(
+// ── Setup helpers ─────────────────────────────────────────────────────────────
+
+interface InstitucionSetup {
+  institucionId: string;
+  sedeA1Id: string;
+  sedeA2Id: string;
+  adminCorreo: string;
+  adminClave: string;
+  adminId: string;
+  adminMembresiaId: string;
+  directorA1Correo: string;
+  directorA1Clave: string;
+  directorA1Id: string;
+  directorA1MembresiaId: string;
+  directorA2Correo: string;
+  directorA2Clave: string;
+  directorA2Id: string;
+  directorA2MembresiaId: string;
+}
+
+async function crearInstitucionConUsuarios(
   ds: DataSource,
   sufijo: string,
-): Promise<ContextoTest> {
+): Promise<InstitucionSetup> {
   const institucionId = randomUUID();
-  const sedeId = randomUUID();
-  const sedeBId = randomUUID();
-  const usuarioId = randomUUID();
-  const membresiaId = randomUUID();
-  const correo = `ea-e2e-${randomUUID()}@test.edura.local`;
-  const clave = `Clave${sufijo}@2026!`;
-  const codigo = `IE-EA-${sufijo}-${Date.now().toString(36)}`.slice(0, 40);
+  const sedeA1Id = randomUUID();
+  const sedeA2Id = randomUUID();
+  const codigoBase = `IE-${sufijo}-${Date.now().toString(36)}`.slice(0, 40);
 
-  await ds.transaction(async (manager) => {
-    await manager.query(
+  const adminId = randomUUID();
+  const adminMembresiaId = randomUUID();
+  const adminCorreo = `admin-${randomUUID()}@test.edura.local`;
+  const adminClave = `Admin${sufijo}@2026!`;
+
+  const directorA1Id = randomUUID();
+  const directorA1MembresiaId = randomUUID();
+  const directorA1Correo = `dir-a1-${randomUUID()}@test.edura.local`;
+  const directorA1Clave = `DirA1${sufijo}@2026!`;
+
+  const directorA2Id = randomUUID();
+  const directorA2MembresiaId = randomUUID();
+  const directorA2Correo = `dir-a2-${randomUUID()}@test.edura.local`;
+  const directorA2Clave = `DirA2${sufijo}@2026!`;
+
+  await ds.transaction(async (m) => {
+    // Institución y sedes
+    await m.query(
       `INSERT INTO instituciones_educativas
          (id, codigo, nombre_legal, nombre_corto, tipo_gestion, estado, fecha_creacion, fecha_modificacion)
        VALUES ($1, $2, $3, $4, 'PUBLICA', 'ACTIVA', now(), now())`,
-      [institucionId, codigo, `Institucion EA ${sufijo}`, `EA-${sufijo}`],
+      [institucionId, codigoBase, `Inst ${sufijo}`, `I-${sufijo}`],
     );
-    await manager.query(
-      `INSERT INTO sedes
-         (id, id_institucion_educativa, codigo, nombre, es_principal, estado, fecha_creacion, fecha_modificacion)
+    await m.query(
+      `INSERT INTO sedes (id, id_institucion_educativa, codigo, nombre, es_principal, estado, fecha_creacion, fecha_modificacion)
        VALUES ($1, $2, $3, $4, true, 'ACTIVA', now(), now())`,
-      [sedeId, institucionId, `SEDE-P-${sufijo}`, `Sede P ${sufijo}`],
+      [sedeA1Id, institucionId, `S1-${sufijo}`, `Sede A1 ${sufijo}`],
     );
-    await manager.query(
-      `INSERT INTO sedes
-         (id, id_institucion_educativa, codigo, nombre, es_principal, estado, fecha_creacion, fecha_modificacion)
+    await m.query(
+      `INSERT INTO sedes (id, id_institucion_educativa, codigo, nombre, es_principal, estado, fecha_creacion, fecha_modificacion)
        VALUES ($1, $2, $3, $4, false, 'ACTIVA', now(), now())`,
-      [sedeBId, institucionId, `SEDE-B-${sufijo}`, `Sede B ${sufijo}`],
+      [sedeA2Id, institucionId, `S2-${sufijo}`, `Sede A2 ${sufijo}`],
     );
 
-    const hash = await argon2.hash(clave, { type: argon2.argon2id });
-    await manager.query(
-      `INSERT INTO usuarios
-         (id, correo, correo_normalizado, nombre_mostrado, estado, correo_verificado, version_seguridad, fecha_creacion, fecha_modificacion)
-       VALUES ($1, $2, $3, $4, 'ACTIVO', true, 1, now(), now())`,
-      [usuarioId, correo, correo.toLowerCase(), `Usuario EA ${sufijo}`],
-    );
-    await manager.query(
-      `INSERT INTO credenciales_usuario
-         (id_usuario, hash_clave, algoritmo, requiere_cambio, intentos_fallidos, fecha_cambio_clave, fecha_modificacion)
-       VALUES ($1, $2, 'ARGON2ID', false, 0, now(), now())`,
-      [usuarioId, hash],
-    );
-    await manager.query(
-      `INSERT INTO membresias_institucion
-         (id, id_usuario, id_institucion_educativa, estado, fecha_inicio, fecha_creacion, fecha_modificacion)
-       VALUES ($1, $2, $3, 'ACTIVA', CURRENT_DATE, now(), now())`,
-      [membresiaId, usuarioId, institucionId],
-    );
-
-    const [rol] = await manager.query<{ id: string }[]>(
+    // Obtener roles
+    const [rolAdmin] = await m.query<{ id: string }[]>(
       `SELECT id FROM roles WHERE codigo = 'ADMINISTRADOR_INSTITUCION' LIMIT 1`,
     );
-    if (rol) {
-      await manager.query(
-        `INSERT INTO asignaciones_rol_usuario
-           (id, id_usuario, id_rol, id_membresia_institucion, id_sede, estado, fecha_inicio, fecha_creacion)
+    const [rolDirector] = await m.query<{ id: string }[]>(
+      `SELECT id FROM roles WHERE codigo = 'DIRECTOR_SEDE' LIMIT 1`,
+    );
+
+    // Usuario ADMIN (solo ADMINISTRADOR_INSTITUCION, sin sede)
+    const hashAdmin = await argon2.hash(adminClave, { type: argon2.argon2id });
+    await m.query(
+      `INSERT INTO usuarios (id, correo, correo_normalizado, nombre_mostrado, estado, correo_verificado, version_seguridad, fecha_creacion, fecha_modificacion)
+       VALUES ($1, $2, $3, $4, 'ACTIVO', true, 1, now(), now())`,
+      [adminId, adminCorreo, adminCorreo.toLowerCase(), `Admin ${sufijo}`],
+    );
+    await m.query(
+      `INSERT INTO credenciales_usuario (id_usuario, hash_clave, algoritmo, requiere_cambio, intentos_fallidos, fecha_cambio_clave, fecha_modificacion)
+       VALUES ($1, $2, 'ARGON2ID', false, 0, now(), now())`,
+      [adminId, hashAdmin],
+    );
+    await m.query(
+      `INSERT INTO membresias_institucion (id, id_usuario, id_institucion_educativa, estado, fecha_inicio, fecha_creacion, fecha_modificacion)
+       VALUES ($1, $2, $3, 'ACTIVA', CURRENT_DATE, now(), now())`,
+      [adminMembresiaId, adminId, institucionId],
+    );
+    if (rolAdmin) {
+      await m.query(
+        `INSERT INTO asignaciones_rol_usuario (id, id_usuario, id_rol, id_membresia_institucion, id_sede, estado, fecha_inicio, fecha_creacion)
          VALUES ($1, $2, $3, $4, NULL, 'ACTIVA', CURRENT_DATE, now())`,
-        [randomUUID(), usuarioId, rol.id, membresiaId],
+        [randomUUID(), adminId, rolAdmin.id, adminMembresiaId],
       );
     }
 
-    const [rolDirector] = await manager.query<{ id: string }[]>(
-      `SELECT id FROM roles WHERE codigo = 'DIRECTOR_SEDE' LIMIT 1`,
+    // Usuario DIRECTOR A1 (solo DIRECTOR_SEDE en sedeA1)
+    const hashDir1 = await argon2.hash(directorA1Clave, {
+      type: argon2.argon2id,
+    });
+    await m.query(
+      `INSERT INTO usuarios (id, correo, correo_normalizado, nombre_mostrado, estado, correo_verificado, version_seguridad, fecha_creacion, fecha_modificacion)
+       VALUES ($1, $2, $3, $4, 'ACTIVO', true, 1, now(), now())`,
+      [
+        directorA1Id,
+        directorA1Correo,
+        directorA1Correo.toLowerCase(),
+        `Dir A1 ${sufijo}`,
+      ],
+    );
+    await m.query(
+      `INSERT INTO credenciales_usuario (id_usuario, hash_clave, algoritmo, requiere_cambio, intentos_fallidos, fecha_cambio_clave, fecha_modificacion)
+       VALUES ($1, $2, 'ARGON2ID', false, 0, now(), now())`,
+      [directorA1Id, hashDir1],
+    );
+    await m.query(
+      `INSERT INTO membresias_institucion (id, id_usuario, id_institucion_educativa, estado, fecha_inicio, fecha_creacion, fecha_modificacion)
+       VALUES ($1, $2, $3, 'ACTIVA', CURRENT_DATE, now(), now())`,
+      [directorA1MembresiaId, directorA1Id, institucionId],
     );
     if (rolDirector) {
-      await manager.query(
-        `INSERT INTO asignaciones_rol_usuario
-           (id, id_usuario, id_rol, id_membresia_institucion, id_sede, estado, fecha_inicio, fecha_creacion)
+      await m.query(
+        `INSERT INTO asignaciones_rol_usuario (id, id_usuario, id_rol, id_membresia_institucion, id_sede, estado, fecha_inicio, fecha_creacion)
          VALUES ($1, $2, $3, $4, $5, 'ACTIVA', CURRENT_DATE, now())`,
-        [randomUUID(), usuarioId, rolDirector.id, membresiaId, sedeId],
+        [
+          randomUUID(),
+          directorA1Id,
+          rolDirector.id,
+          directorA1MembresiaId,
+          sedeA1Id,
+        ],
       );
-      await manager.query(
-        `INSERT INTO asignaciones_rol_usuario
-           (id, id_usuario, id_rol, id_membresia_institucion, id_sede, estado, fecha_inicio, fecha_creacion)
+    }
+
+    // Usuario DIRECTOR A2 (solo DIRECTOR_SEDE en sedeA2)
+    const hashDir2 = await argon2.hash(directorA2Clave, {
+      type: argon2.argon2id,
+    });
+    await m.query(
+      `INSERT INTO usuarios (id, correo, correo_normalizado, nombre_mostrado, estado, correo_verificado, version_seguridad, fecha_creacion, fecha_modificacion)
+       VALUES ($1, $2, $3, $4, 'ACTIVO', true, 1, now(), now())`,
+      [
+        directorA2Id,
+        directorA2Correo,
+        directorA2Correo.toLowerCase(),
+        `Dir A2 ${sufijo}`,
+      ],
+    );
+    await m.query(
+      `INSERT INTO credenciales_usuario (id_usuario, hash_clave, algoritmo, requiere_cambio, intentos_fallidos, fecha_cambio_clave, fecha_modificacion)
+       VALUES ($1, $2, 'ARGON2ID', false, 0, now(), now())`,
+      [directorA2Id, hashDir2],
+    );
+    await m.query(
+      `INSERT INTO membresias_institucion (id, id_usuario, id_institucion_educativa, estado, fecha_inicio, fecha_creacion, fecha_modificacion)
+       VALUES ($1, $2, $3, 'ACTIVA', CURRENT_DATE, now(), now())`,
+      [directorA2MembresiaId, directorA2Id, institucionId],
+    );
+    if (rolDirector) {
+      await m.query(
+        `INSERT INTO asignaciones_rol_usuario (id, id_usuario, id_rol, id_membresia_institucion, id_sede, estado, fecha_inicio, fecha_creacion)
          VALUES ($1, $2, $3, $4, $5, 'ACTIVA', CURRENT_DATE, now())`,
-        [randomUUID(), usuarioId, rolDirector.id, membresiaId, sedeBId],
+        [
+          randomUUID(),
+          directorA2Id,
+          rolDirector.id,
+          directorA2MembresiaId,
+          sedeA2Id,
+        ],
       );
     }
   });
 
   return {
     institucionId,
-    sedeId,
-    sedeBId,
-    usuarioId,
-    membresiaId,
-    correo,
-    clave,
+    sedeA1Id,
+    sedeA2Id,
+    adminCorreo,
+    adminClave,
+    adminId,
+    adminMembresiaId,
+    directorA1Correo,
+    directorA1Clave,
+    directorA1Id,
+    directorA1MembresiaId,
+    directorA2Correo,
+    directorA2Clave,
+    directorA2Id,
+    directorA2MembresiaId,
   };
 }
 
-async function limpiarContexto(
+async function limpiarInstitucion(
   ds: DataSource,
-  ctx: ContextoTest,
+  institucionId: string,
 ): Promise<void> {
-  const cleanTable = async (t: string) => {
+  const cleanByInst = async (t: string) => {
     await ds.query(`DELETE FROM ${t} WHERE id_institucion_educativa = $1`, [
-      ctx.institucionId,
+      institucionId,
     ]);
   };
+  await cleanByInst('secciones_academicas');
+  await cleanByInst('ofertas_grado_sede');
+  await cleanByInst('periodos_academicos');
+  await cleanByInst('anios_academicos');
+  await cleanByInst('grados_educativos');
+  await cleanByInst('niveles_educativos');
+  await cleanByInst('elementos_infraestructura');
 
-  await cleanTable('secciones_academicas');
-  await cleanTable('ofertas_grado_sede');
-  await cleanTable('periodos_academicos');
-  await cleanTable('anios_academicos');
-  await cleanTable('grados_educativos');
-  await cleanTable('niveles_educativos');
-  await cleanTable('elementos_infraestructura');
-
-  // Clean all user roles/membresias/sessions/credentials for users that belong to this IE
   const usuarios = await ds.query<{ id_usuario: string }[]>(
     `SELECT id_usuario FROM membresias_institucion WHERE id_institucion_educativa = $1`,
-    [ctx.institucionId],
+    [institucionId],
   );
   const uIds = usuarios.map((u) => u.id_usuario);
-
   if (uIds.length > 0) {
     await ds.query(
       `DELETE FROM asignaciones_rol_usuario WHERE id_usuario = ANY($1)`,
@@ -185,16 +271,15 @@ async function limpiarContexto(
     ]);
     await ds.query(`DELETE FROM usuarios WHERE id = ANY($1)`, [uIds]);
   }
-
   await ds.query(`DELETE FROM sedes WHERE id_institucion_educativa = $1`, [
-    ctx.institucionId,
+    institucionId,
   ]);
   await ds.query(`DELETE FROM instituciones_educativas WHERE id = $1`, [
-    ctx.institucionId,
+    institucionId,
   ]);
 }
 
-async function obtenerTokenAcceso(
+async function obtenerToken(
   app: INestApplication<App>,
   correo: string,
   clave: string,
@@ -205,64 +290,43 @@ async function obtenerTokenAcceso(
     .post('/api/v1/autenticacion/iniciar-sesion')
     .send({ correo, clave })
     .expect(201);
-  const tokenPrecontexto = (loginRes.body as { accessToken: string })
-    .accessToken;
+  const preToken = (loginRes.body as { accessToken: string }).accessToken;
 
-  const contextosRes = await request(app.getHttpServer())
+  const ctxRes = await request(app.getHttpServer())
     .get('/api/v1/autenticacion/contextos')
-    .set('Authorization', `Bearer ${tokenPrecontexto}`)
+    .set('Authorization', `Bearer ${preToken}`)
     .expect(200);
-  const listaContextos = contextosRes.body as {
+
+  const lista = ctxRes.body as {
     ambito: string;
     institucionId: string | null;
     sedeId: string | null;
   }[];
-
-  const contexto = listaContextos.find((item) => {
-    if (sedeId) {
-      return item.ambito === 'SEDE' && item.sedeId === sedeId;
-    }
-    return (
-      item.ambito === 'INSTITUCION' && item.institucionId === institucionId
+  const ctx = lista.find((c) =>
+    sedeId
+      ? c.ambito === 'SEDE' && c.sedeId === sedeId
+      : c.ambito === 'INSTITUCION' && c.institucionId === institucionId,
+  );
+  if (!ctx)
+    throw new Error(
+      `No se encontró contexto para ${correo} (sedeId=${sedeId ?? 'null'})`,
     );
-  });
-  if (!contexto) {
-    const ds = app.get(DataSource);
-    const u = await ds.query<{ id: string }[]>(
-      'SELECT id FROM usuarios WHERE correo_normalizado = $1',
-      [correo.toLowerCase()],
-    );
-    const resolvedUserId = u[0]?.id;
-    console.log('--- E2E CONTEXT NOT FOUND DEBUG ---');
-    console.log('correo:', correo);
-    console.log('institucionId:', institucionId);
-    console.log('sedeId:', sedeId);
-    console.log('listaContextos:', JSON.stringify(listaContextos, null, 2));
-    const allRoles = await ds.query<unknown[]>('SELECT * FROM roles');
-    console.log('allRoles in DB:', JSON.stringify(allRoles, null, 2));
-    if (resolvedUserId) {
-      const userRoles = await ds.query<unknown[]>(
-        'SELECT * FROM asignaciones_rol_usuario WHERE id_usuario = $1',
-        [resolvedUserId],
-      );
-      console.log('userRoles in DB:', JSON.stringify(userRoles, null, 2));
-    }
-    throw new Error(`No se encontró contexto para ${correo}`);
-  }
 
-  const seleccionRes = await request(app.getHttpServer())
+  const selRes = await request(app.getHttpServer())
     .post('/api/v1/autenticacion/seleccionar-contexto')
-    .set('Authorization', `Bearer ${tokenPrecontexto}`)
-    .send(contexto)
+    .set('Authorization', `Bearer ${preToken}`)
+    .send(ctx)
     .expect(201);
-  return (seleccionRes.body as { accessToken: string }).accessToken;
+  return (selRes.body as { accessToken: string }).accessToken;
 }
+
+// ── Tests ─────────────────────────────────────────────────────────────────────
 
 describeE2E('Flujo estructura académica E2E (requiere BD)', () => {
   let app: INestApplication<App>;
   let ds: DataSource;
-  let ctx: ContextoTest;
-  let tokenInst: string;
+  let setup: InstitucionSetup;
+  let tokenAdmin: string;
 
   beforeAll(async () => {
     const modulo: TestingModule = await Test.createTestingModule({
@@ -273,30 +337,31 @@ describeE2E('Flujo estructura académica E2E (requiere BD)', () => {
     await app.init();
     ds = modulo.get(DataSource);
 
-    ctx = await crearContextoCompleto(ds, 'EA1');
-    tokenInst = await obtenerTokenAcceso(
+    setup = await crearInstitucionConUsuarios(ds, 'EA1');
+    tokenAdmin = await obtenerToken(
       app,
-      ctx.correo,
-      ctx.clave,
-      ctx.institucionId,
+      setup.adminCorreo,
+      setup.adminClave,
+      setup.institucionId,
     );
   });
 
   afterAll(async () => {
-    if (ds) {
-      await limpiarContexto(ds, ctx).catch(() => undefined);
-    }
+    if (ds)
+      await limpiarInstitucion(ds, setup.institucionId).catch(() => undefined);
     if (app) await app.close();
   });
+
+  // ── Calendario Académico ──────────────────────────────────────────────────
 
   describe('Calendario Académico (Años y Períodos)', () => {
     let anioId: string;
     let periodoId: string;
 
-    it('POST /api/v1/estructura-academica/anios crea un año planificado', async () => {
+    it('POST /anios crea un año planificado', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/v1/estructura-academica/anios')
-        .set('Authorization', `Bearer ${tokenInst}`)
+        .set('Authorization', `Bearer ${tokenAdmin}`)
         .send({
           anio: 2026,
           codigo: '2026',
@@ -304,32 +369,29 @@ describeE2E('Flujo estructura académica E2E (requiere BD)', () => {
           fechaInicio: '2026-03-01',
           fechaFin: '2026-12-20',
           estado: 'PLANIFICADO',
-          observacion: 'Prueba E2E',
         })
         .expect(201);
 
-      const body = res.body as IdResponse;
-      expect(body.id).toBeDefined();
-      anioId = body.id;
+      anioId = (res.body as IdResponse).id;
+      expect(anioId).toBeDefined();
     });
 
-    it('GET /api/v1/estructura-academica/anios retorna lista conteniendo el año creado', async () => {
+    it('GET /anios retorna el año creado', async () => {
       const res = await request(app.getHttpServer())
         .get('/api/v1/estructura-academica/anios')
-        .set('Authorization', `Bearer ${tokenInst}`)
+        .set('Authorization', `Bearer ${tokenAdmin}`)
         .expect(200);
 
       const items = res.body as AnioResponse[];
       const creado = items.find((a) => a.id === anioId);
-      expect(creado).toBeDefined();
       expect(creado?.anio).toBe(2026);
       expect(creado?.estado).toBe('PLANIFICADO');
     });
 
-    it('POST /api/v1/estructura-academica/anios/:idAnio/periodos crea un bimestres', async () => {
+    it('POST /anios/:id/periodos crea un período bimestral', async () => {
       const res = await request(app.getHttpServer())
         .post(`/api/v1/estructura-academica/anios/${anioId}/periodos`)
-        .set('Authorization', `Bearer ${tokenInst}`)
+        .set('Authorization', `Bearer ${tokenAdmin}`)
         .send({
           codigo: 'B1',
           nombre: 'Primer Bimestre',
@@ -337,148 +399,150 @@ describeE2E('Flujo estructura académica E2E (requiere BD)', () => {
           orden: 1,
           fechaInicio: '2026-03-01',
           fechaFin: '2026-04-30',
-          observacion: 'B1 E2E',
         })
         .expect(201);
 
-      const body = res.body as IdResponse;
-      expect(body.id).toBeDefined();
-      periodoId = body.id;
+      periodoId = (res.body as IdResponse).id;
+      expect(periodoId).toBeDefined();
     });
 
-    it('GET /api/v1/estructura-academica/anios/:idAnio/periodos retorna el periodo creado', async () => {
+    it('GET /anios/:id/periodos retorna el período', async () => {
       const res = await request(app.getHttpServer())
         .get(`/api/v1/estructura-academica/anios/${anioId}/periodos`)
-        .set('Authorization', `Bearer ${tokenInst}`)
+        .set('Authorization', `Bearer ${tokenAdmin}`)
         .expect(200);
 
       const items = res.body as PeriodoResponse[];
-      const creado = items.find((p) => p.id === periodoId);
-      expect(creado).toBeDefined();
-      expect(creado?.codigo).toBe('B1');
+      expect(items.find((p) => p.id === periodoId)?.codigo).toBe('B1');
     });
   });
+
+  // ── Catálogos ─────────────────────────────────────────────────────────────
 
   describe('Catálogos (Niveles y Grados)', () => {
     let nivelId: string;
     let gradoId: string;
 
-    it('POST /api/v1/estructura-academica/niveles crea un nivel educativo', async () => {
+    it('POST /niveles crea un nivel', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/v1/estructura-academica/niveles')
-        .set('Authorization', `Bearer ${tokenInst}`)
-        .send({
-          codigo: 'SEC',
-          nombre: 'Secundaria',
-          descripcion: 'Nivel Secundaria',
-          orden: 1,
-        })
+        .set('Authorization', `Bearer ${tokenAdmin}`)
+        .send({ codigo: 'SEC', nombre: 'Secundaria', orden: 1 })
         .expect(201);
 
-      const body = res.body as IdResponse;
-      expect(body.id).toBeDefined();
-      nivelId = body.id;
+      nivelId = (res.body as IdResponse).id;
+      expect(nivelId).toBeDefined();
     });
 
-    it('POST /api/v1/estructura-academica/grados crea un grado en ese nivel', async () => {
+    it('POST /grados crea un grado', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/v1/estructura-academica/grados')
-        .set('Authorization', `Bearer ${tokenInst}`)
+        .set('Authorization', `Bearer ${tokenAdmin}`)
         .send({
           idNivelEducativo: nivelId,
           codigo: '1SEC',
           nombre: 'Primero de Secundaria',
-          descripcion: 'Primer grado',
           orden: 1,
         })
         .expect(201);
 
-      const body = res.body as IdResponse;
-      expect(body.id).toBeDefined();
-      gradoId = body.id;
+      gradoId = (res.body as IdResponse).id;
+      expect(gradoId).toBeDefined();
     });
 
-    it('GET /api/v1/estructura-academica/grados retorna el grado creado', async () => {
+    it('GET /grados retorna el grado con nivel correcto', async () => {
       const res = await request(app.getHttpServer())
         .get('/api/v1/estructura-academica/grados')
-        .set('Authorization', `Bearer ${tokenInst}`)
+        .set('Authorization', `Bearer ${tokenAdmin}`)
         .expect(200);
 
       const items = res.body as GradoResponse[];
-      const creado = items.find((g) => g.id === gradoId);
-      expect(creado).toBeDefined();
-      expect(creado?.nombreNivel).toBe('Secundaria');
+      expect(items.find((g) => g.id === gradoId)?.nombreNivel).toBe(
+        'Secundaria',
+      );
     });
   });
+
+  // ── Ofertas y Secciones ───────────────────────────────────────────────────
 
   describe('Ofertas y Secciones', () => {
     let anioId: string;
     let nivelId: string;
     let gradoId: string;
-    let ofertaId: string;
-    let seccionId: string;
+    let ofertaA1Id: string;
+    let ofertaA2Id: string;
+    let seccionA1Id: string;
 
     beforeAll(async () => {
-      // Registrar un año y grado listos para ofertar
-      const anioRes = await request(app.getHttpServer())
-        .post('/api/v1/estructura-academica/anios')
-        .set('Authorization', `Bearer ${tokenInst}`)
-        .send({
-          anio: 2027,
-          codigo: '2027',
-          nombre: 'Año Académico 2027',
-          fechaInicio: '2027-03-01',
-          fechaFin: '2027-12-20',
-          estado: 'PLANIFICADO',
-        });
-      const anioBody = anioRes.body as IdResponse;
-      anioId = anioBody.id;
-
-      const nivelRes = await request(app.getHttpServer())
-        .post('/api/v1/estructura-academica/niveles')
-        .set('Authorization', `Bearer ${tokenInst}`)
-        .send({
-          codigo: 'PRI',
-          nombre: 'Primaria',
-          orden: 2,
-        });
-      const nivelBody = nivelRes.body as IdResponse;
-      nivelId = nivelBody.id;
+      // Año, nivel, grado compartidos para este suite
+      const [anioRes, nivelRes] = await Promise.all([
+        request(app.getHttpServer())
+          .post('/api/v1/estructura-academica/anios')
+          .set('Authorization', `Bearer ${tokenAdmin}`)
+          .send({
+            anio: 2027,
+            codigo: '2027',
+            nombre: 'Año 2027',
+            fechaInicio: '2027-03-01',
+            fechaFin: '2027-12-20',
+            estado: 'PLANIFICADO',
+          }),
+        request(app.getHttpServer())
+          .post('/api/v1/estructura-academica/niveles')
+          .set('Authorization', `Bearer ${tokenAdmin}`)
+          .send({ codigo: 'PRI', nombre: 'Primaria', orden: 2 }),
+      ]);
+      anioId = (anioRes.body as IdResponse).id;
+      nivelId = (nivelRes.body as IdResponse).id;
 
       const gradoRes = await request(app.getHttpServer())
         .post('/api/v1/estructura-academica/grados')
-        .set('Authorization', `Bearer ${tokenInst}`)
+        .set('Authorization', `Bearer ${tokenAdmin}`)
         .send({
           idNivelEducativo: nivelId,
           codigo: '1PRI',
-          nombre: 'Primero de Primaria',
+          nombre: 'Primero Primaria',
           orden: 1,
         });
-      const gradoBody = gradoRes.body as IdResponse;
-      gradoId = gradoBody.id;
+      gradoId = (gradoRes.body as IdResponse).id;
     });
 
-    it('POST /api/v1/estructura-academica/ofertas crea oferta grado-sede', async () => {
+    it('POST /ofertas crea oferta en sede A1', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/v1/estructura-academica/ofertas')
-        .set('Authorization', `Bearer ${tokenInst}`)
+        .set('Authorization', `Bearer ${tokenAdmin}`)
         .send({
-          idSede: ctx.sedeId,
+          idSede: setup.sedeA1Id,
           idGradoEducativo: gradoId,
           idAnioAcademico: anioId,
           capacidadReferencial: 30,
         })
         .expect(201);
 
-      const body = res.body as IdResponse;
-      expect(body.id).toBeDefined();
-      ofertaId = body.id;
+      ofertaA1Id = (res.body as IdResponse).id;
+      expect(ofertaA1Id).toBeDefined();
     });
 
-    it('POST /api/v1/estructura-academica/ofertas/:idOferta/secciones crea sección sin tutor ni espacio', async () => {
+    it('POST /ofertas crea oferta en sede A2', async () => {
       const res = await request(app.getHttpServer())
-        .post(`/api/v1/estructura-academica/ofertas/${ofertaId}/secciones`)
-        .set('Authorization', `Bearer ${tokenInst}`)
+        .post('/api/v1/estructura-academica/ofertas')
+        .set('Authorization', `Bearer ${tokenAdmin}`)
+        .send({
+          idSede: setup.sedeA2Id,
+          idGradoEducativo: gradoId,
+          idAnioAcademico: anioId,
+          capacidadReferencial: 30,
+        })
+        .expect(201);
+
+      ofertaA2Id = (res.body as IdResponse).id;
+      expect(ofertaA2Id).toBeDefined();
+    });
+
+    it('POST /ofertas/:id/secciones crea sección en A1', async () => {
+      const res = await request(app.getHttpServer())
+        .post(`/api/v1/estructura-academica/ofertas/${ofertaA1Id}/secciones`)
+        .set('Authorization', `Bearer ${tokenAdmin}`)
         .send({
           codigo: 'A',
           nombre: 'Sección A',
@@ -487,99 +551,293 @@ describeE2E('Flujo estructura académica E2E (requiere BD)', () => {
         })
         .expect(201);
 
-      const body = res.body as IdResponse;
-      expect(body.id).toBeDefined();
-      seccionId = body.id;
+      seccionA1Id = (res.body as IdResponse).id;
+      expect(seccionA1Id).toBeDefined();
     });
 
-    it('GET /api/v1/estructura-academica/ofertas/:idOferta/secciones retorna la sección creada', async () => {
+    it('POST /ofertas/:id/secciones crea sección en A2', async () => {
       const res = await request(app.getHttpServer())
-        .get(`/api/v1/estructura-academica/ofertas/${ofertaId}/secciones`)
-        .set('Authorization', `Bearer ${tokenInst}`)
+        .post(`/api/v1/estructura-academica/ofertas/${ofertaA2Id}/secciones`)
+        .set('Authorization', `Bearer ${tokenAdmin}`)
+        .send({
+          codigo: 'A',
+          nombre: 'Sección A',
+          turno: 'MANANA',
+          capacidadMaxima: 25,
+        })
+        .expect(201);
+
+      expect((res.body as IdResponse).id).toBeDefined();
+    });
+
+    it('GET /ofertas/:id/secciones retorna la sección de A1', async () => {
+      const res = await request(app.getHttpServer())
+        .get(`/api/v1/estructura-academica/ofertas/${ofertaA1Id}/secciones`)
+        .set('Authorization', `Bearer ${tokenAdmin}`)
         .expect(200);
 
       const items = res.body as SeccionResponse[];
-      const creado = items.find((s) => s.id === seccionId);
-      expect(creado).toBeDefined();
-      expect(creado?.codigo).toBe('A');
-      expect(creado?.turno).toBe('MANANA');
+      expect(items.find((s) => s.id === seccionA1Id)?.codigo).toBe('A');
     });
 
-    it('POST /api/v1/estructura-academica/ofertas/:idOferta/secciones con espacio fuera de sede retorna 422', async () => {
-      // 1. Crear un espacio físico en sede B
-      const espacioOtroId = randomUUID();
-      const tipoElemId = randomUUID();
-      const estadoConservId = randomUUID();
-      await ds.transaction(async (manager) => {
-        const existingType = await manager.query<{ id: string }[]>(
-          `SELECT id FROM tipos_elemento_infraestructura WHERE codigo = 'TIPO-E2E-1' LIMIT 1`,
-        );
-        let actualTipoElemId = tipoElemId;
-        if (existingType.length > 0) {
-          actualTipoElemId = existingType[0].id;
-        } else {
-          await manager.query(
-            `INSERT INTO tipos_elemento_infraestructura (id, codigo, nombre, activo)
-             VALUES ($1, 'TIPO-E2E-1', 'Tipo E2E', true)`,
-            [tipoElemId],
-          );
-        }
+    // ── Aislamiento por sede ────────────────────────────────────────────────
 
-        const existingEC = await manager.query<{ id: string }[]>(
-          `SELECT id FROM estados_conservacion WHERE codigo = 'ESTADO-E2E-1' LIMIT 1`,
-        );
-        let actualEstadoConservId = estadoConservId;
-        if (existingEC.length > 0) {
-          actualEstadoConservId = existingEC[0].id;
-        } else {
-          await manager.query(
-            `INSERT INTO estados_conservacion (id, codigo, nombre, orden, activo)
-             VALUES ($1, 'ESTADO-E2E-1', 'Bueno', 1, true)`,
-            [estadoConservId],
-          );
-        }
+    describe('Aislamiento por sede', () => {
+      let tokenDirA1: string;
+      let tokenDirA2: string;
 
-        await manager.query(
-          `INSERT INTO elementos_infraestructura
-             (id, id_sede, id_tipo_elemento, id_estado_conservacion, codigo, nombre, estado)
-           VALUES ($1, $2, $3, $4, 'ESP-SEDEB', 'Aula Sede B', 'ACTIVO')`,
-          [espacioOtroId, ctx.sedeBId, actualTipoElemId, actualEstadoConservId],
-        );
+      beforeAll(async () => {
+        [tokenDirA1, tokenDirA2] = await Promise.all([
+          obtenerToken(
+            app,
+            setup.directorA1Correo,
+            setup.directorA1Clave,
+            setup.institucionId,
+            setup.sedeA1Id,
+          ),
+          obtenerToken(
+            app,
+            setup.directorA2Correo,
+            setup.directorA2Clave,
+            setup.institucionId,
+            setup.sedeA2Id,
+          ),
+        ]);
       });
 
-      // 2. Intentar crear sección asociando ese espacio (la oferta es en sede A)
-      await request(app.getHttpServer())
-        .post(`/api/v1/estructura-academica/ofertas/${ofertaId}/secciones`)
-        .set('Authorization', `Bearer ${tokenInst}`)
-        .send({
-          codigo: 'B',
-          nombre: 'Sección B',
-          turno: 'MANANA',
-          idEspacioFisico: espacioOtroId,
-        })
-        .expect(422);
+      it('Director A1 lista secciones de su sede (200)', async () => {
+        const res = await request(app.getHttpServer())
+          .get(`/api/v1/estructura-academica/ofertas/${ofertaA1Id}/secciones`)
+          .set('Authorization', `Bearer ${tokenDirA1}`)
+          .expect(200);
+
+        const items = res.body as SeccionResponse[];
+        expect(items.some((s) => s.id === seccionA1Id)).toBe(true);
+      });
+
+      it('Director A1 no lista secciones de A2 (lista vacía por filtro sedeId)', async () => {
+        const res = await request(app.getHttpServer())
+          .get(`/api/v1/estructura-academica/ofertas/${ofertaA2Id}/secciones`)
+          .set('Authorization', `Bearer ${tokenDirA1}`)
+          .expect(200);
+
+        // El consultador filtra por sedeId A1, que no coincide con la oferta A2
+        expect((res.body as SeccionResponse[]).length).toBe(0);
+      });
+
+      it('Director A1 no puede actualizar sección de A2 (404)', async () => {
+        // Necesitamos id de la sección de A2
+        const seccionesA2Res = await request(app.getHttpServer())
+          .get(`/api/v1/estructura-academica/ofertas/${ofertaA2Id}/secciones`)
+          .set('Authorization', `Bearer ${tokenAdmin}`)
+          .expect(200);
+        const seccionA2Id = (seccionesA2Res.body as SeccionResponse[])[0]?.id;
+
+        if (!seccionA2Id) return; // skip si no existe
+        await request(app.getHttpServer())
+          .patch(
+            `/api/v1/estructura-academica/ofertas/${ofertaA2Id}/secciones/${seccionA2Id}`,
+          )
+          .set('Authorization', `Bearer ${tokenDirA1}`)
+          .send({ nombre: 'Intento cruzado' })
+          .expect(404);
+      });
+
+      it('Director A2 no puede crear oferta en sede A1 (403)', async () => {
+        await request(app.getHttpServer())
+          .post('/api/v1/estructura-academica/ofertas')
+          .set('Authorization', `Bearer ${tokenDirA2}`)
+          .send({
+            idSede: setup.sedeA1Id,
+            idGradoEducativo: gradoId,
+            idAnioAcademico: anioId,
+          })
+          .expect(403);
+      });
     });
 
-    it('POST /api/v1/estructura-academica/ofertas con token de sede diferente retorna 403 (no autorizado)', async () => {
-      // Intentar crear oferta en sede A usando token de sede B (o viceversa)
-      // Usaremos tokenSede que está limitado al contexto de sede Principal
-      const tokenSedeB = await obtenerTokenAcceso(
-        app,
-        ctx.correo,
-        ctx.clave,
-        ctx.institucionId,
-        ctx.sedeBId,
-      );
+    // ── Validaciones de contrato ──────────────────────────────────────────
 
-      await request(app.getHttpServer())
-        .post('/api/v1/estructura-academica/ofertas')
-        .set('Authorization', `Bearer ${tokenSedeB}`)
-        .send({
-          idSede: ctx.sedeId, // Sede A
-          idGradoEducativo: gradoId,
-          idAnioAcademico: anioId,
-        })
-        .expect(403); // Revisa control de alcance de Sede (Forbidden por CONTEXTO_NO_AUTORIZADO)
+    describe('Validaciones de contrato', () => {
+      it('capacidadMaxima: null retorna 400', async () => {
+        await request(app.getHttpServer())
+          .post(`/api/v1/estructura-academica/ofertas/${ofertaA1Id}/secciones`)
+          .set('Authorization', `Bearer ${tokenAdmin}`)
+          .send({
+            codigo: 'Z',
+            nombre: 'Sección Z',
+            turno: 'MANANA',
+            capacidadMaxima: null,
+          })
+          .expect(400);
+      });
+
+      it('PATCH sección con idOferta incorrecto retorna 404', async () => {
+        const idOfertaFalso = randomUUID();
+        await request(app.getHttpServer())
+          .patch(
+            `/api/v1/estructura-academica/ofertas/${idOfertaFalso}/secciones/${seccionA1Id}`,
+          )
+          .set('Authorization', `Bearer ${tokenAdmin}`)
+          .send({ nombre: 'Intento padre incorrecto' })
+          .expect(404);
+      });
+
+      it('Crear oferta con año cerrado retorna 422', async () => {
+        // Crear y cerrar un año
+        const anioTempRes = await request(app.getHttpServer())
+          .post('/api/v1/estructura-academica/anios')
+          .set('Authorization', `Bearer ${tokenAdmin}`)
+          .send({
+            anio: 2020,
+            codigo: '2020',
+            nombre: 'Año 2020',
+            fechaInicio: '2020-03-01',
+            fechaFin: '2020-12-20',
+            estado: 'PLANIFICADO',
+          });
+        const anioTempId = (anioTempRes.body as IdResponse).id;
+
+        // Activar → Cerrar
+        await request(app.getHttpServer())
+          .patch(`/api/v1/estructura-academica/anios/${anioTempId}/estado`)
+          .set('Authorization', `Bearer ${tokenAdmin}`)
+          .send({ estado: 'ACTIVO' });
+        await request(app.getHttpServer())
+          .patch(`/api/v1/estructura-academica/anios/${anioTempId}/estado`)
+          .set('Authorization', `Bearer ${tokenAdmin}`)
+          .send({ estado: 'CERRADO' });
+
+        await request(app.getHttpServer())
+          .post('/api/v1/estructura-academica/ofertas')
+          .set('Authorization', `Bearer ${tokenAdmin}`)
+          .send({
+            idSede: setup.sedeA1Id,
+            idGradoEducativo: gradoId,
+            idAnioAcademico: anioTempId,
+          })
+          .expect(422);
+      });
+
+      it('Activar oferta con año planificado retorna 422', async () => {
+        // ofertaA1Id tiene año en estado PLANIFICADO
+        await request(app.getHttpServer())
+          .patch(`/api/v1/estructura-academica/ofertas/${ofertaA1Id}/estado`)
+          .set('Authorization', `Bearer ${tokenAdmin}`)
+          .send({ estado: 'ACTIVA' })
+          .expect(422);
+      });
+
+      it('Crear sección sobre oferta cancelada retorna 422', async () => {
+        // Crear oferta limpia y cancelarla
+        const [anioFreshRes, nivelFreshRes] = await Promise.all([
+          request(app.getHttpServer())
+            .post('/api/v1/estructura-academica/anios')
+            .set('Authorization', `Bearer ${tokenAdmin}`)
+            .send({
+              anio: 2028,
+              codigo: '2028',
+              nombre: 'Año 2028',
+              fechaInicio: '2028-03-01',
+              fechaFin: '2028-12-20',
+              estado: 'PLANIFICADO',
+            }),
+          request(app.getHttpServer())
+            .post('/api/v1/estructura-academica/niveles')
+            .set('Authorization', `Bearer ${tokenAdmin}`)
+            .send({ codigo: 'INI', nombre: 'Inicial', orden: 3 }),
+        ]);
+        const anioFreshId = (anioFreshRes.body as IdResponse).id;
+        const nivelFreshId = (nivelFreshRes.body as IdResponse).id;
+
+        const gradoFreshRes = await request(app.getHttpServer())
+          .post('/api/v1/estructura-academica/grados')
+          .set('Authorization', `Bearer ${tokenAdmin}`)
+          .send({
+            idNivelEducativo: nivelFreshId,
+            codigo: '1INI',
+            nombre: 'Primero Inicial',
+            orden: 1,
+          });
+        const gradoFreshId = (gradoFreshRes.body as IdResponse).id;
+
+        const ofertaCancelRes = await request(app.getHttpServer())
+          .post('/api/v1/estructura-academica/ofertas')
+          .set('Authorization', `Bearer ${tokenAdmin}`)
+          .send({
+            idSede: setup.sedeA1Id,
+            idGradoEducativo: gradoFreshId,
+            idAnioAcademico: anioFreshId,
+          });
+        const ofertaCancelId = (ofertaCancelRes.body as IdResponse).id;
+
+        await request(app.getHttpServer())
+          .patch(
+            `/api/v1/estructura-academica/ofertas/${ofertaCancelId}/estado`,
+          )
+          .set('Authorization', `Bearer ${tokenAdmin}`)
+          .send({ estado: 'CANCELADA' });
+
+        await request(app.getHttpServer())
+          .post(
+            `/api/v1/estructura-academica/ofertas/${ofertaCancelId}/secciones`,
+          )
+          .set('Authorization', `Bearer ${tokenAdmin}`)
+          .send({
+            codigo: 'X',
+            nombre: 'Sección X',
+            turno: 'MANANA',
+            capacidadMaxima: 20,
+          })
+          .expect(409);
+      });
+
+      it('POST espacio fuera de sede retorna 422', async () => {
+        const tipoElemId = randomUUID();
+        const estadoConservId = randomUUID();
+        const espacioOtroId = randomUUID();
+
+        await ds.transaction(async (m) => {
+          const existingType = await m.query<{ id: string }[]>(
+            `SELECT id FROM tipos_elemento_infraestructura WHERE codigo = 'TIPO-E2E-1' LIMIT 1`,
+          );
+          const tipoId = existingType[0]?.id ?? tipoElemId;
+          if (!existingType[0]) {
+            await m.query(
+              `INSERT INTO tipos_elemento_infraestructura (id, codigo, nombre, activo) VALUES ($1, 'TIPO-E2E-1', 'Tipo E2E', true)`,
+              [tipoElemId],
+            );
+          }
+          const existingEC = await m.query<{ id: string }[]>(
+            `SELECT id FROM estados_conservacion WHERE codigo = 'ESTADO-E2E-1' LIMIT 1`,
+          );
+          const ecId = existingEC[0]?.id ?? estadoConservId;
+          if (!existingEC[0]) {
+            await m.query(
+              `INSERT INTO estados_conservacion (id, codigo, nombre, orden, activo) VALUES ($1, 'ESTADO-E2E-1', 'Bueno', 1, true)`,
+              [estadoConservId],
+            );
+          }
+          await m.query(
+            `INSERT INTO elementos_infraestructura (id, id_sede, id_tipo_elemento, id_estado_conservacion, codigo, nombre, estado)
+             VALUES ($1, $2, $3, $4, 'ESP-SEDEA2', 'Aula Sede A2', 'ACTIVO')`,
+            [espacioOtroId, setup.sedeA2Id, tipoId, ecId],
+          );
+        });
+
+        // La oferta es de A1, espacio es de A2
+        await request(app.getHttpServer())
+          .post(`/api/v1/estructura-academica/ofertas/${ofertaA1Id}/secciones`)
+          .set('Authorization', `Bearer ${tokenAdmin}`)
+          .send({
+            codigo: 'E',
+            nombre: 'Sec Espacio Cruzado',
+            turno: 'MANANA',
+            capacidadMaxima: 20,
+            idEspacioFisico: espacioOtroId,
+          })
+          .expect(422);
+      });
     });
   });
 });

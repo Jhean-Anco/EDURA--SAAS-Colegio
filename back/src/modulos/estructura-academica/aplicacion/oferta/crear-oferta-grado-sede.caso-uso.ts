@@ -1,4 +1,10 @@
-import { OfertaDuplicadaError } from '../../dominio/errores-estructura-academica';
+import {
+  AnioAcademicoNoDisponibleError,
+  GradoAcademicoNoDisponibleError,
+  NivelAcademicoNoDisponibleError,
+  OfertaDuplicadaError,
+  SedeAcademicaNoDisponibleError,
+} from '../../dominio/errores-estructura-academica';
 import {
   AlcanceAcceso,
   RepositorioOfertaAcademica,
@@ -28,6 +34,30 @@ export class CrearOfertaGradoSedeCasoUso {
         'CONTEXTO_NO_AUTORIZADO',
         'No autorizado para crear oferta en esta sede',
       );
+    }
+
+    const ctx = await this.repositorio.obtenerContextoReferenciasOferta({
+      idSede: entrada.idSede,
+      idGrado: entrada.idGradoEducativo,
+      idAnio: entrada.idAnioAcademico,
+      institucionId: alcance.institucionId,
+    });
+
+    if (!ctx.sede) throw new SedeAcademicaNoDisponibleError();
+    if (ctx.sede.estado !== 'ACTIVA')
+      throw new SedeAcademicaNoDisponibleError();
+    if (!ctx.grado) throw new GradoAcademicoNoDisponibleError();
+    if (ctx.grado.estado !== 'ACTIVO')
+      throw new GradoAcademicoNoDisponibleError();
+    if (!ctx.nivel) throw new NivelAcademicoNoDisponibleError();
+    if (ctx.nivel.estado !== 'ACTIVO')
+      throw new NivelAcademicoNoDisponibleError();
+    if (!ctx.anioAcademico) throw new AnioAcademicoNoDisponibleError();
+    if (
+      ctx.anioAcademico.estado === 'CERRADO' ||
+      ctx.anioAcademico.estado === 'ANULADO'
+    ) {
+      throw new AnioAcademicoNoDisponibleError();
     }
 
     const existe = await this.repositorio.existeOfertaEnSede({
