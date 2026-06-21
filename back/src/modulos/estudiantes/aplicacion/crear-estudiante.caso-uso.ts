@@ -1,9 +1,13 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access */
-import { ForbiddenException } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import {
+  EstudianteCodigoDuplicadoError,
+  PersonaFueraDeInstitucionError,
+  PersonaYaEsEstudianteError,
+  SedeFueraDeInstitucionError,
+} from '../dominio/errores-estudiantes';
+import { RepositorioEstudiantes } from '../dominio/puertos/estudiantes.puerto';
 
 export class CrearEstudianteCasoUso {
-  constructor(private readonly ds: DataSource) {}
+  constructor(private readonly repositorio: RepositorioEstudiantes) {}
 
   async ejecutar(entrada: {
     institucionId: string;
@@ -13,40 +17,29 @@ export class CrearEstudianteCasoUso {
     fechaIngreso?: string | null;
     observacion?: string | null;
   }): Promise<{ id: string }> {
-    const sede = await this.ds.query(
-      `SELECT id FROM sedes WHERE id = $1 AND id_institucion_educativa = $2 LIMIT 1`,
-      [entrada.idSede, entrada.institucionId],
+    const sedeOk = await this.repositorio.verificarSedeDeInstitucion(
+      entrada.idSede,
+      entrada.institucionId,
     );
-    if (!sede.length) throw new ForbiddenException('CONTEXTO_NO_AUTORIZADO');
-    const persona = await this.ds.query(
-      `SELECT id FROM personas WHERE id = $1 AND id_institucion_educativa = $2 LIMIT 1`,
-      [entrada.idPersona, entrada.institucionId],
+    if (!sedeOk) throw new SedeFueraDeInstitucionError();
+    const personaOk = await this.repositorio.verificarPersonaDeInstitucion(
+      entrada.idPersona,
+      entrada.institucionId,
     );
-    if (!persona.length) throw new ForbiddenException('CONTEXTO_NO_AUTORIZADO');
-    const codigoExiste = await this.ds.query(
-      `SELECT 1 FROM estudiantes WHERE id_institucion_educativa = $1 AND codigo = $2 LIMIT 1`,
-      [entrada.institucionId, entrada.codigo],
-    );
-    if (codigoExiste.length) throw new ForbiddenException('CODIGO_DUPLICADO');
-    const personaAsociada = await this.ds.query(
-      `SELECT 1 FROM estudiantes WHERE id_institucion_educativa = $1 AND id_persona = $2 LIMIT 1`,
-      [entrada.institucionId, entrada.idPersona],
-    );
-    if (personaAsociada.length)
-      throw new ForbiddenException('PERSONA_YA_ESTUDIANTE');
-    const [r] = await this.ds.query(
-      `INSERT INTO estudiantes (id, id_institucion_educativa, id_sede, id_persona, codigo, estado, fecha_ingreso, observacion, fecha_creacion, fecha_modificacion)
-       VALUES (gen_random_uuid(), $1, $2, $3, $4, 'ACTIVO', $5, $6, now(), now())
-       RETURNING id`,
-      [
-        entrada.institucionId,
-        entrada.idSede,
+    if (!personaOk) throw new PersonaFueraDeInstitucionError();
+    if (
+      await this.repositorio.existeCodigo(entrada.codigo, entrada.institucionId)
+    ) {
+      throw new EstudianteCodigoDuplicadoError();
+    }
+    if (
+      await this.repositorio.personaYaEsEstudiante(
         entrada.idPersona,
-        entrada.codigo,
-        entrada.fechaIngreso ?? null,
-        entrada.observacion ?? null,
-      ],
-    );
-    return { id: r.id };
+        entrada.institucionId,
+      )
+    ) {
+      throw new PersonaYaEsEstudianteError();
+    }
+    return this.repositorio.crearEstudiante(entrada);
   }
 }

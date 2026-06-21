@@ -18,13 +18,18 @@
 - Fuente de datos: instituciones, sedes, membresias, asignaciones, infraestructura, alertas, comunicados y estudiantes activos cuando la tabla existe.
 - Contrato estable: indicadores preparados para estudiantes, docentes, matriculas y asistencia aunque algunos queden en cero o `null`.
 
-## MOD-006
+## MOD-006 (REL-004.4)
 
-- Estado: implementado en codigo y documentado.
-- Alcance: gestion de estudiantes y apoderados sobre `personas.id`.
-- Regla base: no se duplica la tabla de personas.
-- Seguridad: filtros por institucion obligatorios y filtro por sede cuando el contexto lo exige.
-- Integracion: el panel institucional ya consume el conteo real de estudiantes activos.
+- Estado: estabilizado — arquitectura hexagonal limpia, tests unitarios y E2E.
+- Alcance: gestion de estudiantes, apoderados y documentos administrativos sobre `personas.id`.
+- DI: tokens Symbol (`CONSULTA_ESTUDIANTES`, `REPOSITORIO_ESTUDIANTES`) con `useFactory + inject`; capa de aplicacion sin imports de NestJS ni TypeORM.
+- Errores de dominio: `EstudianteNoEncontradoError`, `SedeFueraDeInstitucionError`, `PersonaFueraDeInstitucionError`, `EstudianteCodigoDuplicadoError`, `PersonaYaEsEstudianteError`, `ApoderadoPrincipalExistenteError` mapeados en `FiltroHttpGlobal`.
+- DTOs: solicitudes tipadas con `class-validator` para todos los endpoints.
+- Seguridad: `institucionId` siempre desde JWT, nunca del body.
+- Integridad BD: migracion V14 agrega CHECKs de estado/codigo, FKs compuestas que garantizan que estudiante, apoderado y documento pertenezcan a la misma institucion, e indices parciales.
+- Tests unitarios: 85/85 pasan; `mockRepo()` tipado contra `RepositorioEstudiantes`.
+- Tests E2E: `test/estudiantes-flujo.e2e-spec.ts` cubre CRUD, 401 sin token, 409 codigo duplicado, 422 sede de otra institucion, aislamiento cruzado entre instituciones.
+- CI: workflow movido a raiz del repo (`.github/workflows/ci.yml`) para deteccion por GitHub Actions.
 
 ## PR-PLT-00
 

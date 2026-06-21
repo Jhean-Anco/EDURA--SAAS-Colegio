@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access */
 import {
   Body,
   Controller,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
@@ -19,9 +19,16 @@ import { CambiarEstadoEstudianteCasoUso } from '../../../aplicacion/cambiar-esta
 import { AgregarApoderadoEstudianteCasoUso } from '../../../aplicacion/agregar-apoderado-estudiante.caso-uso';
 import { ActualizarApoderadoEstudianteCasoUso } from '../../../aplicacion/actualizar-apoderado-estudiante.caso-uso';
 import { RegistrarDocumentoEstudianteCasoUso } from '../../../aplicacion/registrar-documento-estudiante.caso-uso';
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  AgregarApoderadoEstudianteSolicitud,
+  ActualizarApoderadoEstudianteSolicitud,
+  ActualizarEstudianteSolicitud,
+  CambiarEstadoEstudianteSolicitud,
+  CrearEstudianteSolicitud,
+  ListarEstudiantesSolicitud,
+  RegistrarDocumentoEstudianteSolicitud,
+} from '../solicitudes/estudiantes.solicitudes';
 
-@Injectable()
 @Controller('estudiantes')
 export class EstudiantesControlador {
   constructor(
@@ -34,137 +41,149 @@ export class EstudiantesControlador {
     private readonly actualizarApoderado: ActualizarApoderadoEstudianteCasoUso,
     private readonly registrarDocumento: RegistrarDocumentoEstudianteCasoUso,
   ) {}
-  private inst(ctx: ContextoSolicitudAutenticada | undefined) {
-    if (!ctx?.institucionId)
-      throw new ForbiddenException('CONTEXTO_NO_AUTORIZADO');
-    return ctx;
+
+  private contexto(
+    ctx: ContextoSolicitudAutenticada | undefined,
+  ): ContextoSolicitudAutenticada & { institucionId: string } {
+    if (!ctx?.institucionId || !ctx.usuarioId) {
+      throw new Error('CONTEXTO_NO_AUTORIZADO');
+    }
+    return ctx as ContextoSolicitudAutenticada & { institucionId: string };
   }
+
   @Permisos('ESTUDIANTES.LEER')
   @Get()
   listar(
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
-    @Query() q: any,
+    @Query() q: ListarEstudiantesSolicitud,
   ) {
-    const c = this.inst(ctx);
+    const c = this.contexto(ctx);
     return this.listarEstudiantes.ejecutar({
-      institucionId: c.institucionId!,
-      sedeId: q.idSede ?? (c.ambito === 'SEDE' ? c.sedeId : null),
+      institucionId: c.institucionId,
+      sedeId: c.ambito === 'SEDE' ? c.sedeId : (q.idSede ?? null),
       estado: q.estado ?? null,
       busqueda: q.busqueda ?? null,
-      pagina: Math.max(1, Number(q.pagina ?? 1)),
-      limite: Math.min(100, Math.max(1, Number(q.limite ?? 20))),
+      pagina: q.pagina ?? 1,
+      limite: q.limite ?? 20,
     });
   }
+
   @Permisos('ESTUDIANTES.LEER')
   @Get(':id')
   obtener(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ) {
-    const c = this.inst(ctx);
-    return this.obtenerEstudiante.ejecutar(id, c.institucionId!);
+    const c = this.contexto(ctx);
+    return this.obtenerEstudiante.ejecutar(id, c.institucionId);
   }
+
   @Permisos('ESTUDIANTES.CREAR')
   @Post()
   crear(
-    @Body() b: any,
+    @Body() body: CrearEstudianteSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ) {
-    const c = this.inst(ctx);
+    const c = this.contexto(ctx);
     return this.crearEstudiante.ejecutar({
-      institucionId: c.institucionId!,
-      idPersona: b.idPersona,
-      idSede: b.idSede,
-      codigo: b.codigo,
-      fechaIngreso: b.fechaIngreso ?? null,
-      observacion: b.observacion ?? null,
+      institucionId: c.institucionId,
+      idPersona: body.idPersona,
+      idSede: body.idSede,
+      codigo: body.codigo,
+      fechaIngreso: body.fechaIngreso ?? null,
+      observacion: body.observacion ?? null,
     });
   }
+
   @Permisos('ESTUDIANTES.ACTUALIZAR')
   @Patch(':id')
   actualizar(
-    @Param('id') id: string,
-    @Body() b: any,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: ActualizarEstudianteSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ) {
-    const c = this.inst(ctx);
+    const c = this.contexto(ctx);
     return this.actualizarEstudiante.ejecutar({
-      institucionId: c.institucionId!,
+      institucionId: c.institucionId,
       id,
-      codigo: b.codigo,
-      idSede: b.idSede,
-      fechaIngreso: b.fechaIngreso ?? null,
-      observacion: b.observacion ?? null,
+      codigo: body.codigo,
+      idSede: body.idSede,
+      fechaIngreso: body.fechaIngreso ?? null,
+      observacion: body.observacion ?? null,
     });
   }
+
   @Permisos('ESTUDIANTES.CAMBIAR_ESTADO')
   @Patch(':id/estado')
   estado(
-    @Param('id') id: string,
-    @Body() b: any,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: CambiarEstadoEstudianteSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ) {
-    const c = this.inst(ctx);
+    const c = this.contexto(ctx);
     return this.cambiarEstadoEstudiante.ejecutar({
-      institucionId: c.institucionId!,
+      institucionId: c.institucionId,
       id,
-      estado: b.estado,
+      estado: body.estado,
     });
   }
+
   @Permisos('ESTUDIANTES.APODERADOS.GESTIONAR')
   @Post(':id/apoderados')
   apoderado(
-    @Param('id') id: string,
-    @Body() b: any,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: AgregarApoderadoEstudianteSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ) {
-    const c = this.inst(ctx);
+    const c = this.contexto(ctx);
     return this.agregarApoderado.ejecutar({
-      institucionId: c.institucionId!,
+      institucionId: c.institucionId,
       estudianteId: id,
-      idPersona: b.idPersona,
-      parentesco: b.parentesco,
-      esPrincipal: b.esPrincipal,
-      puedeRecoger: b.puedeRecoger,
-      recibeComunicaciones: b.recibeComunicaciones,
+      idPersona: body.idPersona,
+      parentesco: body.parentesco,
+      esPrincipal: body.esPrincipal,
+      puedeRecoger: body.puedeRecoger,
+      recibeComunicaciones: body.recibeComunicaciones,
     });
   }
+
   @Permisos('ESTUDIANTES.APODERADOS.GESTIONAR')
   @Patch(':id/apoderados/:idApoderado')
   apoderadoPatch(
-    @Param('id') id: string,
-    @Param('idApoderado') idApoderado: string,
-    @Body() b: any,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('idApoderado', ParseUUIDPipe) idApoderado: string,
+    @Body() body: ActualizarApoderadoEstudianteSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ) {
-    const c = this.inst(ctx);
+    const c = this.contexto(ctx);
     return this.actualizarApoderado.ejecutar({
-      institucionId: c.institucionId!,
+      institucionId: c.institucionId,
       estudianteId: id,
       idApoderado,
-      parentesco: b.parentesco,
-      esPrincipal: b.esPrincipal,
-      puedeRecoger: b.puedeRecoger,
-      recibeComunicaciones: b.recibeComunicaciones,
-      estado: b.estado,
+      parentesco: body.parentesco,
+      esPrincipal: body.esPrincipal,
+      puedeRecoger: body.puedeRecoger,
+      recibeComunicaciones: body.recibeComunicaciones,
+      estado: body.estado,
     });
   }
+
   @Permisos('ESTUDIANTES.DOCUMENTOS.GESTIONAR')
   @Post(':id/documentos')
   documento(
-    @Param('id') id: string,
-    @Body() b: any,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: RegistrarDocumentoEstudianteSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ) {
-    const c = this.inst(ctx);
+    const c = this.contexto(ctx);
     return this.registrarDocumento.ejecutar({
-      institucionId: c.institucionId!,
+      institucionId: c.institucionId,
       estudianteId: id,
-      tipoDocumento: b.tipoDocumento,
-      nombre: b.nombre,
-      fechaEmision: b.fechaEmision ?? null,
-      fechaVencimiento: b.fechaVencimiento ?? null,
-      observacion: b.observacion ?? null,
+      tipoDocumento: body.tipoDocumento,
+      nombre: body.nombre,
+      fechaEmision: body.fechaEmision ?? null,
+      fechaVencimiento: body.fechaVencimiento ?? null,
+      observacion: body.observacion ?? null,
     });
   }
 }
