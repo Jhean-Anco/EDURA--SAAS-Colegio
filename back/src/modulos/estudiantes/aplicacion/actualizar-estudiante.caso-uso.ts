@@ -1,9 +1,13 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access */
-import { ForbiddenException } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import {
+  EstudianteCodigoDuplicadoError,
+  EstudianteNoEncontradoError,
+  SedeFueraDeInstitucionError,
+} from '../dominio/errores-estudiantes';
+import { RepositorioEstudiantes } from '../dominio/puertos/estudiantes.puerto';
 
 export class ActualizarEstudianteCasoUso {
-  constructor(private readonly ds: DataSource) {}
+  constructor(private readonly repositorio: RepositorioEstudiantes) {}
+
   async ejecutar(entrada: {
     institucionId: string;
     id: string;
@@ -12,29 +16,29 @@ export class ActualizarEstudianteCasoUso {
     fechaIngreso?: string | null;
     observacion?: string | null;
   }): Promise<void> {
-    const estudiante = await this.ds.query(
-      `SELECT id FROM estudiantes WHERE id = $1 AND id_institucion_educativa = $2 LIMIT 1`,
-      [entrada.id, entrada.institucionId],
+    const base = await this.repositorio.obtenerEstudianteBase(
+      entrada.id,
+      entrada.institucionId,
     );
-    if (!estudiante.length)
-      throw new ForbiddenException('RECURSO_NO_ENCONTRADO');
+    if (!base) throw new EstudianteNoEncontradoError();
     if (entrada.idSede) {
-      const sede = await this.ds.query(
-        `SELECT 1 FROM sedes WHERE id = $1 AND id_institucion_educativa = $2 LIMIT 1`,
-        [entrada.idSede, entrada.institucionId],
-      );
-      if (!sede.length) throw new ForbiddenException('CONTEXTO_NO_AUTORIZADO');
-    }
-    await this.ds.query(
-      `UPDATE estudiantes SET codigo = COALESCE($3, codigo), id_sede = COALESCE($4, id_sede), fecha_ingreso = COALESCE($5, fecha_ingreso), observacion = COALESCE($6, observacion), fecha_modificacion = now() WHERE id = $1 AND id_institucion_educativa = $2`,
-      [
-        entrada.id,
+      const sedeOk = await this.repositorio.verificarSedeDeInstitucion(
+        entrada.idSede,
         entrada.institucionId,
-        entrada.codigo ?? null,
-        entrada.idSede ?? null,
-        entrada.fechaIngreso ?? null,
-        entrada.observacion ?? null,
-      ],
-    );
+      );
+      if (!sedeOk) throw new SedeFueraDeInstitucionError();
+    }
+    if (
+      entrada.codigo &&
+      (await this.repositorio.existeCodigo(
+        entrada.codigo,
+        entrada.institucionId,
+        entrada.id,
+      ))
+    ) {
+      throw new EstudianteCodigoDuplicadoError();
+    }
+    const actualizado = await this.repositorio.actualizarEstudiante(entrada);
+    if (!actualizado) throw new EstudianteNoEncontradoError();
   }
 }
