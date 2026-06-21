@@ -6,6 +6,7 @@ import {
   IsUUID,
   Length,
   IsIn,
+  ValidateIf,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 import {
@@ -67,11 +68,9 @@ export class ActualizarSeccionAcademicaSolicitud {
   @IsIn(TURNOS_SECCION)
   turno?: TurnoSeccion;
 
-  @IsOptional()
-  @Transform(({ value }: { value: unknown }) => {
-    if (value === null) return -1;
-    return value;
-  })
+  @ValidateIf(
+    (o: ActualizarSeccionAcademicaSolicitud) => o.capacidadMaxima !== undefined,
+  )
   @IsInt()
   @IsPositive()
   capacidadMaxima?: number;
