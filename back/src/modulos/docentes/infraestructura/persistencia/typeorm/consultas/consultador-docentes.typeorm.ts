@@ -32,7 +32,11 @@ interface FilaDocenteDetalle {
   nombres: string;
   apellido_paterno: string | null;
   apellido_materno: string | null;
-  doc_principal: Array<{ tipo_documento: string; tipo_codigo: string; numero: string }> | null;
+  doc_principal: Array<{
+    tipo_documento: string;
+    tipo_codigo: string;
+    numero: string;
+  }> | null;
   tiene_cuenta: boolean;
 }
 
