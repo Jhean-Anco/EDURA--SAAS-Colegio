@@ -1,0 +1,31 @@
+# Root generated artifacts
+/coverage
+/dist
+/node_modules
+/.env
+/.env.*
+!/back/.env.example
+
+# Logs and temp files
+/logs
+*.log
+*.tmp
+*.temp
+*.pid
+*.seed
+*.pid.lock
+/.nyc_output
+
+# OS and editor files
+.DS_Store
+.idea/
+.vscode/
+
+# Local exports
+ChatGPT Image *.png
+ChatGPT Image *.jpg
+ChatGPT Image *.jpeg
+ChatGPT Image *.webp
+*.bak
+*.dump
+*.sql
