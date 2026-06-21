@@ -55,13 +55,13 @@ export class ConfiguracionAplicacion {
     false,
   );
 
-  readonly jwtSecreto = process.env.JWT_SECRETO ?? 'dev-secret';
+  readonly jwtSecreto = process.env.JWT_SECRETO ?? '';
 
   readonly jwtEmisor = process.env.JWT_EMISOR ?? 'EDURA';
 
   readonly jwtAudiencia = process.env.JWT_AUDIENCIA ?? 'EDURA_WEB';
 
-  readonly hashTokenSecreto = process.env.HASH_TOKEN_SECRETO ?? 'dev-secret';
+  readonly hashTokenSecreto = process.env.HASH_TOKEN_SECRETO ?? '';
 
   readonly jwtAccesoTtlSegundos = leerEntero(
     process.env.JWT_ACCESO_TTL_SEGUNDOS,
@@ -99,4 +99,32 @@ export class ConfiguracionAplicacion {
     process.env.INTEGRACION_RUTAS_HABILITADA,
     false,
   );
+
+  readonly esDesarrollo =
+    this.entorno === 'desarrollo' || this.entorno === 'pruebas';
+
+  constructor() {
+    if (!this.esDesarrollo) {
+      if (!this.jwtSecreto || this.jwtSecreto.length < 32) {
+        throw new Error(
+          'JWT_SECRETO es obligatorio y debe tener al menos 32 caracteres en entornos no desarrollo',
+        );
+      }
+      if (!this.hashTokenSecreto || this.hashTokenSecreto.length < 32) {
+        throw new Error(
+          'HASH_TOKEN_SECRETO es obligatorio y debe tener al menos 32 caracteres en entornos no desarrollo',
+        );
+      }
+      if (this.integracionDocumentosHabilitada && !this.apisperuToken) {
+        throw new Error(
+          'APISPERU_TOKEN es obligatorio cuando INTEGRACION_DOCUMENTOS_HABILITADA=true',
+        );
+      }
+      if (this.integracionRutasHabilitada && !this.googleMapsApiKey) {
+        throw new Error(
+          'GOOGLE_MAPS_API_KEY es obligatorio cuando INTEGRACION_RUTAS_HABILITADA=true',
+        );
+      }
+    }
+  }
 }

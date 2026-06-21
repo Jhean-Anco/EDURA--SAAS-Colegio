@@ -4,6 +4,7 @@
 
 Si una IA va a recorrer este repositorio, este es el orden recomendado:
 
+0. [`../docs/README.md`](../docs/README.md)
 1. [`documentacion/estado-maestro/ESTADO-MAESTRO.md`](documentacion/estado-maestro/ESTADO-MAESTRO.md)
 2. [`documentacion/arquitectura/arquitectura-backend.md`](documentacion/arquitectura/arquitectura-backend.md)
 3. [`documentacion/base-datos/diccionario-datos.md`](documentacion/base-datos/diccionario-datos.md)
