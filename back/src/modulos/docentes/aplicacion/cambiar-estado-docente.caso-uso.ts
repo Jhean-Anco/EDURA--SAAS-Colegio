@@ -4,6 +4,8 @@ import {
 } from '../dominio/puertos/docentes.puerto';
 import {
   DocenteNoEncontradoError,
+  FechaCeseRequeridaError,
+  ReactivacionSinSedeActivaError,
   TransicionEstadoDocenteInvalidaError,
 } from '../dominio/errores-docentes';
 
@@ -38,17 +40,27 @@ export class CambiarEstadoDocenteCasoUso {
     }
 
     if (entrada.estado === 'CESADO') {
+      if (!entrada.fechaCese) throw new FechaCeseRequeridaError();
+
       await this.repositorio.inactivarAsignacionesDocente(
         entrada.id,
         alcance.institucionId,
       );
     }
 
+    if (entrada.estado === 'ACTIVO') {
+      const sedes = await this.repositorio.contarSedesActivas(
+        entrada.id,
+        alcance.institucionId,
+      );
+      if (sedes === 0) throw new ReactivacionSinSedeActivaError();
+    }
+
     await this.repositorio.cambiarEstadoDocente(
       entrada.id,
       alcance.institucionId,
       entrada.estado,
-      entrada.estado === 'CESADO' ? (entrada.fechaCese ?? null) : null,
+      entrada.estado === 'CESADO' ? entrada.fechaCese : null,
     );
   }
 }

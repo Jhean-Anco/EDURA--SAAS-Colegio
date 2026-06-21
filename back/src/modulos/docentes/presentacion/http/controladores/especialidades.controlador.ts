@@ -3,10 +3,13 @@ import {
   Controller,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
+  UseInterceptors,
 } from '@nestjs/common';
+import { AuditoriaDocentesInterceptor } from '../interceptores/auditoria-docentes.interceptor';
 import { Permisos } from '../../../../../compartido/presentacion/http/decoradores/permisos.decorador';
 import { ContextoActual } from '../../../../../compartido/presentacion/http/decoradores/contexto-actual.decorador';
 import { ContextoSolicitudAutenticada } from '../../../../../compartido/aplicacion/contexto-solicitud-autenticada';
@@ -17,6 +20,7 @@ import { ListarEspecialidadesCasoUso } from '../../../aplicacion/listar-especial
 import { CrearEspecialidadSolicitud } from '../solicitudes/crear-especialidad.solicitud';
 import { ActualizarEspecialidadSolicitud } from '../solicitudes/actualizar-especialidad.solicitud';
 
+@UseInterceptors(AuditoriaDocentesInterceptor)
 @Controller('especialidades-profesionales')
 export class EspecialidadesControlador {
   constructor(
@@ -53,7 +57,7 @@ export class EspecialidadesControlador {
   @Permisos('ESPECIALIDADES_PROFESIONALES.ACTUALIZAR')
   @Patch(':id')
   async actualizarEspecialidad(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() solicitud: ActualizarEspecialidadSolicitud,
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ): Promise<void> {

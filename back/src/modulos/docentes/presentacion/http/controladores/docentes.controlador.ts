@@ -7,7 +7,9 @@ import {
   Patch,
   Post,
   Query,
+  UseInterceptors,
 } from '@nestjs/common';
+import { AuditoriaDocentesInterceptor } from '../interceptores/auditoria-docentes.interceptor';
 import { Permisos } from '../../../../../compartido/presentacion/http/decoradores/permisos.decorador';
 import { ContextoActual } from '../../../../../compartido/presentacion/http/decoradores/contexto-actual.decorador';
 import { ContextoSolicitudAutenticada } from '../../../../../compartido/aplicacion/contexto-solicitud-autenticada';
@@ -31,6 +33,7 @@ import { ActualizarAsignacionSedeSolicitud } from '../solicitudes/actualizar-asi
 import { AsignarEspecialidadSolicitud } from '../solicitudes/asignar-especialidad.solicitud';
 import { ActualizarAsignacionEspecialidadSolicitud } from '../solicitudes/actualizar-asignacion-especialidad.solicitud';
 
+@UseInterceptors(AuditoriaDocentesInterceptor)
 @Controller('docentes')
 export class DocentesControlador {
   constructor(
