@@ -7,8 +7,9 @@ Este indice sirve como entrada principal para humanos y para agentes automaticos
 1. [`ESTADO-MAESTRO.md`](ESTADO-MAESTRO.md)
 2. [`ARQUITECTURA.md`](ARQUITECTURA.md)
 3. [`DICCIONARIO-DATOS.md`](DICCIONARIO-DATOS.md)
-4. [`../back/README.md`](../back/README.md)
-5. [`../back/documentacion/guia-lectura-ia.md`](../back/documentacion/guia-lectura-ia.md)
+4. [`../CHANGELOG.md`](../CHANGELOG.md)
+5. [`../back/README.md`](../back/README.md)
+6. [`../back/documentacion/guia-lectura-ia.md`](../back/documentacion/guia-lectura-ia.md)
 
 ## Capas de documentacion
 
