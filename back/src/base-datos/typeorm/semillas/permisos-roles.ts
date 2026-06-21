@@ -294,6 +294,18 @@ export const permisosSistema = [
     codigo: 'CURRICULO.PLANES.GESTIONAR',
     descripcion: 'Gestionar planes de estudio y sus asignaciones',
   },
+  {
+    recurso: 'CURRICULO',
+    accion: 'PLANES.APROBAR',
+    codigo: 'CURRICULO.PLANES.APROBAR',
+    descripcion: 'Aprobar planes de estudio',
+  },
+  {
+    recurso: 'CURRICULO',
+    accion: 'PLANES.CAMBIAR_ESTADO',
+    codigo: 'CURRICULO.PLANES.CAMBIAR_ESTADO',
+    descripcion: 'Cambiar estado de planes de estudio',
+  },
 ] as const;
 
 export const rolesSistema = [
@@ -371,6 +383,8 @@ export const permisosAdministradorInstitucion = [
   'CURRICULO.LEER',
   'CURRICULO.CATALOGOS.GESTIONAR',
   'CURRICULO.PLANES.GESTIONAR',
+  'CURRICULO.PLANES.APROBAR',
+  'CURRICULO.PLANES.CAMBIAR_ESTADO',
 ] as const;
 
 export const permisosDirectorSede = [
@@ -400,7 +414,6 @@ export const permisosDirectorSede = [
   'ESTRUCTURA_ACADEMICA.SECCIONES.ASIGNAR_ESPACIO',
   'ESTRUCTURA_ACADEMICA.SECCIONES.ASIGNAR_TUTOR',
   'CURRICULO.LEER',
-  'CURRICULO.PLANES.GESTIONAR',
 ] as const;
 
 export const permisosDocente = [

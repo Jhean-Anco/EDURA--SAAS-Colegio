@@ -23,6 +23,7 @@ import { ListarPlanesEstudioConsulta } from '../../../aplicacion/planes-estudio/
 import { ObtenerPlanEstudioConsulta } from '../../../aplicacion/planes-estudio/obtener-plan-estudio.consulta';
 import { ResolverPlanVigenteConsulta } from '../../../aplicacion/planes-estudio/resolver-plan-vigente.consulta';
 import { DuplicarPlanEstudioCasoUso } from '../../../aplicacion/planes-estudio/duplicar-plan-estudio.caso-uso';
+import { AprobarPlanEstudioCasoUso } from '../../../aplicacion/planes-estudio/aprobar-plan-estudio.caso-uso';
 import { AgregarDetallePlanEstudioCasoUso } from '../../../aplicacion/planes-estudio/agregar-detalle-plan-estudio.caso-uso';
 import { ActualizarDetallePlanEstudioCasoUso } from '../../../aplicacion/planes-estudio/actualizar-detalle-plan-estudio.caso-uso';
 import { CambiarEstadoDetallePlanEstudioCasoUso } from '../../../aplicacion/planes-estudio/cambiar-estado-detalle-plan-estudio.caso-uso';
@@ -55,6 +56,7 @@ export class PlanesEstudioControlador {
     private readonly obtenerPlan: ObtenerPlanEstudioConsulta,
     private readonly resolverPlan: ResolverPlanVigenteConsulta,
     private readonly duplicarPlan: DuplicarPlanEstudioCasoUso,
+    private readonly aprobarPlan: AprobarPlanEstudioCasoUso,
     private readonly agregarDetalle: AgregarDetallePlanEstudioCasoUso,
     private readonly actualizarDetalle: ActualizarDetallePlanEstudioCasoUso,
     private readonly cambiarEstadoDetalle: CambiarEstadoDetallePlanEstudioCasoUso,
@@ -121,13 +123,25 @@ export class PlanesEstudioControlador {
   @Patch('planes/:id/estado')
   async cambiarEstadoPlanHandler(
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
-    @Param('id', ParseUUIDPipe) id: string,
     @Req() req: { correlationId?: string },
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() body: CambiarEstadoPlanSolicitud,
   ) {
     const alcance = alcanceDesdeContexto(ctx);
     alcance.correlationId = req.correlationId;
     await this.cambiarEstadoPlan.ejecutar(id, body.estado, alcance);
+  }
+
+  @Permisos('CURRICULO.PLANES.APROBAR')
+  @Post('planes/:id/aprobar')
+  async aprobarPlanHandler(
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
+    @Req() req: { correlationId?: string },
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    const alcance = alcanceDesdeContexto(ctx);
+    alcance.correlationId = req.correlationId;
+    await this.aprobarPlan.ejecutar(id, alcance);
   }
 
   @Permisos('CURRICULO.PLANES.GESTIONAR')

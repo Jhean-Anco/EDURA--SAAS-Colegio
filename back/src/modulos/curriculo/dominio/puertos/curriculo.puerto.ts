@@ -231,6 +231,12 @@ export interface RepositorioPlanesEstudio {
     excluirId?: string,
   ): Promise<boolean>;
 
+  obtenerSiguienteVersionPlan(
+    idAnio: string,
+    idGrado: string,
+    institucionId: string,
+  ): Promise<number>;
+
   crearPlan(entrada: {
     institucionId: string;
     idAnioAcademico: string;
@@ -261,6 +267,7 @@ export interface RepositorioPlanesEstudio {
     institucionId: string,
     estado: EstadoPlan,
     aprobacion?: { fechaAprobacion: string; idUsuarioAprobador: string },
+    activacion?: { fechaVigencia: string; idUsuarioActivador: string },
   ): Promise<boolean>;
 
   existePlanVigenteParaAnioGrado(

@@ -14,7 +14,7 @@ import {
 } from '../../dominio/puertos/curriculo.puerto';
 
 const TRANSICIONES_PLAN: Record<EstadoPlan, EstadoPlan[]> = {
-  BORRADOR: ['APROBADO', 'ANULADO'],
+  BORRADOR: ['ANULADO'],
   APROBADO: ['VIGENTE', 'ANULADO'],
   VIGENTE: ['CERRADO'],
   CERRADO: [],
@@ -40,16 +40,6 @@ export class CambiarEstadoPlanEstudioCasoUso {
       throw new TransicionPlanInvalidaError(plan.estado, nuevoEstado);
     }
 
-    // RN-CUR-013: pre-aprobación
-    if (nuevoEstado === 'APROBADO') {
-      const totalActivos = await this.repositorio.contarDetallesActivos(id, alcance.institucionId);
-      if (totalActivos === 0) throw new PlanSinDetallesError();
-
-      if (await this.repositorio.tieneAsignaturasInactivasEnDetalle(id, alcance.institucionId)) {
-        throw new PlanAsignaturaInactivaError();
-      }
-    }
-
     // RN-CUR-014: pre-vigencia
     if (nuevoEstado === 'VIGENTE') {
       const estadoAnio = await this.repositorio.obtenerEstadoAnio(plan.idAnioAcademico, alcance.institucionId);
@@ -65,11 +55,11 @@ export class CambiarEstadoPlanEstudioCasoUso {
       }
     }
 
-    // Datos de aprobación para VIGENTE
-    const aprobacion = nuevoEstado === 'VIGENTE'
-      ? { fechaAprobacion: new Date().toISOString(), idUsuarioAprobador: alcance.usuarioId }
+    // Datos de activación para VIGENTE
+    const activacion = nuevoEstado === 'VIGENTE'
+      ? { fechaVigencia: new Date().toISOString(), idUsuarioActivador: alcance.usuarioId }
       : undefined;
 
-    await this.repositorio.cambiarEstadoPlan(id, alcance.institucionId, nuevoEstado, aprobacion);
+    await this.repositorio.cambiarEstadoPlan(id, alcance.institucionId, nuevoEstado, undefined, activacion);
   }
 }

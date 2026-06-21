@@ -111,39 +111,57 @@ async function sembrarEstructuraAcademica(
   );
 
   // ── Curriculo Demo ────────────────────────────────────────────────────────
-  const areaId = '77777777-7777-7777-7777-777777777777';
   await manager.query(
     `INSERT INTO areas_curriculares
        (id, id_institucion_educativa, codigo, codigo_normalizado, nombre, nombre_normalizado, descripcion, orden, estado, fecha_creacion, fecha_modificacion)
-     VALUES ($1, $2, 'MATEMATICA', 'MATEMATICA', 'Matemática', 'MATEMATICA', 'Área de matemática', 1, 'ACTIVA', now(), now())
-     ON CONFLICT DO NOTHING`,
-    [areaId, institucionId],
+     VALUES (gen_random_uuid(), $1, 'MATEMATICA', 'MATEMATICA', 'Matemática', 'MATEMATICA', 'Área de matemática', 1, 'ACTIVA', now(), now())
+     ON CONFLICT (id_institucion_educativa, codigo_normalizado) DO NOTHING`,
+    [institucionId],
   );
 
-  const asignaturaId = '88888888-8888-8888-8888-888888888888';
+  const [area] = await manager.query<{ id: string }[]>(
+    `SELECT id FROM areas_curriculares
+     WHERE id_institucion_educativa = $1 AND codigo_normalizado = 'MATEMATICA' LIMIT 1`,
+    [institucionId],
+  );
+  if (!area) return;
+
   await manager.query(
     `INSERT INTO asignaturas
        (id, id_institucion_educativa, id_area_curricular, codigo, codigo_normalizado, nombre, nombre_corto, descripcion, orden, estado, fecha_creacion, fecha_modificacion)
-     VALUES ($1, $2, $3, 'ALGEBRA', 'ALGEBRA', 'Álgebra', 'Álgebra', 'Curso de álgebra', 1, 'ACTIVA', now(), now())
-     ON CONFLICT DO NOTHING`,
-    [asignaturaId, institucionId, areaId],
+     VALUES (gen_random_uuid(), $1, $2, 'ALGEBRA', 'ALGEBRA', 'Álgebra', 'Álgebra', 'Curso de álgebra', 1, 'ACTIVA', now(), now())
+     ON CONFLICT (id_institucion_educativa, codigo_normalizado) DO NOTHING`,
+    [institucionId, area.id],
   );
 
-  const planId = '99999999-9999-9999-9999-999999999999';
+  const [asignatura] = await manager.query<{ id: string }[]>(
+    `SELECT id FROM asignaturas
+     WHERE id_institucion_educativa = $1 AND codigo_normalizado = 'ALGEBRA' LIMIT 1`,
+    [institucionId],
+  );
+  if (!asignatura) return;
+
   await manager.query(
     `INSERT INTO planes_estudio
        (id, id_institucion_educativa, id_anio_academico, id_grado_educativo, codigo, codigo_normalizado, nombre, version, estado, observacion, fecha_creacion, fecha_modificacion)
-     VALUES ($1, $2, $3, $4, 'PLAN-1ERO-MAT', 'PLAN-1ERO-MAT', 'Plan Primer Grado Matemática', 1, 'BORRADOR', 'Plan demo', now(), now())
-     ON CONFLICT DO NOTHING`,
-    [planId, institucionId, anio.id, grado.id],
+     VALUES (gen_random_uuid(), $1, $2, $3, 'PLAN-1ERO-MAT', 'PLAN-1ERO-MAT', 'Plan Primer Grado Matemática', 1, 'BORRADOR', 'Plan demo', now(), now())
+     ON CONFLICT (id_institucion_educativa, codigo_normalizado) DO NOTHING`,
+    [institucionId, anio.id, grado.id],
   );
+
+  const [plan] = await manager.query<{ id: string }[]>(
+    `SELECT id FROM planes_estudio
+     WHERE id_institucion_educativa = $1 AND codigo_normalizado = 'PLAN-1ERO-MAT' LIMIT 1`,
+    [institucionId],
+  );
+  if (!plan) return;
 
   await manager.query(
     `INSERT INTO detalles_plan_estudio
        (id, id_institucion_educativa, id_plan_estudio, id_asignatura, tipo, horas_semanales, horas_anuales, orden, estado, observacion, fecha_creacion, fecha_modificacion)
      VALUES (gen_random_uuid(), $1, $2, $3, 'OBLIGATORIA', 4, 160, 1, 'ACTIVO', 'Detalle demo', now(), now())
      ON CONFLICT DO NOTHING`,
-    [institucionId, planId, asignaturaId],
+    [institucionId, plan.id, asignatura.id],
   );
 }
 
