@@ -2,7 +2,7 @@
 
 import { useMutation } from '@tanstack/react-query';
 import { esBackendError } from '@/types/api';
-import { traducirError } from '@/lib/errores/traducir-error';
+import { traducirBackendError } from '@/lib/errores/traducir-error';
 import type { ErrorApi } from '@/lib/errores/traducir-error';
 import type { LoginFormValues } from '../esquemas/login.schema';
 
@@ -15,7 +15,7 @@ async function iniciarSesion(datos: LoginFormValues): Promise<void> {
 
   if (!res.ok) {
     const json: unknown = await res.json().catch(() => null);
-    if (esBackendError(json)) throw traducirError(json, res.status);
+    if (esBackendError(json)) throw traducirBackendError(json, res.status);
     throw new Error('Error al iniciar sesión');
   }
 }

@@ -9,6 +9,7 @@ export interface ProxyOptions {
   method?: string;
   body?: unknown;
   accessToken?: string;
+  signal?: AbortSignal;
 }
 
 export interface ProxyResult<T> {
@@ -21,7 +22,7 @@ export async function llamarBackend<T>(
   ruta: string,
   opciones: ProxyOptions = {},
 ): Promise<ProxyResult<T>> {
-  const { method = 'GET', body, accessToken } = opciones;
+  const { method = 'GET', body, accessToken, signal } = opciones;
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -36,9 +37,16 @@ export async function llamarBackend<T>(
       method,
       headers,
       body: body !== undefined ? JSON.stringify(body) : undefined,
+      signal,
     });
-  } catch {
-    return { status: 503, error: { codigo: 'ERROR_RED', mensaje: 'No se pudo conectar con el servidor' } };
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      return { status: 499, error: { codigo: 'SOLICITUD_CANCELADA', mensaje: 'Solicitud cancelada' } };
+    }
+    return {
+      status: 503,
+      error: { codigo: 'ERROR_RED', mensaje: 'No se pudo conectar con el servidor' },
+    };
   }
 
   if (res.status === 204) {
@@ -49,7 +57,10 @@ export async function llamarBackend<T>(
   try {
     json = await res.json();
   } catch {
-    return { status: res.status, error: { codigo: 'ERROR_SERVIDOR', mensaje: 'Respuesta inesperada del servidor' } };
+    return {
+      status: res.status,
+      error: { codigo: 'ERROR_SERVIDOR', mensaje: 'Respuesta inesperada del servidor' },
+    };
   }
 
   if (!res.ok) {
@@ -59,12 +70,36 @@ export async function llamarBackend<T>(
   return { status: res.status, data: json as T };
 }
 
+export function errorBff(
+  codigo: string,
+  mensaje: string,
+  status: number,
+  ruta = '',
+): NextResponse {
+  return NextResponse.json(
+    {
+      codigo,
+      mensaje,
+      correlacionId: '',
+      ruta,
+      fecha: new Date().toISOString(),
+    },
+    { status },
+  );
+}
+
 export function errorResponse(error: unknown, status: number): NextResponse {
   if (esBackendError(error)) {
     return NextResponse.json(error, { status });
   }
   return NextResponse.json(
-    { codigo: 'ERROR_SERVIDOR', mensaje: 'Error inesperado', correlacionId: '', ruta: '', fecha: new Date().toISOString() },
+    {
+      codigo: 'ERROR_SERVIDOR',
+      mensaje: 'Error inesperado',
+      correlacionId: '',
+      ruta: '',
+      fecha: new Date().toISOString(),
+    },
     { status: 500 },
   );
 }
@@ -90,7 +125,6 @@ export async function renovarSesion(
   sesion.accessToken = resultado.data.accessToken;
   sesion.refreshToken = resultado.data.refreshToken;
 
-  // Si tiene contexto guardado, re-seleccionarlo automáticamente
   if (sesion.contexto) {
     const reselect = await llamarBackend<{ accessToken: string }>(
       '/api/v1/autenticacion/seleccionar-contexto',
@@ -114,4 +148,30 @@ export async function renovarSesion(
 
   await sesion.save();
   return true;
+}
+
+/**
+ * Ejecuta una llamada autenticada al backend con renovación automática de token.
+ * Debe usarse desde route handlers BFF que ya tienen la sesión cargada.
+ */
+export async function llamarAutenticado<T>(
+  sesion: IronSession<EduraSession>,
+  ruta: string,
+  opciones: Omit<ProxyOptions, 'accessToken'> = {},
+): Promise<ProxyResult<T>> {
+  if (!sesion.accessToken) {
+    return { status: 401, error: { codigo: 'SESION_EXPIRADA', mensaje: 'Sesión no válida' } };
+  }
+
+  let resultado = await llamarBackend<T>(ruta, { ...opciones, accessToken: sesion.accessToken });
+
+  if (resultado.status === 401) {
+    const renovado = await renovarSesion(sesion);
+    if (!renovado || !sesion.accessToken) {
+      return { status: 401, error: { codigo: 'SESION_EXPIRADA', mensaje: 'Sesión expirada' } };
+    }
+    resultado = await llamarBackend<T>(ruta, { ...opciones, accessToken: sesion.accessToken });
+  }
+
+  return resultado;
 }

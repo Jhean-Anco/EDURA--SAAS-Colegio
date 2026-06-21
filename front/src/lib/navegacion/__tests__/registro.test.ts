@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolverNavegacion, REGISTRO_NAVEGACION } from '../registro';
+import { resolverNavegacion, resolverNavegacionPlana, REGISTRO_NAVEGACION } from '../registro';
 import type { ContextoDescriptor } from '@/types/auth';
 
 const contextoBase: ContextoDescriptor = {
@@ -8,50 +8,74 @@ const contextoBase: ContextoDescriptor = {
   ambito: 'INSTITUCION',
   sedeId: null,
   nombreSede: null,
-  permisos: ['PANEL_INSTITUCIONAL.RESUMEN.LEER'],
+  permisos: ['PANEL_INSTITUCIONAL.RESUMEN.LEER', 'CURRICULO.LEER'],
   roles: ['DIRECTIVO'],
 };
 
-describe('REGISTRO_NAVEGACION', () => {
+describe('REGISTRO_NAVEGACION (plano)', () => {
   it('contiene al menos el item panel', () => {
     const panel = REGISTRO_NAVEGACION.find((i) => i.codigo === 'panel');
     expect(panel).toBeDefined();
     expect(panel?.ruta).toBe('/panel');
   });
+
+  it('contiene item de planes de estudio', () => {
+    const planes = REGISTRO_NAVEGACION.find((i) => i.codigo === 'curriculo-planes');
+    expect(planes).toBeDefined();
+  });
 });
 
-describe('resolverNavegacion', () => {
-  it('retorna panel para contexto INSTITUCION con permiso correcto', () => {
-    const items = resolverNavegacion(contextoBase);
-    expect(items.some((i) => i.codigo === 'panel')).toBe(true);
+describe('resolverNavegacion (grupos)', () => {
+  it('devuelve grupos con items para contexto INSTITUCION con permisos', () => {
+    const grupos = resolverNavegacion(contextoBase);
+    expect(grupos.length).toBeGreaterThan(0);
+    const todosItems = grupos.flatMap((g) => g.items);
+    expect(todosItems.some((i) => i.codigo === 'panel')).toBe(true);
   });
 
-  it('retorna panel para contexto SEDE con permiso correcto', () => {
-    const contextoSede: ContextoDescriptor = {
+  it('incluye grupo Currículo cuando hay CURRICULO.LEER', () => {
+    const grupos = resolverNavegacion(contextoBase);
+    const curriculum = grupos.find((g) => g.etiqueta === 'Currículo');
+    expect(curriculum).toBeDefined();
+    expect(curriculum?.items.length).toBeGreaterThan(0);
+  });
+
+  it('no incluye Currículo sin permiso CURRICULO.LEER', () => {
+    const sinCurriculo: ContextoDescriptor = {
+      ...contextoBase,
+      permisos: ['PANEL_INSTITUCIONAL.RESUMEN.LEER'],
+    };
+    const grupos = resolverNavegacion(sinCurriculo);
+    const curriculum = grupos.find((g) => g.etiqueta === 'Currículo');
+    expect(curriculum).toBeUndefined();
+  });
+
+  it('excluye grupos vacíos cuando faltan permisos', () => {
+    const sinPermisos: ContextoDescriptor = { ...contextoBase, permisos: [] };
+    const grupos = resolverNavegacion(sinPermisos);
+    grupos.forEach((g) => expect(g.items.length).toBeGreaterThan(0));
+    const totalItems = grupos.flatMap((g) => g.items);
+    expect(totalItems).toHaveLength(0);
+  });
+
+  it('no retorna panel para contexto SEDE sin permiso de SEDE', () => {
+    const sede: ContextoDescriptor = {
       ...contextoBase,
       ambito: 'SEDE',
       sedeId: 'sede-001',
       nombreSede: 'Sede Norte',
     };
-    const items = resolverNavegacion(contextoSede);
-    expect(items.some((i) => i.codigo === 'panel')).toBe(true);
+    const grupos = resolverNavegacion(sede);
+    const items = grupos.flatMap((g) => g.items);
+    // Currículo requiere ámbito INSTITUCION
+    expect(items.some((i) => i.codigo === 'curriculo-planes')).toBe(false);
   });
+});
 
-  it('no retorna items si faltan permisos', () => {
-    const sinPermisos: ContextoDescriptor = { ...contextoBase, permisos: [] };
-    const items = resolverNavegacion(sinPermisos);
-    const panel = items.find((i) => i.codigo === 'panel');
-    expect(panel).toBeUndefined();
-  });
-
-  it('retorna array vacío para contexto sin permisos', () => {
-    const sinPermisos: ContextoDescriptor = { ...contextoBase, permisos: [] };
-    const items = resolverNavegacion(sinPermisos);
-    expect(items).toHaveLength(0);
-  });
-
-  it('cada item tiene icono, ruta, y etiqueta definidos', () => {
-    const items = resolverNavegacion(contextoBase);
+describe('resolverNavegacionPlana', () => {
+  it('devuelve array plano de NavItem', () => {
+    const items = resolverNavegacionPlana(contextoBase);
+    expect(Array.isArray(items)).toBe(true);
     items.forEach((item) => {
       expect(item.icono).toBeDefined();
       expect(item.ruta).toMatch(/^\//);

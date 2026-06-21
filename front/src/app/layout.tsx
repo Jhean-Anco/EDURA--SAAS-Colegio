@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { ThemeProvider } from 'next-themes';
 import { QueryProvider } from '@/components/providers/query-provider';
+import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -14,9 +15,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode;
-}): React.JSX.Element {
+}: Readonly<{ children: React.ReactNode }>): React.JSX.Element {
   return (
     <html lang="es" suppressHydrationWarning>
       <body>
@@ -27,6 +26,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <QueryProvider>{children}</QueryProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

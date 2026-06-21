@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { esBackendError } from '@/types/api';
-import { traducirError } from '@/lib/errores/traducir-error';
+import { traducirBackendError } from '@/lib/errores/traducir-error';
 import type { ErrorApi } from '@/lib/errores/traducir-error';
 import type { Ambito } from '@/types/auth';
 
@@ -33,7 +33,7 @@ async function seleccionarContexto(datos: EntradaSeleccion): Promise<void> {
 
   if (!res.ok) {
     const json: unknown = await res.json().catch(() => null);
-    if (esBackendError(json)) throw traducirError(json, res.status);
+    if (esBackendError(json)) throw traducirBackendError(json, res.status);
     throw new Error('Error al seleccionar contexto');
   }
 }
