@@ -41,7 +41,7 @@ export class RepositorioCalendarioAcademicoTypeorm implements RepositorioCalenda
          AND ($3::uuid IS NULL OR id <> $3)`,
       [institucionId, anio, excluirId ?? null],
     );
-    return parseInt(rows[0]?.total ?? '0', 10) > 0;
+    return Number.parseInt(rows[0]?.total ?? '0', 10) > 0;
   }
 
   async existeCodigoAnioEnInstitucion(
@@ -55,7 +55,7 @@ export class RepositorioCalendarioAcademicoTypeorm implements RepositorioCalenda
          AND ($3::uuid IS NULL OR id <> $3)`,
       [institucionId, codigoNormalizado, excluirId ?? null],
     );
-    return parseInt(rows[0]?.total ?? '0', 10) > 0;
+    return Number.parseInt(rows[0]?.total ?? '0', 10) > 0;
   }
 
   async existeAnioActivo(institucionId: string): Promise<boolean> {
@@ -64,7 +64,7 @@ export class RepositorioCalendarioAcademicoTypeorm implements RepositorioCalenda
        WHERE id_institucion_educativa = $1 AND estado = 'ACTIVO'`,
       [institucionId],
     );
-    return parseInt(rows[0]?.total ?? '0', 10) > 0;
+    return Number.parseInt(rows[0]?.total ?? '0', 10) > 0;
   }
 
   async crearAnioAcademico(entrada: {
@@ -75,12 +75,13 @@ export class RepositorioCalendarioAcademicoTypeorm implements RepositorioCalenda
     nombre: string;
     fechaInicio: string;
     fechaFin: string;
+    estado: EstadoCalendario;
     observacion?: string | null;
   }): Promise<{ id: string }> {
     const rows = await this.ds.query<FilaId[]>(
       `INSERT INTO anios_academicos
-         (id_institucion_educativa, anio, codigo, codigo_normalizado, nombre, fecha_inicio, fecha_fin, observacion)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         (id_institucion_educativa, anio, codigo, codigo_normalizado, nombre, fecha_inicio, fecha_fin, estado, observacion)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING id`,
       [
         entrada.institucionId,
@@ -90,10 +91,43 @@ export class RepositorioCalendarioAcademicoTypeorm implements RepositorioCalenda
         entrada.nombre,
         entrada.fechaInicio,
         entrada.fechaFin,
+        entrada.estado,
         entrada.observacion ?? null,
       ],
     );
     return { id: rows[0].id };
+  }
+
+  async obtenerFechasAnio(
+    id: string,
+    institucionId: string,
+  ): Promise<{ fechaInicio: string; fechaFin: string } | null> {
+    const rows = await this.ds.query<
+      { fecha_inicio: string; fecha_fin: string }[]
+    >(
+      `SELECT fecha_inicio::text AS fecha_inicio, fecha_fin::text AS fecha_fin
+       FROM anios_academicos
+       WHERE id = $1 AND id_institucion_educativa = $2`,
+      [id, institucionId],
+    );
+    if (!rows.length) return null;
+    return { fechaInicio: rows[0].fecha_inicio, fechaFin: rows[0].fecha_fin };
+  }
+
+  async existePeriodoFueraDeIntervalo(
+    idAnio: string,
+    institucionId: string,
+    nuevaFechaInicio: string,
+    nuevaFechaFin: string,
+  ): Promise<boolean> {
+    const rows = await this.ds.query<FilaConteo[]>(
+      `SELECT COUNT(*)::text AS total FROM periodos_academicos
+       WHERE id_anio_academico = $1 AND id_institucion_educativa = $2
+         AND estado NOT IN ('CERRADO', 'ANULADO')
+         AND (fecha_inicio < $3::date OR fecha_fin > $4::date)`,
+      [idAnio, institucionId, nuevaFechaInicio, nuevaFechaFin],
+    );
+    return Number.parseInt(rows[0]?.total ?? '0', 10) > 0;
   }
 
   async obtenerAnioBase(
@@ -178,7 +212,7 @@ export class RepositorioCalendarioAcademicoTypeorm implements RepositorioCalenda
          AND estado = 'ACTIVO'`,
       [idAnio, institucionId],
     );
-    return parseInt(rows[0]?.total ?? '0', 10) > 0;
+    return Number.parseInt(rows[0]?.total ?? '0', 10) > 0;
   }
 
   async existeCodigoPeriodoEnAnio(
@@ -193,7 +227,7 @@ export class RepositorioCalendarioAcademicoTypeorm implements RepositorioCalenda
          AND codigo_normalizado = $3 AND ($4::uuid IS NULL OR id <> $4)`,
       [idAnio, institucionId, codigoNormalizado, excluirId ?? null],
     );
-    return parseInt(rows[0]?.total ?? '0', 10) > 0;
+    return Number.parseInt(rows[0]?.total ?? '0', 10) > 0;
   }
 
   async existeOrdenPeriodoEnAnio(
@@ -208,7 +242,7 @@ export class RepositorioCalendarioAcademicoTypeorm implements RepositorioCalenda
          AND orden = $3 AND ($4::uuid IS NULL OR id <> $4)`,
       [idAnio, institucionId, orden, excluirId ?? null],
     );
-    return parseInt(rows[0]?.total ?? '0', 10) > 0;
+    return Number.parseInt(rows[0]?.total ?? '0', 10) > 0;
   }
 
   async existeSolapamientoPeriodo(entrada: {
@@ -232,7 +266,7 @@ export class RepositorioCalendarioAcademicoTypeorm implements RepositorioCalenda
         entrada.excluirId ?? null,
       ],
     );
-    return parseInt(rows[0]?.total ?? '0', 10) > 0;
+    return Number.parseInt(rows[0]?.total ?? '0', 10) > 0;
   }
 
   async crearPeriodoAcademico(entrada: {
@@ -284,10 +318,29 @@ export class RepositorioCalendarioAcademicoTypeorm implements RepositorioCalenda
     return { id: r.id, estado: r.estado as EstadoCalendario };
   }
 
+  async obtenerPeriodoFechas(
+    id: string,
+    idAnio: string,
+    institucionId: string,
+  ): Promise<{ fechaInicio: string; fechaFin: string } | null> {
+    const rows = await this.ds.query<
+      { fecha_inicio: string; fecha_fin: string }[]
+    >(
+      `SELECT fecha_inicio::text AS fecha_inicio, fecha_fin::text AS fecha_fin
+       FROM periodos_academicos
+       WHERE id = $1 AND id_anio_academico = $2 AND id_institucion_educativa = $3`,
+      [id, idAnio, institucionId],
+    );
+    if (!rows.length) return null;
+    return { fechaInicio: rows[0].fecha_inicio, fechaFin: rows[0].fecha_fin };
+  }
+
   async actualizarPeriodoAcademico(entrada: {
     id: string;
     idAnioAcademico: string;
     institucionId: string;
+    codigo?: string;
+    codigoNormalizado?: string;
     nombre?: string;
     tipo?: TipoPeriodo;
     orden?: number;
@@ -302,6 +355,14 @@ export class RepositorioCalendarioAcademicoTypeorm implements RepositorioCalenda
       entrada.institucionId,
     ];
     let idx = 4;
+    if (entrada.codigo !== undefined) {
+      sets.push(`codigo = $${idx++}`);
+      params.push(entrada.codigo);
+    }
+    if (entrada.codigoNormalizado !== undefined) {
+      sets.push(`codigo_normalizado = $${idx++}`);
+      params.push(entrada.codigoNormalizado);
+    }
     if (entrada.nombre !== undefined) {
       sets.push(`nombre = $${idx++}`);
       params.push(entrada.nombre);

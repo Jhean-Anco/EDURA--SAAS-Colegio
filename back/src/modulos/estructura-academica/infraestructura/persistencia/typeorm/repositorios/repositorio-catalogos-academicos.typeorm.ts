@@ -40,7 +40,7 @@ export class RepositorioCatalogosAcademicosTypeorm implements RepositorioCatalog
          AND ($3::uuid IS NULL OR id <> $3)`,
       [institucionId, codigoNormalizado, excluirId ?? null],
     );
-    return parseInt(rows[0]?.total ?? '0', 10) > 0;
+    return Number.parseInt(rows[0]?.total ?? '0', 10) > 0;
   }
 
   async existeOrdenNivelEnInstitucion(
@@ -54,7 +54,7 @@ export class RepositorioCatalogosAcademicosTypeorm implements RepositorioCatalog
          AND ($3::uuid IS NULL OR id <> $3)`,
       [institucionId, orden, excluirId ?? null],
     );
-    return parseInt(rows[0]?.total ?? '0', 10) > 0;
+    return Number.parseInt(rows[0]?.total ?? '0', 10) > 0;
   }
 
   async crearNivelEducativo(entrada: {
@@ -148,7 +148,7 @@ export class RepositorioCatalogosAcademicosTypeorm implements RepositorioCatalog
          AND codigo_normalizado = $3 AND ($4::uuid IS NULL OR id <> $4)`,
       [idNivel, institucionId, codigoNormalizado, excluirId ?? null],
     );
-    return parseInt(rows[0]?.total ?? '0', 10) > 0;
+    return Number.parseInt(rows[0]?.total ?? '0', 10) > 0;
   }
 
   async existeOrdenGradoEnNivel(
@@ -163,7 +163,7 @@ export class RepositorioCatalogosAcademicosTypeorm implements RepositorioCatalog
          AND orden = $3 AND ($4::uuid IS NULL OR id <> $4)`,
       [idNivel, institucionId, orden, excluirId ?? null],
     );
-    return parseInt(rows[0]?.total ?? '0', 10) > 0;
+    return Number.parseInt(rows[0]?.total ?? '0', 10) > 0;
   }
 
   async crearGradoEducativo(entrada: {
@@ -250,5 +250,67 @@ export class RepositorioCatalogosAcademicosTypeorm implements RepositorioCatalog
       ? result[1]
       : (result?.affected ?? 0);
     return affected > 0;
+  }
+
+  async cambiarEstadoNivel(
+    id: string,
+    institucionId: string,
+    estado: EstadoNivel,
+  ): Promise<boolean> {
+    const result = await this.ds.query<
+      [unknown, number] | { affected?: number }
+    >(
+      `UPDATE niveles_educativos SET estado = $3, fecha_modificacion = now()
+       WHERE id = $1 AND id_institucion_educativa = $2`,
+      [id, institucionId, estado],
+    );
+    const affected = Array.isArray(result)
+      ? result[1]
+      : (result?.affected ?? 0);
+    return affected > 0;
+  }
+
+  async tieneGradosActivos(
+    idNivel: string,
+    institucionId: string,
+  ): Promise<boolean> {
+    const rows = await this.ds.query<FilaConteo[]>(
+      `SELECT COUNT(*)::text AS total FROM grados_educativos
+       WHERE id_nivel_educativo = $1 AND id_institucion_educativa = $2
+         AND estado = 'ACTIVO'`,
+      [idNivel, institucionId],
+    );
+    return Number.parseInt(rows[0]?.total ?? '0', 10) > 0;
+  }
+
+  async cambiarEstadoGrado(
+    id: string,
+    institucionId: string,
+    estado: EstadoNivel,
+  ): Promise<boolean> {
+    const result = await this.ds.query<
+      [unknown, number] | { affected?: number }
+    >(
+      `UPDATE grados_educativos SET estado = $3, fecha_modificacion = now()
+       WHERE id = $1 AND id_institucion_educativa = $2`,
+      [id, institucionId, estado],
+    );
+    const affected = Array.isArray(result)
+      ? result[1]
+      : (result?.affected ?? 0);
+    return affected > 0;
+  }
+
+  async tieneOfertasActivasOPlanificadas(
+    idGrado: string,
+    institucionId: string,
+  ): Promise<boolean> {
+    const rows = await this.ds.query<FilaConteo[]>(
+      `SELECT COUNT(*)::text AS total FROM ofertas_grado_sede
+       WHERE id_grado_educativo = $1 AND id_institucion_educativa = $2
+         AND estado IN ('ACTIVA', 'PLANIFICADA')`,
+      [idGrado, institucionId],
+    );
+    return Number.parseInt(rows[0]?.total ?? '0', 10) > 0;
   }
 }

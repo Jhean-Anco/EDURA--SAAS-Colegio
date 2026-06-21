@@ -15,6 +15,20 @@ Este archivo registra la evolucion visible del backend para que una IA o una per
 - Se alineo la documentacion del backend con el indice raiz.
 - Se mantuvo la separacion documental entre vision global y detalle del backend.
 
+## [0.2.0] - 2026-06-21
+
+### Added
+
+- MOD-008.1 Estructura Académica: calendario (años y períodos), catálogos (niveles y grados), oferta por sede y secciones.
+- Migración V17 con btree_gist, EXCLUDE para solapamientos de períodos y CHECKs de integridad.
+- 26 nuevos endpoints bajo `/estructura-academica/`.
+- Documentación `documentacion/modulos/estructura-academica.md` y ADR-014.
+
+### Changed
+
+- CI actualizado con SHA base de REL-006.1.
+- Tokens DI Symbol para todos los repositorios de estructura académica.
+
 ## [0.1.0] - 2026-06-20
 
 ### Added

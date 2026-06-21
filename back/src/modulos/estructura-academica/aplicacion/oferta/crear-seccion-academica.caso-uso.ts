@@ -1,5 +1,10 @@
 import {
+  CapacidadSuperaAforoError,
+  DocenteTutorCesadoError,
+  DocenteTutorInactivoError,
   EspacioFisicoFueraDeSedeError,
+  EspacioInactivoError,
+  EspacioNoEsAulaError,
   OfertaGradoSedeNoEncontradaError,
   SeccionNombreDuplicadoError,
   TutorFueraDeSedeError,
@@ -49,20 +54,31 @@ export class CrearSeccionAcademicaCasoUso {
     if (existe) throw new SeccionNombreDuplicadoError();
 
     if (entrada.idEspacioFisico) {
-      const espacioOk = await this.repositorio.verificarEspacioFisicoEnSede(
+      const espacio = await this.repositorio.verificarEspacioFisicoEnSede(
         entrada.idEspacioFisico,
         oferta.idSede,
       );
-      if (!espacioOk) throw new EspacioFisicoFueraDeSedeError();
+      if (!espacio) throw new EspacioFisicoFueraDeSedeError();
+      if (!espacio.esAula) throw new EspacioNoEsAulaError();
+      if (!espacio.estaActivo) throw new EspacioInactivoError();
+      if (
+        entrada.capacidadMaxima &&
+        espacio.aforo !== null &&
+        entrada.capacidadMaxima > espacio.aforo
+      ) {
+        throw new CapacidadSuperaAforoError();
+      }
     }
 
     if (entrada.idDocenteTutor) {
-      const tutorOk = await this.repositorio.verificarDocenteTutorEnSede(
+      const tutor = await this.repositorio.verificarDocenteTutorEnSede(
         entrada.idDocenteTutor,
         oferta.idSede,
         alcance.institucionId,
       );
-      if (!tutorOk) throw new TutorFueraDeSedeError();
+      if (!tutor.estaActivo) throw new DocenteTutorInactivoError();
+      if (tutor.estaCesado) throw new DocenteTutorCesadoError();
+      if (!tutor.tieneAsignacion) throw new TutorFueraDeSedeError();
     }
 
     return this.repositorio.crearSeccionAcademica({

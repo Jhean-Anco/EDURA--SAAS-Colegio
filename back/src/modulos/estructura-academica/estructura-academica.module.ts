@@ -28,17 +28,23 @@ import { ListarPeriodosAcademicosCasoUso } from './aplicacion/calendario/listar-
 // ── Casos de uso Catálogos ────────────────────────────────────────────────────
 import { CrearNivelEducativoCasoUso } from './aplicacion/catalogos/crear-nivel-educativo.caso-uso';
 import { ActualizarNivelEducativoCasoUso } from './aplicacion/catalogos/actualizar-nivel-educativo.caso-uso';
+import { CambiarEstadoNivelEducativoCasoUso } from './aplicacion/catalogos/cambiar-estado-nivel-educativo.caso-uso';
 import { ListarNivelesEducativosCasoUso } from './aplicacion/catalogos/listar-niveles-educativos.caso-uso';
 import { CrearGradoEducativoCasoUso } from './aplicacion/catalogos/crear-grado-educativo.caso-uso';
 import { ActualizarGradoEducativoCasoUso } from './aplicacion/catalogos/actualizar-grado-educativo.caso-uso';
+import { CambiarEstadoGradoEducativoCasoUso } from './aplicacion/catalogos/cambiar-estado-grado-educativo.caso-uso';
 import { ListarGradosEducativosCasoUso } from './aplicacion/catalogos/listar-grados-educativos.caso-uso';
 
 // ── Casos de uso Oferta ───────────────────────────────────────────────────────
 import { CrearOfertaGradoSedeCasoUso } from './aplicacion/oferta/crear-oferta-grado-sede.caso-uso';
 import { ActualizarOfertaGradoSedeCasoUso } from './aplicacion/oferta/actualizar-oferta-grado-sede.caso-uso';
+import { CambiarEstadoOfertaGradoSedeCasoUso } from './aplicacion/oferta/cambiar-estado-oferta-grado-sede.caso-uso';
 import { ListarOfertasCasoUso } from './aplicacion/oferta/listar-ofertas.caso-uso';
 import { CrearSeccionAcademicaCasoUso } from './aplicacion/oferta/crear-seccion-academica.caso-uso';
 import { ActualizarSeccionAcademicaCasoUso } from './aplicacion/oferta/actualizar-seccion-academica.caso-uso';
+import { CambiarEstadoSeccionAcademicaCasoUso } from './aplicacion/oferta/cambiar-estado-seccion-academica.caso-uso';
+import { AsignarEspacioSeccionCasoUso } from './aplicacion/oferta/asignar-espacio-seccion.caso-uso';
+import { AsignarTutorSeccionCasoUso } from './aplicacion/oferta/asignar-tutor-seccion.caso-uso';
 import { ListarSeccionesCasoUso } from './aplicacion/oferta/listar-secciones.caso-uso';
 
 // ── Caso de uso Panel ─────────────────────────────────────────────────────────
@@ -76,135 +82,145 @@ import { ObtenerPeriodoActivoCasoUso } from './aplicacion/panel/obtener-periodo-
     // ── Casos de uso Calendario ─────────────────────────────────────────────
     {
       provide: CrearAnioAcademicoCasoUso,
-      useFactory: (r: RepositorioCalendarioAcademicoTypeorm) =>
-        new CrearAnioAcademicoCasoUso(r),
-      inject: [RepositorioCalendarioAcademicoTypeorm],
+      useFactory: (r: any) => new CrearAnioAcademicoCasoUso(r),
+      inject: [REPOSITORIO_CALENDARIO_ACADEMICO],
     },
     {
       provide: ActualizarAnioAcademicoCasoUso,
-      useFactory: (r: RepositorioCalendarioAcademicoTypeorm) =>
-        new ActualizarAnioAcademicoCasoUso(r),
-      inject: [RepositorioCalendarioAcademicoTypeorm],
+      useFactory: (r: any) => new ActualizarAnioAcademicoCasoUso(r),
+      inject: [REPOSITORIO_CALENDARIO_ACADEMICO],
     },
     {
       provide: CambiarEstadoAnioAcademicoCasoUso,
-      useFactory: (r: RepositorioCalendarioAcademicoTypeorm) =>
-        new CambiarEstadoAnioAcademicoCasoUso(r),
-      inject: [RepositorioCalendarioAcademicoTypeorm],
+      useFactory: (r: any, ro: any) =>
+        new CambiarEstadoAnioAcademicoCasoUso(r, ro),
+      inject: [REPOSITORIO_CALENDARIO_ACADEMICO, REPOSITORIO_OFERTA_ACADEMICA],
     },
     {
       provide: ListarAniosAcademicosCasoUso,
-      useFactory: (c: ConsultadorEstructuraAcademicaTypeorm) =>
-        new ListarAniosAcademicosCasoUso(c),
-      inject: [ConsultadorEstructuraAcademicaTypeorm],
+      useFactory: (c: any) => new ListarAniosAcademicosCasoUso(c),
+      inject: [CONSULTADOR_ESTRUCTURA_ACADEMICA],
     },
     {
       provide: CrearPeriodoAcademicoCasoUso,
-      useFactory: (r: RepositorioCalendarioAcademicoTypeorm) =>
-        new CrearPeriodoAcademicoCasoUso(r),
-      inject: [RepositorioCalendarioAcademicoTypeorm],
+      useFactory: (r: any) => new CrearPeriodoAcademicoCasoUso(r),
+      inject: [REPOSITORIO_CALENDARIO_ACADEMICO],
     },
     {
       provide: ActualizarPeriodoAcademicoCasoUso,
-      useFactory: (r: RepositorioCalendarioAcademicoTypeorm) =>
-        new ActualizarPeriodoAcademicoCasoUso(r),
-      inject: [RepositorioCalendarioAcademicoTypeorm],
+      useFactory: (r: any) => new ActualizarPeriodoAcademicoCasoUso(r),
+      inject: [REPOSITORIO_CALENDARIO_ACADEMICO],
     },
     {
       provide: CambiarEstadoPeriodoAcademicoCasoUso,
-      useFactory: (r: RepositorioCalendarioAcademicoTypeorm) =>
-        new CambiarEstadoPeriodoAcademicoCasoUso(r),
-      inject: [RepositorioCalendarioAcademicoTypeorm],
+      useFactory: (r: any) => new CambiarEstadoPeriodoAcademicoCasoUso(r),
+      inject: [REPOSITORIO_CALENDARIO_ACADEMICO],
     },
     {
       provide: ListarPeriodosAcademicosCasoUso,
-      useFactory: (c: ConsultadorEstructuraAcademicaTypeorm) =>
-        new ListarPeriodosAcademicosCasoUso(c),
-      inject: [ConsultadorEstructuraAcademicaTypeorm],
+      useFactory: (c: any) => new ListarPeriodosAcademicosCasoUso(c),
+      inject: [CONSULTADOR_ESTRUCTURA_ACADEMICA],
     },
 
     // ── Casos de uso Catálogos ──────────────────────────────────────────────
     {
       provide: CrearNivelEducativoCasoUso,
-      useFactory: (r: RepositorioCatalogosAcademicosTypeorm) =>
-        new CrearNivelEducativoCasoUso(r),
-      inject: [RepositorioCatalogosAcademicosTypeorm],
+      useFactory: (r: any) => new CrearNivelEducativoCasoUso(r),
+      inject: [REPOSITORIO_CATALOGOS_ACADEMICOS],
     },
     {
       provide: ActualizarNivelEducativoCasoUso,
-      useFactory: (r: RepositorioCatalogosAcademicosTypeorm) =>
-        new ActualizarNivelEducativoCasoUso(r),
-      inject: [RepositorioCatalogosAcademicosTypeorm],
+      useFactory: (r: any) => new ActualizarNivelEducativoCasoUso(r),
+      inject: [REPOSITORIO_CATALOGOS_ACADEMICOS],
+    },
+    {
+      provide: CambiarEstadoNivelEducativoCasoUso,
+      useFactory: (r: any) => new CambiarEstadoNivelEducativoCasoUso(r),
+      inject: [REPOSITORIO_CATALOGOS_ACADEMICOS],
     },
     {
       provide: ListarNivelesEducativosCasoUso,
-      useFactory: (c: ConsultadorEstructuraAcademicaTypeorm) =>
-        new ListarNivelesEducativosCasoUso(c),
-      inject: [ConsultadorEstructuraAcademicaTypeorm],
+      useFactory: (c: any) => new ListarNivelesEducativosCasoUso(c),
+      inject: [CONSULTADOR_ESTRUCTURA_ACADEMICA],
     },
     {
       provide: CrearGradoEducativoCasoUso,
-      useFactory: (r: RepositorioCatalogosAcademicosTypeorm) =>
-        new CrearGradoEducativoCasoUso(r),
-      inject: [RepositorioCatalogosAcademicosTypeorm],
+      useFactory: (r: any) => new CrearGradoEducativoCasoUso(r),
+      inject: [REPOSITORIO_CATALOGOS_ACADEMICOS],
     },
     {
       provide: ActualizarGradoEducativoCasoUso,
-      useFactory: (r: RepositorioCatalogosAcademicosTypeorm) =>
-        new ActualizarGradoEducativoCasoUso(r),
-      inject: [RepositorioCatalogosAcademicosTypeorm],
+      useFactory: (r: any) => new ActualizarGradoEducativoCasoUso(r),
+      inject: [REPOSITORIO_CATALOGOS_ACADEMICOS],
+    },
+    {
+      provide: CambiarEstadoGradoEducativoCasoUso,
+      useFactory: (r: any) => new CambiarEstadoGradoEducativoCasoUso(r),
+      inject: [REPOSITORIO_CATALOGOS_ACADEMICOS],
     },
     {
       provide: ListarGradosEducativosCasoUso,
-      useFactory: (c: ConsultadorEstructuraAcademicaTypeorm) =>
-        new ListarGradosEducativosCasoUso(c),
-      inject: [ConsultadorEstructuraAcademicaTypeorm],
+      useFactory: (c: any) => new ListarGradosEducativosCasoUso(c),
+      inject: [CONSULTADOR_ESTRUCTURA_ACADEMICA],
     },
 
     // ── Casos de uso Oferta ─────────────────────────────────────────────────
     {
       provide: CrearOfertaGradoSedeCasoUso,
-      useFactory: (r: RepositorioOfertaAcademicaTypeorm) =>
-        new CrearOfertaGradoSedeCasoUso(r),
-      inject: [RepositorioOfertaAcademicaTypeorm],
+      useFactory: (r: any) => new CrearOfertaGradoSedeCasoUso(r),
+      inject: [REPOSITORIO_OFERTA_ACADEMICA],
     },
     {
       provide: ActualizarOfertaGradoSedeCasoUso,
-      useFactory: (r: RepositorioOfertaAcademicaTypeorm) =>
-        new ActualizarOfertaGradoSedeCasoUso(r),
-      inject: [RepositorioOfertaAcademicaTypeorm],
+      useFactory: (r: any) => new ActualizarOfertaGradoSedeCasoUso(r),
+      inject: [REPOSITORIO_OFERTA_ACADEMICA],
+    },
+    {
+      provide: CambiarEstadoOfertaGradoSedeCasoUso,
+      useFactory: (r: any) => new CambiarEstadoOfertaGradoSedeCasoUso(r),
+      inject: [REPOSITORIO_OFERTA_ACADEMICA],
     },
     {
       provide: ListarOfertasCasoUso,
-      useFactory: (c: ConsultadorEstructuraAcademicaTypeorm) =>
-        new ListarOfertasCasoUso(c),
-      inject: [ConsultadorEstructuraAcademicaTypeorm],
+      useFactory: (c: any) => new ListarOfertasCasoUso(c),
+      inject: [CONSULTADOR_ESTRUCTURA_ACADEMICA],
     },
     {
       provide: CrearSeccionAcademicaCasoUso,
-      useFactory: (r: RepositorioOfertaAcademicaTypeorm) =>
-        new CrearSeccionAcademicaCasoUso(r),
-      inject: [RepositorioOfertaAcademicaTypeorm],
+      useFactory: (r: any) => new CrearSeccionAcademicaCasoUso(r),
+      inject: [REPOSITORIO_OFERTA_ACADEMICA],
     },
     {
       provide: ActualizarSeccionAcademicaCasoUso,
-      useFactory: (r: RepositorioOfertaAcademicaTypeorm) =>
-        new ActualizarSeccionAcademicaCasoUso(r),
-      inject: [RepositorioOfertaAcademicaTypeorm],
+      useFactory: (r: any) => new ActualizarSeccionAcademicaCasoUso(r),
+      inject: [REPOSITORIO_OFERTA_ACADEMICA],
+    },
+    {
+      provide: CambiarEstadoSeccionAcademicaCasoUso,
+      useFactory: (r: any) => new CambiarEstadoSeccionAcademicaCasoUso(r),
+      inject: [REPOSITORIO_OFERTA_ACADEMICA],
+    },
+    {
+      provide: AsignarEspacioSeccionCasoUso,
+      useFactory: (r: any) => new AsignarEspacioSeccionCasoUso(r),
+      inject: [REPOSITORIO_OFERTA_ACADEMICA],
+    },
+    {
+      provide: AsignarTutorSeccionCasoUso,
+      useFactory: (r: any) => new AsignarTutorSeccionCasoUso(r),
+      inject: [REPOSITORIO_OFERTA_ACADEMICA],
     },
     {
       provide: ListarSeccionesCasoUso,
-      useFactory: (c: ConsultadorEstructuraAcademicaTypeorm) =>
-        new ListarSeccionesCasoUso(c),
-      inject: [ConsultadorEstructuraAcademicaTypeorm],
+      useFactory: (c: any) => new ListarSeccionesCasoUso(c),
+      inject: [CONSULTADOR_ESTRUCTURA_ACADEMICA],
     },
 
     // ── Caso de uso Panel ───────────────────────────────────────────────────
     {
       provide: ObtenerPeriodoActivoCasoUso,
-      useFactory: (c: ConsultadorEstructuraAcademicaTypeorm) =>
-        new ObtenerPeriodoActivoCasoUso(c),
-      inject: [ConsultadorEstructuraAcademicaTypeorm],
+      useFactory: (c: any) => new ObtenerPeriodoActivoCasoUso(c),
+      inject: [CONSULTADOR_ESTRUCTURA_ACADEMICA],
     },
   ],
   exports: [ObtenerPeriodoActivoCasoUso],

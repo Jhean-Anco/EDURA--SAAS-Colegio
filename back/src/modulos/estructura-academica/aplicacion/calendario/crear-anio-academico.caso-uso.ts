@@ -53,6 +53,7 @@ export class CrearAnioAcademicoCasoUso {
       nombre: entrada.nombre.trim(),
       fechaInicio: entrada.fechaInicio,
       fechaFin: entrada.fechaFin,
+      estado: entrada.estado ?? 'PLANIFICADO',
       observacion: entrada.observacion ?? null,
     });
   }
