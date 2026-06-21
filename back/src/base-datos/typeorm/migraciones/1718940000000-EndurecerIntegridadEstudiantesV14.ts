@@ -25,11 +25,7 @@ export class EndurecerIntegridadEstudiantesV141718940000000 implements Migration
       )
     `);
     // FK compuesta estudiante → persona de la misma institución
-    await queryRunner.query(`
-      ALTER TABLE personas
-      ADD CONSTRAINT uq_personas_id_institucion_v14
-      UNIQUE (id, id_institucion_educativa)
-    `);
+    // Nota: UNIQUE(id, id_institucion_educativa) en personas ya existe desde V11
     await queryRunner.query(`
       ALTER TABLE estudiantes
       ADD CONSTRAINT fk_estudiantes_persona_institucion
@@ -168,9 +164,6 @@ export class EndurecerIntegridadEstudiantesV141718940000000 implements Migration
     );
     await queryRunner.query(
       `ALTER TABLE estudiantes DROP CONSTRAINT IF EXISTS fk_estudiantes_persona_institucion`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE personas DROP CONSTRAINT IF EXISTS uq_personas_id_institucion_v14`,
     );
     await queryRunner.query(
       `ALTER TABLE estudiantes DROP CONSTRAINT IF EXISTS ck_estudiantes_fechas`,

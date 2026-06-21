@@ -29,7 +29,8 @@ export class CrearEstructuraInstitucionalEInfraestructuraFisica1718810000000 imp
         fecha_creacion timestamptz NOT NULL DEFAULT now(),
         fecha_modificacion timestamptz NOT NULL DEFAULT now(),
         CONSTRAINT fk_sedes_instituciones_educativas FOREIGN KEY (id_institucion_educativa) REFERENCES instituciones_educativas(id) ON DELETE RESTRICT ON UPDATE RESTRICT,
-        CONSTRAINT ux_sedes_institucion_codigo UNIQUE (id_institucion_educativa, codigo)
+        CONSTRAINT ux_sedes_institucion_codigo UNIQUE (id_institucion_educativa, codigo),
+        CONSTRAINT uq_sedes_id_institucion UNIQUE (id, id_institucion_educativa)
       )
     `);
     await queryRunner.query(
