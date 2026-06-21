@@ -26,19 +26,34 @@ export class DuplicarPlanEstudioCasoUso {
     entrada: EntradaDuplicarPlanEstudio,
     alcance: AlcanceAcceso,
   ): Promise<{ id: string }> {
-    if (alcance.ambito !== 'INSTITUCION') throw new AmbiteInstitucionRequeridoError();
+    if (alcance.ambito !== 'INSTITUCION')
+      throw new AmbiteInstitucionRequeridoError();
 
-    const planOrigen = await this.repositorio.obtenerPlanBase(entrada.idPlanOrigen, alcance.institucionId);
+    const planOrigen = await this.repositorio.obtenerPlanBase(
+      entrada.idPlanOrigen,
+      alcance.institucionId,
+    );
     if (!planOrigen) throw new PlanEstudioNoEncontradoError();
 
     const idAnio = entrada.idAnioAcademico ?? planOrigen.idAnioAcademico;
 
     // Si se cambia de año, validar que exista en la institución
-    if (entrada.idAnioAcademico && entrada.idAnioAcademico !== planOrigen.idAnioAcademico) {
-      if (!(await this.repositorio.existeAnioEnInstitucion(entrada.idAnioAcademico, alcance.institucionId))) {
+    if (
+      entrada.idAnioAcademico &&
+      entrada.idAnioAcademico !== planOrigen.idAnioAcademico
+    ) {
+      if (
+        !(await this.repositorio.existeAnioEnInstitucion(
+          entrada.idAnioAcademico,
+          alcance.institucionId,
+        ))
+      ) {
         throw new PlanAnioFueraDeInstitucionError();
       }
-      const estadoAnio = await this.repositorio.obtenerEstadoAnio(entrada.idAnioAcademico, alcance.institucionId);
+      const estadoAnio = await this.repositorio.obtenerEstadoAnio(
+        entrada.idAnioAcademico,
+        alcance.institucionId,
+      );
       if (estadoAnio === 'CERRADO' || estadoAnio === 'ANULADO') {
         throw new PlanAnioNoDisponibleError();
       }
@@ -46,7 +61,12 @@ export class DuplicarPlanEstudioCasoUso {
 
     const codigoNorm = entrada.codigo.trim().toUpperCase();
 
-    if (await this.repositorio.existeCodigoPlanEnInstitucion(codigoNorm, alcance.institucionId)) {
+    if (
+      await this.repositorio.existeCodigoPlanEnInstitucion(
+        codigoNorm,
+        alcance.institucionId,
+      )
+    ) {
       throw new PlanCodigoDuplicadoError();
     }
 

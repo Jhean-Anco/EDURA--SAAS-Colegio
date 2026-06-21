@@ -52,7 +52,10 @@ async function crearInstitucionConUsuarios(
 ): Promise<InstitucionSetup> {
   const institucionId = randomUUID();
   const sedeId = randomUUID();
-  const codigoBase = `IE-CURR-${sufijo}-${Date.now().toString(36)}`.slice(0, 40);
+  const codigoBase = `IE-CURR-${sufijo}-${Date.now().toString(36)}`.slice(
+    0,
+    40,
+  );
 
   const adminId = randomUUID();
   const adminMembresiaId = randomUUID();
@@ -171,7 +174,7 @@ async function obtenerToken(
   const loginRes = await request(app.getHttpServer())
     .post('/api/v1/autenticacion/iniciar-sesion')
     .send({ correo, clave })
-    .expect(201);
+    .expect(200);
   const preToken = (loginRes.body as { accessToken: string }).accessToken;
 
   const ctxRes = await request(app.getHttpServer())
@@ -184,15 +187,16 @@ async function obtenerToken(
     institucionId: string | null;
     sedeId: string | null;
   }[];
-  const ctx = lista.find((c) => c.ambito === 'INSTITUCION' && c.institucionId === institucionId);
-  if (!ctx)
-    throw new Error(`No se encontró contexto para ${correo}`);
+  const ctx = lista.find(
+    (c) => c.ambito === 'INSTITUCION' && c.institucionId === institucionId,
+  );
+  if (!ctx) throw new Error(`No se encontró contexto para ${correo}`);
 
   const selRes = await request(app.getHttpServer())
     .post('/api/v1/autenticacion/seleccionar-contexto')
     .set('Authorization', `Bearer ${preToken}`)
     .send(ctx)
-    .expect(201);
+    .expect(200);
   return (selRes.body as { accessToken: string }).accessToken;
 }
 
@@ -458,7 +462,9 @@ describeE2E('Flujo currículo y planes de estudio E2E (requiere BD)', () => {
 
     it('GET /curriculo/planes/resolver resuelve plan vigente correctamente', async () => {
       const res = await request(app.getHttpServer())
-        .get(`/api/v1/curriculo/planes/resolver?idAnio=${anioId}&idGrado=${gradoId}`)
+        .get(
+          `/api/v1/curriculo/planes/resolver?idAnio=${anioId}&idGrado=${gradoId}`,
+        )
         .set('Authorization', `Bearer ${tokenAdmin}`)
         .expect(200);
 

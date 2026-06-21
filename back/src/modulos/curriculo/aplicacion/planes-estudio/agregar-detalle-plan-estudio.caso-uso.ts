@@ -29,9 +29,13 @@ export class AgregarDetallePlanEstudioCasoUso {
     entrada: EntradaAgregarDetallePlanEstudio,
     alcance: AlcanceAcceso,
   ): Promise<{ id: string }> {
-    if (alcance.ambito !== 'INSTITUCION') throw new AmbiteInstitucionRequeridoError();
+    if (alcance.ambito !== 'INSTITUCION')
+      throw new AmbiteInstitucionRequeridoError();
 
-    const plan = await this.repositorio.obtenerPlanBase(entrada.idPlanEstudio, alcance.institucionId);
+    const plan = await this.repositorio.obtenerPlanBase(
+      entrada.idPlanEstudio,
+      alcance.institucionId,
+    );
     if (!plan) throw new PlanEstudioNoEncontradoError();
 
     // RN-CUR-008
@@ -41,10 +45,20 @@ export class AgregarDetallePlanEstudioCasoUso {
       throw new DetalleHorasInvalidasError();
     }
 
-    if (await this.repositorio.existeAsignaturaEnPlan(entrada.idAsignatura, entrada.idPlanEstudio)) {
+    if (
+      await this.repositorio.existeAsignaturaEnPlan(
+        entrada.idAsignatura,
+        entrada.idPlanEstudio,
+      )
+    ) {
       throw new DetalleAsignaturaDuplicadaError();
     }
-    if (await this.repositorio.existeOrdenDetalleEnPlan(entrada.orden, entrada.idPlanEstudio)) {
+    if (
+      await this.repositorio.existeOrdenDetalleEnPlan(
+        entrada.orden,
+        entrada.idPlanEstudio,
+      )
+    ) {
       throw new DetalleOrdenDuplicadoError();
     }
 

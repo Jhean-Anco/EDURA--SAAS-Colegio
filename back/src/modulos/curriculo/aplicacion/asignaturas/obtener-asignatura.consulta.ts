@@ -1,6 +1,4 @@
-import {
-  AsignaturaNoEncontradaError,
-} from '../../dominio/errores-curriculo';
+import { AsignaturaNoEncontradaError } from '../../dominio/errores-curriculo';
 import {
   AlcanceAcceso,
   AsignaturaResumen,
@@ -14,7 +12,10 @@ export class ObtenerAsignaturaConsulta {
     id: string,
     alcance: AlcanceAcceso,
   ): Promise<AsignaturaResumen> {
-    const asignatura = await this.consultador.obtenerAsignatura(id, alcance.institucionId);
+    const asignatura = await this.consultador.obtenerAsignatura(
+      id,
+      alcance.institucionId,
+    );
     if (!asignatura) throw new AsignaturaNoEncontradaError();
     return asignatura;
   }

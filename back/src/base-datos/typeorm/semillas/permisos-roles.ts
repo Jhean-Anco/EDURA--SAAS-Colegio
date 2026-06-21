@@ -306,6 +306,42 @@ export const permisosSistema = [
     codigo: 'CURRICULO.PLANES.CAMBIAR_ESTADO',
     descripcion: 'Cambiar estado de planes de estudio',
   },
+  {
+    recurso: 'MATRICULAS',
+    accion: 'LEER',
+    codigo: 'MATRICULAS.LEER',
+    descripcion: 'Ver matrículas',
+  },
+  {
+    recurso: 'MATRICULAS',
+    accion: 'GESTIONAR',
+    codigo: 'MATRICULAS.GESTIONAR',
+    descripcion: 'Gestionar matrículas',
+  },
+  {
+    recurso: 'MATRICULAS',
+    accion: 'ACTIVAR',
+    codigo: 'MATRICULAS.ACTIVAR',
+    descripcion: 'Activar matrículas',
+  },
+  {
+    recurso: 'MATRICULAS',
+    accion: 'CAMBIAR_SECCION',
+    codigo: 'MATRICULAS.CAMBIAR_SECCION',
+    descripcion: 'Cambiar sección de matrículas',
+  },
+  {
+    recurso: 'MATRICULAS',
+    accion: 'RETIRAR',
+    codigo: 'MATRICULAS.RETIRAR',
+    descripcion: 'Retirar matrículas',
+  },
+  {
+    recurso: 'MATRICULAS',
+    accion: 'ANULAR',
+    codigo: 'MATRICULAS.ANULAR',
+    descripcion: 'Anular matrículas',
+  },
 ] as const;
 
 export const rolesSistema = [
@@ -385,6 +421,12 @@ export const permisosAdministradorInstitucion = [
   'CURRICULO.PLANES.GESTIONAR',
   'CURRICULO.PLANES.APROBAR',
   'CURRICULO.PLANES.CAMBIAR_ESTADO',
+  'MATRICULAS.LEER',
+  'MATRICULAS.GESTIONAR',
+  'MATRICULAS.ACTIVAR',
+  'MATRICULAS.CAMBIAR_SECCION',
+  'MATRICULAS.RETIRAR',
+  'MATRICULAS.ANULAR',
 ] as const;
 
 export const permisosDirectorSede = [
@@ -414,6 +456,12 @@ export const permisosDirectorSede = [
   'ESTRUCTURA_ACADEMICA.SECCIONES.ASIGNAR_ESPACIO',
   'ESTRUCTURA_ACADEMICA.SECCIONES.ASIGNAR_TUTOR',
   'CURRICULO.LEER',
+  'MATRICULAS.LEER',
+  'MATRICULAS.GESTIONAR',
+  'MATRICULAS.ACTIVAR',
+  'MATRICULAS.CAMBIAR_SECCION',
+  'MATRICULAS.RETIRAR',
+  'MATRICULAS.ANULAR',
 ] as const;
 
 export const permisosDocente = [

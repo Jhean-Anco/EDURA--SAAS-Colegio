@@ -1,6 +1,4 @@
-import {
-  PlanEstudioNoEncontradoError,
-} from '../../dominio/errores-curriculo';
+import { PlanEstudioNoEncontradoError } from '../../dominio/errores-curriculo';
 import {
   AlcanceAcceso,
   ConsultadorCurriculo,

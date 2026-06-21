@@ -13,6 +13,10 @@ export class ListarAsignaturasConsulta {
     idArea?: string | null,
     estado?: EstadoAsignatura | null,
   ): Promise<AsignaturaResumen[]> {
-    return this.consultador.listarAsignaturas(alcance.institucionId, idArea, estado);
+    return this.consultador.listarAsignaturas(
+      alcance.institucionId,
+      idArea,
+      estado,
+    );
   }
 }

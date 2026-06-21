@@ -14,6 +14,11 @@ export class ListarPlanesEstudioConsulta {
     idGrado?: string | null,
     estado?: EstadoPlan | null,
   ): Promise<PlanEstudioListaItem[]> {
-    return this.consultador.listarPlanes(alcance.institucionId, idAnio, idGrado, estado);
+    return this.consultador.listarPlanes(
+      alcance.institucionId,
+      idAnio,
+      idGrado,
+      estado,
+    );
   }
 }

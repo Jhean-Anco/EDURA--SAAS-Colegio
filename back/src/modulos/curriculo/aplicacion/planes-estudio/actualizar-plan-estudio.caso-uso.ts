@@ -23,18 +23,30 @@ export class ActualizarPlanEstudioCasoUso {
     entrada: EntradaActualizarPlanEstudio,
     alcance: AlcanceAcceso,
   ): Promise<void> {
-    if (alcance.ambito !== 'INSTITUCION') throw new AmbiteInstitucionRequeridoError();
+    if (alcance.ambito !== 'INSTITUCION')
+      throw new AmbiteInstitucionRequeridoError();
 
-    const plan = await this.repositorio.obtenerPlanBase(entrada.id, alcance.institucionId);
+    const plan = await this.repositorio.obtenerPlanBase(
+      entrada.id,
+      alcance.institucionId,
+    );
     if (!plan) throw new PlanEstudioNoEncontradoError();
 
     // RN-CUR-008: solo modificable en BORRADOR
     if (plan.estado !== 'BORRADOR') throw new PlanNoModificableError();
 
-    const codigoNorm = entrada.codigo ? entrada.codigo.trim().toUpperCase() : undefined;
+    const codigoNorm = entrada.codigo
+      ? entrada.codigo.trim().toUpperCase()
+      : undefined;
 
     if (codigoNorm) {
-      if (await this.repositorio.existeCodigoPlanEnInstitucion(codigoNorm, alcance.institucionId, entrada.id)) {
+      if (
+        await this.repositorio.existeCodigoPlanEnInstitucion(
+          codigoNorm,
+          alcance.institucionId,
+          entrada.id,
+        )
+      ) {
         throw new PlanCodigoDuplicadoError();
       }
     }

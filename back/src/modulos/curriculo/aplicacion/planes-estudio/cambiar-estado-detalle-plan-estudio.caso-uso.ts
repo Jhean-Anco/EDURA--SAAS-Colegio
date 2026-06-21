@@ -19,15 +19,28 @@ export class CambiarEstadoDetallePlanEstudioCasoUso {
     nuevoEstado: EstadoDetalle,
     alcance: AlcanceAcceso,
   ): Promise<void> {
-    if (alcance.ambito !== 'INSTITUCION') throw new AmbiteInstitucionRequeridoError();
+    if (alcance.ambito !== 'INSTITUCION')
+      throw new AmbiteInstitucionRequeridoError();
 
-    const plan = await this.repositorio.obtenerPlanBase(idPlan, alcance.institucionId);
+    const plan = await this.repositorio.obtenerPlanBase(
+      idPlan,
+      alcance.institucionId,
+    );
     if (!plan) throw new PlanEstudioNoEncontradoError();
     if (plan.estado !== 'BORRADOR') throw new PlanNoModificableError();
 
-    const detalle = await this.repositorio.obtenerDetalleBase(idDetalle, idPlan, alcance.institucionId);
+    const detalle = await this.repositorio.obtenerDetalleBase(
+      idDetalle,
+      idPlan,
+      alcance.institucionId,
+    );
     if (!detalle) throw new DetalleNoEncontradoError();
 
-    await this.repositorio.cambiarEstadoDetalle(idDetalle, idPlan, alcance.institucionId, nuevoEstado);
+    await this.repositorio.cambiarEstadoDetalle(
+      idDetalle,
+      idPlan,
+      alcance.institucionId,
+      nuevoEstado,
+    );
   }
 }

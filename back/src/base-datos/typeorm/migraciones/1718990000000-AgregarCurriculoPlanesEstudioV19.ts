@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AgregarCurriculoPlanesEstudioV191718990000000
-  implements MigrationInterface
-{
+export class AgregarCurriculoPlanesEstudioV191718990000000 implements MigrationInterface {
   name = 'AgregarCurriculoPlanesEstudioV191718990000000';
 
   async up(queryRunner: QueryRunner): Promise<void> {

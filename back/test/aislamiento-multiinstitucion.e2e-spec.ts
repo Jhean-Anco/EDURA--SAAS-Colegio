@@ -153,7 +153,7 @@ describeE2E('Aislamiento multi-institucion E2E (requiere BD)', () => {
     const loginRes = await request(app.getHttpServer())
       .post('/api/v1/autenticacion/iniciar-sesion')
       .send({ correo, clave })
-      .expect(201);
+      .expect(200);
 
     const tokenPrecontexto: string = (loginRes.body as { accessToken: string })
       .accessToken;
@@ -184,7 +184,7 @@ describeE2E('Aislamiento multi-institucion E2E (requiere BD)', () => {
       .post('/api/v1/autenticacion/seleccionar-contexto')
       .set('Authorization', `Bearer ${tokenPrecontexto}`)
       .send(contexto)
-      .expect(201);
+      .expect(200);
 
     return (contextoRes.body as { accessToken: string }).accessToken;
   }

@@ -72,7 +72,10 @@ export class PlanesEstudioControlador {
     @Query() query: ListarPlanesQueryDto,
   ) {
     return this.listarPlanes.ejecutar(
-      alcanceDesdeContexto(ctx), query.idAnio, query.idGrado, query.estado,
+      alcanceDesdeContexto(ctx),
+      query.idAnio,
+      query.idGrado,
+      query.estado,
     );
   }
 
@@ -82,7 +85,11 @@ export class PlanesEstudioControlador {
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
     @Query() query: ResolverPlanQueryDto,
   ) {
-    return this.resolverPlan.ejecutar(query.idAnio, query.idGrado, alcanceDesdeContexto(ctx));
+    return this.resolverPlan.ejecutar(
+      query.idAnio,
+      query.idGrado,
+      alcanceDesdeContexto(ctx),
+    );
   }
 
   @Permisos('CURRICULO.LEER')
@@ -165,7 +172,10 @@ export class PlanesEstudioControlador {
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
     @Param('idPlan', ParseUUIDPipe) idPlan: string,
   ) {
-    const plan = await this.listarDetalles.ejecutar(idPlan, alcanceDesdeContexto(ctx));
+    const plan = await this.listarDetalles.ejecutar(
+      idPlan,
+      alcanceDesdeContexto(ctx),
+    );
     return plan.detalles;
   }
 
@@ -179,7 +189,10 @@ export class PlanesEstudioControlador {
   ) {
     const alcance = alcanceDesdeContexto(ctx);
     alcance.correlationId = req.correlationId;
-    return this.agregarDetalle.ejecutar({ idPlanEstudio: idPlan, ...body }, alcance);
+    return this.agregarDetalle.ejecutar(
+      { idPlanEstudio: idPlan, ...body },
+      alcance,
+    );
   }
 
   @Permisos('CURRICULO.PLANES.GESTIONAR')
@@ -193,7 +206,10 @@ export class PlanesEstudioControlador {
   ) {
     const alcance = alcanceDesdeContexto(ctx);
     alcance.correlationId = req.correlationId;
-    await this.actualizarDetalle.ejecutar({ id: idDetalle, idPlanEstudio: idPlan, ...body }, alcance);
+    await this.actualizarDetalle.ejecutar(
+      { id: idDetalle, idPlanEstudio: idPlan, ...body },
+      alcance,
+    );
   }
 
   @Permisos('CURRICULO.PLANES.GESTIONAR')
@@ -207,6 +223,11 @@ export class PlanesEstudioControlador {
   ) {
     const alcance = alcanceDesdeContexto(ctx);
     alcance.correlationId = req.correlationId;
-    await this.cambiarEstadoDetalle.ejecutar(idDetalle, idPlan, body.estado, alcance);
+    await this.cambiarEstadoDetalle.ejecutar(
+      idDetalle,
+      idPlan,
+      body.estado,
+      alcance,
+    );
   }
 }

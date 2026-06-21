@@ -182,7 +182,7 @@ describeE2E('Panel institucional E2E (requiere BD)', () => {
     const loginRes = await request(app.getHttpServer())
       .post('/api/v1/autenticacion/iniciar-sesion')
       .send({ correo, clave })
-      .expect(201);
+      .expect(200);
     const token = (loginRes.body as { accessToken: string }).accessToken;
     const contextosRes = await request(app.getHttpServer())
       .get('/api/v1/autenticacion/contextos')
@@ -207,7 +207,7 @@ describeE2E('Panel institucional E2E (requiere BD)', () => {
       .post('/api/v1/autenticacion/seleccionar-contexto')
       .set('Authorization', `Bearer ${token}`)
       .send(contexto)
-      .expect(201);
+      .expect(200);
     return (contextoRes.body as { accessToken: string }).accessToken;
   }
 

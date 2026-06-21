@@ -1,6 +1,4 @@
-import {
-  AreaCurricularNoEncontradaError,
-} from '../../dominio/errores-curriculo';
+import { AreaCurricularNoEncontradaError } from '../../dominio/errores-curriculo';
 import {
   AlcanceAcceso,
   AreaCurricularResumen,

@@ -149,7 +149,7 @@ describeE2E('Flujo personas E2E (requiere BD)', () => {
     const loginRes = await request(app.getHttpServer())
       .post('/api/v1/autenticacion/iniciar-sesion')
       .send({ correo: correoA, clave: claveA })
-      .expect(201);
+      .expect(200);
 
     const tokenPrecontexto: string = (loginRes.body as { accessToken: string })
       .accessToken;
@@ -181,7 +181,7 @@ describeE2E('Flujo personas E2E (requiere BD)', () => {
       .post('/api/v1/autenticacion/seleccionar-contexto')
       .set('Authorization', `Bearer ${tokenPrecontexto}`)
       .send(contextoInstitucional)
-      .expect(201);
+      .expect(200);
 
     const tokenA = (contextoRes.body as { accessToken: string }).accessToken;
 

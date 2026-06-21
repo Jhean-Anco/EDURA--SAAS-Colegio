@@ -23,11 +23,19 @@ export class ConsultadorCurriculoTypeorm implements ConsultadorCurriculo {
   ): Promise<AreaCurricularResumen[]> {
     const params: unknown[] = [institucionId];
     let filtroEstado = '';
-    if (estado) { filtroEstado = `AND estado = $${params.push(estado)}`; }
-    const rows = await this.ds.query<{
-      id: string; codigo: string; nombre: string;
-      descripcion: string | null; orden: number; estado: string;
-    }[]>(
+    if (estado) {
+      filtroEstado = `AND estado = $${params.push(estado)}`;
+    }
+    const rows = await this.ds.query<
+      {
+        id: string;
+        codigo: string;
+        nombre: string;
+        descripcion: string | null;
+        orden: number;
+        estado: string;
+      }[]
+    >(
       `SELECT id, codigo, nombre, descripcion, orden, estado
        FROM areas_curriculares
        WHERE id_institucion_educativa = $1 ${filtroEstado}
@@ -48,10 +56,16 @@ export class ConsultadorCurriculoTypeorm implements ConsultadorCurriculo {
     id: string,
     institucionId: string,
   ): Promise<AreaCurricularResumen | null> {
-    const rows = await this.ds.query<{
-      id: string; codigo: string; nombre: string;
-      descripcion: string | null; orden: number; estado: string;
-    }[]>(
+    const rows = await this.ds.query<
+      {
+        id: string;
+        codigo: string;
+        nombre: string;
+        descripcion: string | null;
+        orden: number;
+        estado: string;
+      }[]
+    >(
       `SELECT id, codigo, nombre, descripcion, orden, estado
        FROM areas_curriculares
        WHERE id = $1 AND id_institucion_educativa = $2`,
@@ -60,8 +74,12 @@ export class ConsultadorCurriculoTypeorm implements ConsultadorCurriculo {
     const r = rows[0];
     if (!r) return null;
     return {
-      id: r.id, codigo: r.codigo, nombre: r.nombre,
-      descripcion: r.descripcion, orden: r.orden, estado: r.estado as EstadoArea,
+      id: r.id,
+      codigo: r.codigo,
+      nombre: r.nombre,
+      descripcion: r.descripcion,
+      orden: r.orden,
+      estado: r.estado as EstadoArea,
     };
   }
 
@@ -72,14 +90,26 @@ export class ConsultadorCurriculoTypeorm implements ConsultadorCurriculo {
   ): Promise<AsignaturaResumen[]> {
     const params: unknown[] = [institucionId];
     const filtros: string[] = [];
-    if (idArea) { filtros.push(`a.id_area_curricular = $${params.push(idArea)}`); }
-    if (estado) { filtros.push(`a.estado = $${params.push(estado)}`); }
+    if (idArea) {
+      filtros.push(`a.id_area_curricular = $${params.push(idArea)}`);
+    }
+    if (estado) {
+      filtros.push(`a.estado = $${params.push(estado)}`);
+    }
     const where = filtros.length ? `AND ${filtros.join(' AND ')}` : '';
-    const rows = await this.ds.query<{
-      id: string; id_area_curricular: string; nombre_area: string;
-      codigo: string; nombre: string; nombre_corto: string | null;
-      descripcion: string | null; orden: number; estado: string;
-    }[]>(
+    const rows = await this.ds.query<
+      {
+        id: string;
+        id_area_curricular: string;
+        nombre_area: string;
+        codigo: string;
+        nombre: string;
+        nombre_corto: string | null;
+        descripcion: string | null;
+        orden: number;
+        estado: string;
+      }[]
+    >(
       `SELECT a.id, a.id_area_curricular, ac.nombre AS nombre_area,
               a.codigo, a.nombre, a.nombre_corto, a.descripcion, a.orden, a.estado
        FROM asignaturas a
@@ -106,11 +136,19 @@ export class ConsultadorCurriculoTypeorm implements ConsultadorCurriculo {
     id: string,
     institucionId: string,
   ): Promise<AsignaturaResumen | null> {
-    const rows = await this.ds.query<{
-      id: string; id_area_curricular: string; nombre_area: string;
-      codigo: string; nombre: string; nombre_corto: string | null;
-      descripcion: string | null; orden: number; estado: string;
-    }[]>(
+    const rows = await this.ds.query<
+      {
+        id: string;
+        id_area_curricular: string;
+        nombre_area: string;
+        codigo: string;
+        nombre: string;
+        nombre_corto: string | null;
+        descripcion: string | null;
+        orden: number;
+        estado: string;
+      }[]
+    >(
       `SELECT a.id, a.id_area_curricular, ac.nombre AS nombre_area,
               a.codigo, a.nombre, a.nombre_corto, a.descripcion, a.orden, a.estado
        FROM asignaturas a
@@ -122,9 +160,15 @@ export class ConsultadorCurriculoTypeorm implements ConsultadorCurriculo {
     const r = rows[0];
     if (!r) return null;
     return {
-      id: r.id, idAreaCurricular: r.id_area_curricular, nombreArea: r.nombre_area,
-      codigo: r.codigo, nombre: r.nombre, nombreCorto: r.nombre_corto,
-      descripcion: r.descripcion, orden: r.orden, estado: r.estado as EstadoAsignatura,
+      id: r.id,
+      idAreaCurricular: r.id_area_curricular,
+      nombreArea: r.nombre_area,
+      codigo: r.codigo,
+      nombre: r.nombre,
+      nombreCorto: r.nombre_corto,
+      descripcion: r.descripcion,
+      orden: r.orden,
+      estado: r.estado as EstadoAsignatura,
     };
   }
 
@@ -136,15 +180,30 @@ export class ConsultadorCurriculoTypeorm implements ConsultadorCurriculo {
   ): Promise<PlanEstudioListaItem[]> {
     const params: unknown[] = [institucionId];
     const filtros: string[] = [];
-    if (idAnio) { filtros.push(`p.id_anio_academico = $${params.push(idAnio)}`); }
-    if (idGrado) { filtros.push(`p.id_grado_educativo = $${params.push(idGrado)}`); }
-    if (estado) { filtros.push(`p.estado = $${params.push(estado)}`); }
+    if (idAnio) {
+      filtros.push(`p.id_anio_academico = $${params.push(idAnio)}`);
+    }
+    if (idGrado) {
+      filtros.push(`p.id_grado_educativo = $${params.push(idGrado)}`);
+    }
+    if (estado) {
+      filtros.push(`p.estado = $${params.push(estado)}`);
+    }
     const where = filtros.length ? `AND ${filtros.join(' AND ')}` : '';
-    const rows = await this.ds.query<{
-      id: string; codigo: string; nombre: string; version: number; estado: string;
-      id_anio_academico: string; anio: number;
-      id_grado_educativo: string; nombre_grado: string; nombre_nivel: string;
-    }[]>(
+    const rows = await this.ds.query<
+      {
+        id: string;
+        codigo: string;
+        nombre: string;
+        version: number;
+        estado: string;
+        id_anio_academico: string;
+        anio: number;
+        id_grado_educativo: string;
+        nombre_grado: string;
+        nombre_nivel: string;
+      }[]
+    >(
       `SELECT p.id, p.codigo, p.nombre, p.version, p.estado,
               p.id_anio_academico, aa.anio,
               p.id_grado_educativo, g.nombre AS nombre_grado, n.nombre AS nombre_nivel
@@ -160,15 +219,23 @@ export class ConsultadorCurriculoTypeorm implements ConsultadorCurriculo {
       params,
     );
     return rows.map((r) => ({
-      id: r.id, codigo: r.codigo, nombre: r.nombre,
-      version: r.version, estado: r.estado as EstadoPlan,
-      idAnioAcademico: r.id_anio_academico, anio: r.anio,
+      id: r.id,
+      codigo: r.codigo,
+      nombre: r.nombre,
+      version: r.version,
+      estado: r.estado as EstadoPlan,
+      idAnioAcademico: r.id_anio_academico,
+      anio: r.anio,
       idGradoEducativo: r.id_grado_educativo,
-      nombreGrado: r.nombre_grado, nombreNivel: r.nombre_nivel,
+      nombreGrado: r.nombre_grado,
+      nombreNivel: r.nombre_nivel,
     }));
   }
 
-  async obtenerPlan(id: string, institucionId: string): Promise<PlanEstudioResumen | null> {
+  async obtenerPlan(
+    id: string,
+    institucionId: string,
+  ): Promise<PlanEstudioResumen | null> {
     return this._obtenerPlanCompleto(
       `WHERE p.id = $1 AND p.id_institucion_educativa = $2`,
       [id, institucionId],
@@ -191,13 +258,23 @@ export class ConsultadorCurriculoTypeorm implements ConsultadorCurriculo {
     whereClause: string,
     params: unknown[],
   ): Promise<PlanEstudioResumen | null> {
-    const planRows = await this.ds.query<{
-      id: string; codigo: string; nombre: string; version: number; estado: string;
-      id_anio_academico: string; anio: number;
-      id_grado_educativo: string; nombre_grado: string; nombre_nivel: string;
-      observacion: string | null; fecha_aprobacion: string | null;
-      id_usuario_aprobador: string | null;
-    }[]>(
+    const planRows = await this.ds.query<
+      {
+        id: string;
+        codigo: string;
+        nombre: string;
+        version: number;
+        estado: string;
+        id_anio_academico: string;
+        anio: number;
+        id_grado_educativo: string;
+        nombre_grado: string;
+        nombre_nivel: string;
+        observacion: string | null;
+        fecha_aprobacion: string | null;
+        id_usuario_aprobador: string | null;
+      }[]
+    >(
       `SELECT p.id, p.codigo, p.nombre, p.version, p.estado,
               p.id_anio_academico, aa.anio,
               p.id_grado_educativo, g.nombre AS nombre_grado, n.nombre AS nombre_nivel,
@@ -217,12 +294,21 @@ export class ConsultadorCurriculoTypeorm implements ConsultadorCurriculo {
     const plan = planRows[0];
     if (!plan) return null;
 
-    const detalleRows = await this.ds.query<{
-      id: string; id_asignatura: string; codigo_asignatura: string;
-      nombre_asignatura: string; nombre_area: string;
-      tipo: string; horas_semanales: number; horas_anuales: number;
-      orden: number; estado: string; observacion: string | null;
-    }[]>(
+    const detalleRows = await this.ds.query<
+      {
+        id: string;
+        id_asignatura: string;
+        codigo_asignatura: string;
+        nombre_asignatura: string;
+        nombre_area: string;
+        tipo: string;
+        horas_semanales: number;
+        horas_anuales: number;
+        orden: number;
+        estado: string;
+        observacion: string | null;
+      }[]
+    >(
       `SELECT d.id, d.id_asignatura, a.codigo AS codigo_asignatura,
               a.nombre AS nombre_asignatura, ac.nombre AS nombre_area,
               d.tipo, d.horas_semanales, d.horas_anuales,

@@ -1,14 +1,26 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString, Length } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, Length, IsOptional } from 'class-validator';
 
 export class IniciarSesionSolicitud {
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsString()
   @Length(1, 320)
-  correo!: string;
+  @IsOptional()
+  correo?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsString()
   @Length(1, 200)
-  clave!: string;
+  @IsOptional()
+  clave?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  email?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  password?: string;
 }

@@ -36,7 +36,7 @@ export class SeleccionarContextoCasoUso {
     const coincidencia = disponibles.find(
       (contexto) =>
         contexto.ambito === entrada.contexto.ambito &&
-        contexto.rolId === entrada.contexto.rolId &&
+        (!entrada.contexto.rolId || contexto.rolId === entrada.contexto.rolId) &&
         contexto.institucionId === entrada.contexto.institucionId &&
         contexto.sedeId === entrada.contexto.sedeId,
     );

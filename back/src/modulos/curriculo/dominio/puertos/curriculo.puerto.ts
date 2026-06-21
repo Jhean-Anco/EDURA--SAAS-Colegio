@@ -1,4 +1,4 @@
-import {
+import type {
   EstadoArea,
   EstadoAsignatura,
   EstadoPlan,
@@ -6,7 +6,7 @@ import {
   TipoDetalle,
 } from '../curriculo.constantes';
 
-export {
+export type {
   EstadoArea,
   EstadoAsignatura,
   EstadoPlan,
@@ -14,7 +14,9 @@ export {
   TipoDetalle,
 };
 
-export const REPOSITORIO_AREAS_CURRICULARES = Symbol('REPOSITORIO_AREAS_CURRICULARES');
+export const REPOSITORIO_AREAS_CURRICULARES = Symbol(
+  'REPOSITORIO_AREAS_CURRICULARES',
+);
 export const REPOSITORIO_ASIGNATURAS = Symbol('REPOSITORIO_ASIGNATURAS');
 export const REPOSITORIO_PLANES_ESTUDIO = Symbol('REPOSITORIO_PLANES_ESTUDIO');
 export const CONSULTADOR_CURRICULO = Symbol('CONSULTADOR_CURRICULO');
@@ -150,13 +152,19 @@ export interface RepositorioAreasCurriculares {
     estado: EstadoArea,
   ): Promise<boolean>;
 
-  tieneAsignaturasActivas(idArea: string, institucionId: string): Promise<boolean>;
+  tieneAsignaturasActivas(
+    idArea: string,
+    institucionId: string,
+  ): Promise<boolean>;
 }
 
 // ── Repositorio Asignaturas ───────────────────────────────────────────────────
 
 export interface RepositorioAsignaturas {
-  existeAreaEnInstitucion(idArea: string, institucionId: string): Promise<boolean>;
+  existeAreaEnInstitucion(
+    idArea: string,
+    institucionId: string,
+  ): Promise<boolean>;
 
   existeCodigoAsignaturaEnInstitucion(
     codigoNormalizado: string,
@@ -184,7 +192,11 @@ export interface RepositorioAsignaturas {
   obtenerAsignaturaBase(
     id: string,
     institucionId: string,
-  ): Promise<{ id: string; estado: EstadoAsignatura; idAreaCurricular: string } | null>;
+  ): Promise<{
+    id: string;
+    estado: EstadoAsignatura;
+    idAreaCurricular: string;
+  } | null>;
 
   actualizarAsignatura(entrada: {
     id: string;
@@ -204,18 +216,34 @@ export interface RepositorioAsignaturas {
     estado: EstadoAsignatura,
   ): Promise<boolean>;
 
-  estaAsignaturaEnPlanActivo(idAsignatura: string, institucionId: string): Promise<boolean>;
+  estaAsignaturaEnPlanActivo(
+    idAsignatura: string,
+    institucionId: string,
+  ): Promise<boolean>;
 
-  esAreaDeOtraInstitucion(idArea: string, idAsignatura: string, institucionId: string): Promise<boolean>;
+  esAreaDeOtraInstitucion(
+    idArea: string,
+    idAsignatura: string,
+    institucionId: string,
+  ): Promise<boolean>;
 }
 
 // ── Repositorio Planes de Estudio ─────────────────────────────────────────────
 
 export interface RepositorioPlanesEstudio {
-  existeAnioEnInstitucion(idAnio: string, institucionId: string): Promise<boolean>;
-  existeGradoEnInstitucion(idGrado: string, institucionId: string): Promise<boolean>;
+  existeAnioEnInstitucion(
+    idAnio: string,
+    institucionId: string,
+  ): Promise<boolean>;
+  existeGradoEnInstitucion(
+    idGrado: string,
+    institucionId: string,
+  ): Promise<boolean>;
 
-  obtenerEstadoAnio(idAnio: string, institucionId: string): Promise<string | null>;
+  obtenerEstadoAnio(
+    idAnio: string,
+    institucionId: string,
+  ): Promise<string | null>;
 
   existeCodigoPlanEnInstitucion(
     codigoNormalizado: string,
@@ -251,7 +279,12 @@ export interface RepositorioPlanesEstudio {
   obtenerPlanBase(
     id: string,
     institucionId: string,
-  ): Promise<{ id: string; estado: EstadoPlan; idAnioAcademico: string; idGradoEducativo: string } | null>;
+  ): Promise<{
+    id: string;
+    estado: EstadoPlan;
+    idAnioAcademico: string;
+    idGradoEducativo: string;
+  } | null>;
 
   actualizarPlan(entrada: {
     id: string;
@@ -279,7 +312,10 @@ export interface RepositorioPlanesEstudio {
 
   contarDetallesActivos(idPlan: string, institucionId: string): Promise<number>;
 
-  tieneAsignaturasInactivasEnDetalle(idPlan: string, institucionId: string): Promise<boolean>;
+  tieneAsignaturasInactivasEnDetalle(
+    idPlan: string,
+    institucionId: string,
+  ): Promise<boolean>;
 
   // Detalles
   existeAsignaturaEnPlan(
@@ -309,7 +345,11 @@ export interface RepositorioPlanesEstudio {
     id: string,
     idPlan: string,
     institucionId: string,
-  ): Promise<{ id: string; estado: EstadoDetalle; idPlanEstudio: string } | null>;
+  ): Promise<{
+    id: string;
+    estado: EstadoDetalle;
+    idPlanEstudio: string;
+  } | null>;
 
   actualizarDetalle(entrada: {
     id: string;
@@ -348,7 +388,10 @@ export interface ConsultadorCurriculo {
     estado?: EstadoArea | null,
   ): Promise<AreaCurricularResumen[]>;
 
-  obtenerArea(id: string, institucionId: string): Promise<AreaCurricularResumen | null>;
+  obtenerArea(
+    id: string,
+    institucionId: string,
+  ): Promise<AreaCurricularResumen | null>;
 
   listarAsignaturas(
     institucionId: string,
@@ -356,7 +399,10 @@ export interface ConsultadorCurriculo {
     estado?: EstadoAsignatura | null,
   ): Promise<AsignaturaResumen[]>;
 
-  obtenerAsignatura(id: string, institucionId: string): Promise<AsignaturaResumen | null>;
+  obtenerAsignatura(
+    id: string,
+    institucionId: string,
+  ): Promise<AsignaturaResumen | null>;
 
   listarPlanes(
     institucionId: string,
@@ -365,7 +411,10 @@ export interface ConsultadorCurriculo {
     estado?: EstadoPlan | null,
   ): Promise<PlanEstudioListaItem[]>;
 
-  obtenerPlan(id: string, institucionId: string): Promise<PlanEstudioResumen | null>;
+  obtenerPlan(
+    id: string,
+    institucionId: string,
+  ): Promise<PlanEstudioResumen | null>;
 
   resolverPlanVigente(
     idAnio: string,

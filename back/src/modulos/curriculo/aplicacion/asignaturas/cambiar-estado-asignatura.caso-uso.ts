@@ -23,23 +23,39 @@ export class CambiarEstadoAsignaturaCasoUso {
     nuevoEstado: EstadoAsignatura,
     alcance: AlcanceAcceso,
   ): Promise<void> {
-    if (alcance.ambito !== 'INSTITUCION') throw new AmbiteInstitucionRequeridoError();
+    if (alcance.ambito !== 'INSTITUCION')
+      throw new AmbiteInstitucionRequeridoError();
 
-    const asignatura = await this.repositorio.obtenerAsignaturaBase(id, alcance.institucionId);
+    const asignatura = await this.repositorio.obtenerAsignaturaBase(
+      id,
+      alcance.institucionId,
+    );
     if (!asignatura) throw new AsignaturaNoEncontradaError();
 
     const permitidos = TRANSICIONES_ASIGNATURA[asignatura.estado] ?? [];
     if (!permitidos.includes(nuevoEstado)) {
-      throw new TransicionAsignaturaInvalidaError(asignatura.estado, nuevoEstado);
+      throw new TransicionAsignaturaInvalidaError(
+        asignatura.estado,
+        nuevoEstado,
+      );
     }
 
     // RN-CUR-004: no inactivar si usada en plan BORRADOR/APROBADO/VIGENTE
     if (nuevoEstado === 'INACTIVA') {
-      if (await this.repositorio.estaAsignaturaEnPlanActivo(id, alcance.institucionId)) {
+      if (
+        await this.repositorio.estaAsignaturaEnPlanActivo(
+          id,
+          alcance.institucionId,
+        )
+      ) {
         throw new AsignaturaEnUsoError();
       }
     }
 
-    await this.repositorio.cambiarEstadoAsignatura(id, alcance.institucionId, nuevoEstado);
+    await this.repositorio.cambiarEstadoAsignatura(
+      id,
+      alcance.institucionId,
+      nuevoEstado,
+    );
   }
 }

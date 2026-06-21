@@ -19,7 +19,8 @@ const ACCIONES_AUDITABLES: Record<string, string> = {
   'PATCH /api/v1/curriculo/areas/:id/estado': 'AREA_CURRICULAR_ESTADO_CAMBIADO',
   'POST /api/v1/curriculo/asignaturas': 'ASIGNATURA_CREADA',
   'PATCH /api/v1/curriculo/asignaturas/:id': 'ASIGNATURA_ACTUALIZADA',
-  'PATCH /api/v1/curriculo/asignaturas/:id/estado': 'ASIGNATURA_ESTADO_CAMBIADO',
+  'PATCH /api/v1/curriculo/asignaturas/:id/estado':
+    'ASIGNATURA_ESTADO_CAMBIADO',
   'POST /api/v1/curriculo/planes': 'PLAN_ESTUDIO_CREADO',
   'PATCH /api/v1/curriculo/planes/:id': 'PLAN_ESTUDIO_ACTUALIZADO',
   'PATCH /api/v1/curriculo/planes/:id/estado': 'PLAN_ESTUDIO_ESTADO_CAMBIADO',
@@ -27,7 +28,8 @@ const ACCIONES_AUDITABLES: Record<string, string> = {
   'POST /api/v1/curriculo/planes/:id/aprobar': 'PLAN_ESTUDIO_APROBADO',
   'POST /api/v1/curriculo/planes/:id/detalles': 'DETALLE_PLAN_AGREGADO',
   'PATCH /api/v1/curriculo/planes/:id/detalles/:id': 'DETALLE_PLAN_ACTUALIZADO',
-  'PATCH /api/v1/curriculo/planes/:id/detalles/:id/estado': 'DETALLE_PLAN_ESTADO_CAMBIADO',
+  'PATCH /api/v1/curriculo/planes/:id/detalles/:id/estado':
+    'DETALLE_PLAN_ESTADO_CAMBIADO',
 };
 
 function resolverAccion(method: string, url: string): string | null {
@@ -44,7 +46,7 @@ export class AuditoriaCurriculoInterceptor implements NestInterceptor {
   constructor(
     @Inject(SERVICIO_AUDITORIA)
     private readonly auditoria: ServicioAuditoria,
-  ) { }
+  ) {}
 
   intercept(
     contexto: ExecutionContext,

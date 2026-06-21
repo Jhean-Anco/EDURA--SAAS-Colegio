@@ -29,10 +29,18 @@ export class AreaCurricularEntidad {
   @Column({ name: 'estado', type: 'varchar', length: 20, default: 'ACTIVA' })
   estado!: string;
 
-  @Column({ name: 'fecha_creacion', type: 'timestamptz', default: () => 'now()' })
+  @Column({
+    name: 'fecha_creacion',
+    type: 'timestamptz',
+    default: () => 'now()',
+  })
   fechaCreacion!: Date;
 
-  @Column({ name: 'fecha_modificacion', type: 'timestamptz', default: () => 'now()' })
+  @Column({
+    name: 'fecha_modificacion',
+    type: 'timestamptz',
+    default: () => 'now()',
+  })
   fechaModificacion!: Date;
 }
 
@@ -68,10 +76,18 @@ export class AsignaturaEntidad {
   @Column({ name: 'estado', type: 'varchar', length: 20, default: 'ACTIVA' })
   estado!: string;
 
-  @Column({ name: 'fecha_creacion', type: 'timestamptz', default: () => 'now()' })
+  @Column({
+    name: 'fecha_creacion',
+    type: 'timestamptz',
+    default: () => 'now()',
+  })
   fechaCreacion!: Date;
 
-  @Column({ name: 'fecha_modificacion', type: 'timestamptz', default: () => 'now()' })
+  @Column({
+    name: 'fecha_modificacion',
+    type: 'timestamptz',
+    default: () => 'now()',
+  })
   fechaModificacion!: Date;
 }
 
@@ -113,10 +129,18 @@ export class PlanEstudioEntidad {
   @Column({ name: 'id_usuario_aprobador', type: 'uuid', nullable: true })
   idUsuarioAprobador!: string | null;
 
-  @Column({ name: 'fecha_creacion', type: 'timestamptz', default: () => 'now()' })
+  @Column({
+    name: 'fecha_creacion',
+    type: 'timestamptz',
+    default: () => 'now()',
+  })
   fechaCreacion!: Date;
 
-  @Column({ name: 'fecha_modificacion', type: 'timestamptz', default: () => 'now()' })
+  @Column({
+    name: 'fecha_modificacion',
+    type: 'timestamptz',
+    default: () => 'now()',
+  })
   fechaModificacion!: Date;
 }
 
@@ -152,9 +176,17 @@ export class DetallePlanEstudioEntidad {
   @Column({ name: 'observacion', type: 'text', nullable: true })
   observacion!: string | null;
 
-  @Column({ name: 'fecha_creacion', type: 'timestamptz', default: () => 'now()' })
+  @Column({
+    name: 'fecha_creacion',
+    type: 'timestamptz',
+    default: () => 'now()',
+  })
   fechaCreacion!: Date;
 
-  @Column({ name: 'fecha_modificacion', type: 'timestamptz', default: () => 'now()' })
+  @Column({
+    name: 'fecha_modificacion',
+    type: 'timestamptz',
+    default: () => 'now()',
+  })
   fechaModificacion!: Date;
 }

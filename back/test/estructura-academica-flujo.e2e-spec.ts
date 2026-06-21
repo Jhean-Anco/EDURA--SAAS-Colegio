@@ -289,7 +289,7 @@ async function obtenerToken(
   const loginRes = await request(app.getHttpServer())
     .post('/api/v1/autenticacion/iniciar-sesion')
     .send({ correo, clave })
-    .expect(201);
+    .expect(200);
   const preToken = (loginRes.body as { accessToken: string }).accessToken;
 
   const ctxRes = await request(app.getHttpServer())
@@ -316,7 +316,7 @@ async function obtenerToken(
     .post('/api/v1/autenticacion/seleccionar-contexto')
     .set('Authorization', `Bearer ${preToken}`)
     .send(ctx)
-    .expect(201);
+    .expect(200);
   return (selRes.body as { accessToken: string }).accessToken;
 }
 

@@ -31,9 +31,12 @@ interface FilaId {
 
 @Injectable()
 export class RepositorioPlanesEstudioTypeorm implements RepositorioPlanesEstudio {
-  constructor(@InjectDataSource() private readonly ds: DataSource) { }
+  constructor(@InjectDataSource() private readonly ds: DataSource) {}
 
-  async existeAnioEnInstitucion(idAnio: string, institucionId: string): Promise<boolean> {
+  async existeAnioEnInstitucion(
+    idAnio: string,
+    institucionId: string,
+  ): Promise<boolean> {
     const rows = await this.ds.query<FilaConteo[]>(
       `SELECT COUNT(*)::text AS total FROM anios_academicos
        WHERE id = $1 AND id_institucion_educativa = $2`,
@@ -42,7 +45,10 @@ export class RepositorioPlanesEstudioTypeorm implements RepositorioPlanesEstudio
     return Number.parseInt(rows[0]?.total ?? '0', 10) > 0;
   }
 
-  async existeGradoEnInstitucion(idGrado: string, institucionId: string): Promise<boolean> {
+  async existeGradoEnInstitucion(
+    idGrado: string,
+    institucionId: string,
+  ): Promise<boolean> {
     const rows = await this.ds.query<FilaConteo[]>(
       `SELECT COUNT(*)::text AS total FROM grados_educativos
        WHERE id = $1 AND id_institucion_educativa = $2`,
@@ -51,7 +57,10 @@ export class RepositorioPlanesEstudioTypeorm implements RepositorioPlanesEstudio
     return Number.parseInt(rows[0]?.total ?? '0', 10) > 0;
   }
 
-  async obtenerEstadoAnio(idAnio: string, institucionId: string): Promise<string | null> {
+  async obtenerEstadoAnio(
+    idAnio: string,
+    institucionId: string,
+  ): Promise<string | null> {
     const rows = await this.ds.query<{ estado: string }[]>(
       `SELECT estado FROM anios_academicos
        WHERE id = $1 AND id_institucion_educativa = $2`,
@@ -131,13 +140,18 @@ export class RepositorioPlanesEstudioTypeorm implements RepositorioPlanesEstudio
         entrada.observacion ?? null,
       ],
     );
-    return { id: rows[0]!.id };
+    return { id: rows[0].id };
   }
 
   async obtenerPlanBase(
     id: string,
     institucionId: string,
-  ): Promise<{ id: string; estado: EstadoPlan; idAnioAcademico: string; idGradoEducativo: string } | null> {
+  ): Promise<{
+    id: string;
+    estado: EstadoPlan;
+    idAnioAcademico: string;
+    idGradoEducativo: string;
+  } | null> {
     const rows = await this.ds.query<FilaPlanBase[]>(
       `SELECT id, estado, id_anio_academico, id_grado_educativo FROM planes_estudio
        WHERE id = $1 AND id_institucion_educativa = $2`,
@@ -164,10 +178,22 @@ export class RepositorioPlanesEstudioTypeorm implements RepositorioPlanesEstudio
     const sets: string[] = ['fecha_modificacion = now()'];
     const params: unknown[] = [entrada.id, entrada.institucionId];
     let i = 3;
-    if (entrada.codigo !== undefined) { sets.push(`codigo = $${i++}`); params.push(entrada.codigo); }
-    if (entrada.codigoNormalizado !== undefined) { sets.push(`codigo_normalizado = $${i++}`); params.push(entrada.codigoNormalizado); }
-    if (entrada.nombre !== undefined) { sets.push(`nombre = $${i++}`); params.push(entrada.nombre); }
-    if (entrada.observacion !== undefined) { sets.push(`observacion = $${i++}`); params.push(entrada.observacion); }
+    if (entrada.codigo !== undefined) {
+      sets.push(`codigo = $${i++}`);
+      params.push(entrada.codigo);
+    }
+    if (entrada.codigoNormalizado !== undefined) {
+      sets.push(`codigo_normalizado = $${i++}`);
+      params.push(entrada.codigoNormalizado);
+    }
+    if (entrada.nombre !== undefined) {
+      sets.push(`nombre = $${i++}`);
+      params.push(entrada.nombre);
+    }
+    if (entrada.observacion !== undefined) {
+      sets.push(`observacion = $${i++}`);
+      params.push(entrada.observacion);
+    }
     const result = await this.ds.query<FilaId[]>(
       `UPDATE planes_estudio SET ${sets.join(', ')}
        WHERE id = $1 AND id_institucion_educativa = $2 RETURNING id`,
@@ -190,13 +216,25 @@ export class RepositorioPlanesEstudioTypeorm implements RepositorioPlanesEstudio
              SET estado = $3, fecha_aprobacion = $4, id_usuario_aprobador = $5,
                  fecha_modificacion = now()
              WHERE id = $1 AND id_institucion_educativa = $2 RETURNING id`;
-      params = [id, institucionId, estado, aprobacion.fechaAprobacion, aprobacion.idUsuarioAprobador];
+      params = [
+        id,
+        institucionId,
+        estado,
+        aprobacion.fechaAprobacion,
+        aprobacion.idUsuarioAprobador,
+      ];
     } else if (activacion) {
       sql = `UPDATE planes_estudio
              SET estado = $3, fecha_vigencia = $4, id_usuario_activador = $5,
                  fecha_modificacion = now()
              WHERE id = $1 AND id_institucion_educativa = $2 RETURNING id`;
-      params = [id, institucionId, estado, activacion.fechaVigencia, activacion.idUsuarioActivador];
+      params = [
+        id,
+        institucionId,
+        estado,
+        activacion.fechaVigencia,
+        activacion.idUsuarioActivador,
+      ];
     } else {
       sql = `UPDATE planes_estudio SET estado = $3, fecha_modificacion = now()
              WHERE id = $1 AND id_institucion_educativa = $2 RETURNING id`;
@@ -222,7 +260,10 @@ export class RepositorioPlanesEstudioTypeorm implements RepositorioPlanesEstudio
     return Number.parseInt(rows[0]?.total ?? '0', 10) > 0;
   }
 
-  async contarDetallesActivos(idPlan: string, institucionId: string): Promise<number> {
+  async contarDetallesActivos(
+    idPlan: string,
+    institucionId: string,
+  ): Promise<number> {
     const rows = await this.ds.query<FilaConteo[]>(
       `SELECT COUNT(*)::text AS total FROM detalles_plan_estudio
        WHERE id_plan_estudio = $1 AND id_institucion_educativa = $2 AND estado = 'ACTIVO'`,
@@ -231,7 +272,10 @@ export class RepositorioPlanesEstudioTypeorm implements RepositorioPlanesEstudio
     return Number.parseInt(rows[0]?.total ?? '0', 10);
   }
 
-  async tieneAsignaturasInactivasEnDetalle(idPlan: string, institucionId: string): Promise<boolean> {
+  async tieneAsignaturasInactivasEnDetalle(
+    idPlan: string,
+    institucionId: string,
+  ): Promise<boolean> {
     const rows = await this.ds.query<FilaConteo[]>(
       `SELECT COUNT(*)::text AS total
        FROM detalles_plan_estudio d
@@ -302,14 +346,18 @@ export class RepositorioPlanesEstudioTypeorm implements RepositorioPlanesEstudio
         entrada.observacion ?? null,
       ],
     );
-    return { id: rows[0]!.id };
+    return { id: rows[0].id };
   }
 
   async obtenerDetalleBase(
     id: string,
     idPlan: string,
     institucionId: string,
-  ): Promise<{ id: string; estado: EstadoDetalle; idPlanEstudio: string } | null> {
+  ): Promise<{
+    id: string;
+    estado: EstadoDetalle;
+    idPlanEstudio: string;
+  } | null> {
     const rows = await this.ds.query<FilaDetalleBase[]>(
       `SELECT id, estado, id_plan_estudio FROM detalles_plan_estudio
        WHERE id = $1 AND id_plan_estudio = $2 AND id_institucion_educativa = $3`,
@@ -336,11 +384,26 @@ export class RepositorioPlanesEstudioTypeorm implements RepositorioPlanesEstudio
     const sets: string[] = ['fecha_modificacion = now()'];
     const params: unknown[] = [entrada.id, entrada.institucionId];
     let i = 3;
-    if (entrada.tipo !== undefined) { sets.push(`tipo = $${i++}`); params.push(entrada.tipo); }
-    if (entrada.horasSemanales !== undefined) { sets.push(`horas_semanales = $${i++}`); params.push(entrada.horasSemanales); }
-    if (entrada.horasAnuales !== undefined) { sets.push(`horas_anuales = $${i++}`); params.push(entrada.horasAnuales); }
-    if (entrada.orden !== undefined) { sets.push(`orden = $${i++}`); params.push(entrada.orden); }
-    if (entrada.observacion !== undefined) { sets.push(`observacion = $${i++}`); params.push(entrada.observacion); }
+    if (entrada.tipo !== undefined) {
+      sets.push(`tipo = $${i++}`);
+      params.push(entrada.tipo);
+    }
+    if (entrada.horasSemanales !== undefined) {
+      sets.push(`horas_semanales = $${i++}`);
+      params.push(entrada.horasSemanales);
+    }
+    if (entrada.horasAnuales !== undefined) {
+      sets.push(`horas_anuales = $${i++}`);
+      params.push(entrada.horasAnuales);
+    }
+    if (entrada.orden !== undefined) {
+      sets.push(`orden = $${i++}`);
+      params.push(entrada.orden);
+    }
+    if (entrada.observacion !== undefined) {
+      sets.push(`observacion = $${i++}`);
+      params.push(entrada.observacion);
+    }
     const result = await this.ds.query<FilaId[]>(
       `UPDATE detalles_plan_estudio SET ${sets.join(', ')}
        WHERE id = $1 AND id_institucion_educativa = $2 RETURNING id`,
@@ -394,7 +457,7 @@ export class RepositorioPlanesEstudioTypeorm implements RepositorioPlanesEstudio
         entrada.observacion ?? null,
       ],
     );
-    const idNuevo = planRows[0]!.id;
+    const idNuevo = planRows[0].id;
 
     // Copiar detalles activos
     await this.ds.query(
