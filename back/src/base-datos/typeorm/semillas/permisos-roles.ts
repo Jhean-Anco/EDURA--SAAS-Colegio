@@ -173,6 +173,60 @@ export const permisosSistema = [
     codigo: 'ESTUDIANTES.DOCUMENTOS.GESTIONAR',
     descripcion: 'Gestionar documentos de estudiantes',
   },
+  {
+    recurso: 'DOCENTES',
+    accion: 'LEER',
+    codigo: 'DOCENTES.LEER',
+    descripcion: 'Ver docentes',
+  },
+  {
+    recurso: 'DOCENTES',
+    accion: 'CREAR',
+    codigo: 'DOCENTES.CREAR',
+    descripcion: 'Registrar docentes',
+  },
+  {
+    recurso: 'DOCENTES',
+    accion: 'ACTUALIZAR',
+    codigo: 'DOCENTES.ACTUALIZAR',
+    descripcion: 'Actualizar datos de docentes',
+  },
+  {
+    recurso: 'DOCENTES',
+    accion: 'CAMBIAR_ESTADO',
+    codigo: 'DOCENTES.CAMBIAR_ESTADO',
+    descripcion: 'Cambiar estado de docentes',
+  },
+  {
+    recurso: 'DOCENTES',
+    accion: 'GESTIONAR_SEDES',
+    codigo: 'DOCENTES.GESTIONAR_SEDES',
+    descripcion: 'Gestionar asignaciones de sede de docentes',
+  },
+  {
+    recurso: 'DOCENTES',
+    accion: 'GESTIONAR_ESPECIALIDADES',
+    codigo: 'DOCENTES.GESTIONAR_ESPECIALIDADES',
+    descripcion: 'Gestionar especialidades profesionales de docentes',
+  },
+  {
+    recurso: 'ESPECIALIDADES_PROFESIONALES',
+    accion: 'LEER',
+    codigo: 'ESPECIALIDADES_PROFESIONALES.LEER',
+    descripcion: 'Ver catálogo de especialidades profesionales',
+  },
+  {
+    recurso: 'ESPECIALIDADES_PROFESIONALES',
+    accion: 'CREAR',
+    codigo: 'ESPECIALIDADES_PROFESIONALES.CREAR',
+    descripcion: 'Crear especialidades profesionales',
+  },
+  {
+    recurso: 'ESPECIALIDADES_PROFESIONALES',
+    accion: 'ACTUALIZAR',
+    codigo: 'ESPECIALIDADES_PROFESIONALES.ACTUALIZAR',
+    descripcion: 'Actualizar especialidades profesionales',
+  },
 ] as const;
 
 export const rolesSistema = [
@@ -192,6 +246,12 @@ export const rolesSistema = [
     codigo: 'DIRECTOR_SEDE',
     nombre: 'Director de sede',
     descripcion: 'Gestión de una sede educativa',
+    ambito: 'SEDE',
+  },
+  {
+    codigo: 'DOCENTE',
+    nombre: 'Docente',
+    descripcion: 'Acceso al perfil propio del docente',
     ambito: 'SEDE',
   },
 ] as const;
@@ -225,6 +285,15 @@ export const permisosAdministradorInstitucion = [
   'ESTUDIANTES.CAMBIAR_ESTADO',
   'ESTUDIANTES.APODERADOS.GESTIONAR',
   'ESTUDIANTES.DOCUMENTOS.GESTIONAR',
+  'DOCENTES.LEER',
+  'DOCENTES.CREAR',
+  'DOCENTES.ACTUALIZAR',
+  'DOCENTES.CAMBIAR_ESTADO',
+  'DOCENTES.GESTIONAR_SEDES',
+  'DOCENTES.GESTIONAR_ESPECIALIDADES',
+  'ESPECIALIDADES_PROFESIONALES.LEER',
+  'ESPECIALIDADES_PROFESIONALES.CREAR',
+  'ESPECIALIDADES_PROFESIONALES.ACTUALIZAR',
 ] as const;
 
 export const permisosDirectorSede = [
@@ -244,4 +313,14 @@ export const permisosDirectorSede = [
   'ESTUDIANTES.CAMBIAR_ESTADO',
   'ESTUDIANTES.APODERADOS.GESTIONAR',
   'ESTUDIANTES.DOCUMENTOS.GESTIONAR',
+  'DOCENTES.LEER',
+  'DOCENTES.ACTUALIZAR',
+  'DOCENTES.GESTIONAR_SEDES',
+  'ESPECIALIDADES_PROFESIONALES.LEER',
+] as const;
+
+export const permisosDocente = [
+  'DOCENTES.LEER',
+  'ESPECIALIDADES_PROFESIONALES.LEER',
+  'PANEL_INSTITUCIONAL.RESUMEN.LEER',
 ] as const;

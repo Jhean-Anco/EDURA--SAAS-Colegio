@@ -56,6 +56,10 @@ import {
   DocumentoEstudianteTypeormEntidad,
   EstudianteTypeormEntidad,
 } from '../../modulos/estudiantes/infraestructura/persistencia/typeorm/entidades/estudiantes.typeorm-entidades';
+import { DocenteTypeormEntidad } from '../../modulos/docentes/infraestructura/persistencia/typeorm/entidades/docente.typeorm-entidad';
+import { EspecialidadProfesionalTypeormEntidad } from '../../modulos/docentes/infraestructura/persistencia/typeorm/entidades/especialidad-profesional.typeorm-entidad';
+import { AsignacionDocenteSedeTypeormEntidad } from '../../modulos/docentes/infraestructura/persistencia/typeorm/entidades/asignacion-docente-sede.typeorm-entidad';
+import { DocenteEspecialidadTypeormEntidad } from '../../modulos/docentes/infraestructura/persistencia/typeorm/entidades/docente-especialidad.typeorm-entidad';
 
 export const entidadesTypeOrm = [
   InstitucionEducativaTypeormEntidad,
@@ -108,5 +112,9 @@ export const entidadesTypeOrm = [
   EstudianteTypeormEntidad,
   ApoderadoEstudianteTypeormEntidad,
   DocumentoEstudianteTypeormEntidad,
+  DocenteTypeormEntidad,
+  EspecialidadProfesionalTypeormEntidad,
+  AsignacionDocenteSedeTypeormEntidad,
+  DocenteEspecialidadTypeormEntidad,
 ] as unknown as ConstructorEntidad[];
 type ConstructorEntidad = new (...argumentos: never[]) => unknown;

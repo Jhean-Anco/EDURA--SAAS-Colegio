@@ -88,6 +88,25 @@ export class PanelInstitucionalTypeormConsulta implements PanelInstitucionalCons
         )
       : [{ total: '0' }];
 
+    const tieneTablaDocentes = await this.dataSource.query<
+      Array<{ existe: boolean }>
+    >(`SELECT to_regclass('public.docentes') IS NOT NULL AS existe`);
+    const totalDocentesRows = tieneTablaDocentes[0]?.existe
+      ? await this.dataSource.query<Array<{ total: string }>>(
+          `SELECT COUNT(DISTINCT d.id)::int AS total
+             FROM docentes d
+            WHERE d.id_institucion_educativa = $1
+              AND d.estado = 'ACTIVO'
+              AND ($2::uuid IS NULL OR EXISTS (
+                SELECT 1 FROM asignaciones_docente_sede ads
+                WHERE ads.id_docente = d.id
+                  AND ads.id_sede = $2
+                  AND ads.estado = 'ACTIVA'
+              ))`,
+          [entrada.institucionId, sedeId],
+        )
+      : [{ total: '0' }];
+
     const [totales] = await this.dataSource.query<
       Array<{
         totalSedesActivas: string;
@@ -223,7 +242,7 @@ export class PanelInstitucionalTypeormConsulta implements PanelInstitucionalCons
             : null,
         })),
         totalEstudiantesActivos: Number(totalEstudiantes[0]?.total ?? 0),
-        totalDocentesActivos: null,
+        totalDocentesActivos: Number(totalDocentesRows[0]?.total ?? 0),
         matriculasPorEstado: [],
         asistenciaDelDia: null,
       },
