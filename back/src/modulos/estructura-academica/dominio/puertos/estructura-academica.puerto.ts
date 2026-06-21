@@ -3,6 +3,7 @@ export interface AlcanceAcceso {
   institucionId: string;
   ambito: 'INSTITUCION' | 'SEDE';
   sedeId: string | null;
+  correlationId?: string;
 }
 
 export const REPOSITORIO_CALENDARIO_ACADEMICO = Symbol(
@@ -18,18 +19,23 @@ export const CONSULTADOR_ESTRUCTURA_ACADEMICA = Symbol(
   'CONSULTADOR_ESTRUCTURA_ACADEMICA',
 );
 
-// ── Tipos compartidos ─────────────────────────────────────────────────────────
+import {
+  EstadoCalendario,
+  TipoPeriodo,
+  EstadoNivel,
+  EstadoOferta,
+  EstadoSeccion,
+  TurnoSeccion,
+} from '../estructura-academica.constantes';
 
-export type EstadoCalendario = 'PLANIFICADO' | 'ACTIVO' | 'CERRADO' | 'ANULADO';
-export type TipoPeriodo =
-  | 'BIMESTRE'
-  | 'TRIMESTRE'
-  | 'SEMESTRE'
-  | 'CUATRIMESTRE'
-  | 'OTRO';
-export type EstadoOferta = 'PLANIFICADA' | 'ACTIVA' | 'CERRADA' | 'CANCELADA';
-export type EstadoNivel = 'ACTIVO' | 'INACTIVO';
-export type EstadoSeccion = 'ACTIVA' | 'INACTIVA';
+export type {
+  EstadoCalendario,
+  TipoPeriodo,
+  EstadoNivel,
+  EstadoOferta,
+  EstadoSeccion,
+  TurnoSeccion,
+};
 
 // ── Interfaces de resumen ─────────────────────────────────────────────────────
 
@@ -133,6 +139,7 @@ export interface RepositorioCalendarioAcademico {
     nombre: string;
     fechaInicio: string;
     fechaFin: string;
+    estado: EstadoCalendario;
     observacion?: string | null;
   }): Promise<{ id: string }>;
 
@@ -140,6 +147,18 @@ export interface RepositorioCalendarioAcademico {
     id: string,
     institucionId: string,
   ): Promise<{ id: string; estado: EstadoCalendario; anio: number } | null>;
+
+  obtenerFechasAnio(
+    id: string,
+    institucionId: string,
+  ): Promise<{ fechaInicio: string; fechaFin: string } | null>;
+
+  existePeriodoFueraDeIntervalo(
+    idAnio: string,
+    institucionId: string,
+    nuevaFechaInicio: string,
+    nuevaFechaFin: string,
+  ): Promise<boolean>;
 
   actualizarAnioAcademico(entrada: {
     id: string;
@@ -202,10 +221,18 @@ export interface RepositorioCalendarioAcademico {
     institucionId: string,
   ): Promise<{ id: string; estado: EstadoCalendario } | null>;
 
+  obtenerPeriodoFechas(
+    id: string,
+    idAnio: string,
+    institucionId: string,
+  ): Promise<{ fechaInicio: string; fechaFin: string } | null>;
+
   actualizarPeriodoAcademico(entrada: {
     id: string;
     idAnioAcademico: string;
     institucionId: string;
+    codigo?: string;
+    codigoNormalizado?: string;
     nombre?: string;
     tipo?: TipoPeriodo;
     orden?: number;
@@ -260,6 +287,14 @@ export interface RepositorioCatalogosAcademicos {
     estado?: EstadoNivel;
   }): Promise<boolean>;
 
+  cambiarEstadoNivel(
+    id: string,
+    institucionId: string,
+    estado: EstadoNivel,
+  ): Promise<boolean>;
+
+  tieneGradosActivos(idNivel: string, institucionId: string): Promise<boolean>;
+
   existeCodigoGradoEnNivel(
     codigoNormalizado: string,
     idNivel: string,
@@ -297,6 +332,17 @@ export interface RepositorioCatalogosAcademicos {
     orden?: number;
     estado?: EstadoNivel;
   }): Promise<boolean>;
+
+  cambiarEstadoGrado(
+    id: string,
+    institucionId: string,
+    estado: EstadoNivel,
+  ): Promise<boolean>;
+
+  tieneOfertasActivasOPlanificadas(
+    idGrado: string,
+    institucionId: string,
+  ): Promise<boolean>;
 }
 
 // ── Repositorio Oferta Académica ──────────────────────────────────────────────
@@ -330,6 +376,22 @@ export interface RepositorioOfertaAcademica {
     estado?: EstadoOferta;
   }): Promise<boolean>;
 
+  cambiarEstadoOferta(
+    id: string,
+    institucionId: string,
+    estado: EstadoOferta,
+  ): Promise<boolean>;
+
+  tieneSeccionesActivasEnOferta(
+    idOferta: string,
+    institucionId: string,
+  ): Promise<boolean>;
+
+  existeOfertaActivaOPlanificadaEnAnio(
+    idAnio: string,
+    institucionId: string,
+  ): Promise<boolean>;
+
   existeSeccionEnOferta(
     codigoNormalizado: string,
     idOferta: string,
@@ -357,11 +419,14 @@ export interface RepositorioOfertaAcademica {
     estado: EstadoSeccion;
     idOfertaGradoSede: string;
     idSede: string;
+    capacidadMaxima: number | null;
   } | null>;
 
   actualizarSeccion(entrada: {
     id: string;
     institucionId: string;
+    codigo?: string;
+    codigoNormalizado?: string;
     nombre?: string;
     turno?: string;
     capacidadMaxima?: number | null;
@@ -370,16 +435,30 @@ export interface RepositorioOfertaAcademica {
     estado?: EstadoSeccion;
   }): Promise<boolean>;
 
+  cambiarEstadoSeccion(
+    id: string,
+    institucionId: string,
+    estado: EstadoSeccion,
+  ): Promise<boolean>;
+
   verificarEspacioFisicoEnSede(
     idEspacioFisico: string,
     idSede: string,
-  ): Promise<boolean>;
+  ): Promise<{
+    esAula: boolean;
+    estaActivo: boolean;
+    aforo: number | null;
+  } | null>;
 
   verificarDocenteTutorEnSede(
     idDocente: string,
     idSede: string,
     institucionId: string,
-  ): Promise<boolean>;
+  ): Promise<{
+    estaActivo: boolean;
+    estaCesado: boolean;
+    tieneAsignacion: boolean;
+  }>;
 }
 
 // ── Consultador Estructura Académica ─────────────────────────────────────────

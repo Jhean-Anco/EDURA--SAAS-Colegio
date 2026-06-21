@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseInterceptors,
 } from '@nestjs/common';
 import { Permisos } from '../../../../../compartido/presentacion/http/decoradores/permisos.decorador';
@@ -32,7 +33,10 @@ import {
   CambiarEstadoPeriodoSolicitud,
   CrearPeriodoAcademicoSolicitud,
 } from '../solicitudes/periodo-academico.solicitud';
-import { EstadoCalendario } from '../../../dominio/puertos/estructura-academica.puerto';
+import {
+  ListarAniosQueryDto,
+  ListarPeriodosQueryDto,
+} from '../solicitudes/consultas.solicitud';
 
 @UseInterceptors(AuditoriaEstructuraAcademicaInterceptor)
 @Controller('estructura-academica')
@@ -54,18 +58,21 @@ export class CalendarioControlador {
   @Get('anios')
   async listarAniosHandler(
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
-    @Query('estado') estado?: EstadoCalendario,
+    @Query() query: ListarAniosQueryDto,
   ) {
-    return this.listarAnios.ejecutar(alcanceDesdeContexto(ctx), estado);
+    return this.listarAnios.ejecutar(alcanceDesdeContexto(ctx), query.estado);
   }
 
   @Permisos('ESTRUCTURA_ACADEMICA.CALENDARIO.GESTIONAR')
   @Post('anios')
   async crearAnioHandler(
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
+    @Req() req: { correlationId?: string },
     @Body() body: CrearAnioAcademicoSolicitud,
   ) {
-    return this.crearAnio.ejecutar(body, alcanceDesdeContexto(ctx));
+    const alcance = alcanceDesdeContexto(ctx);
+    alcance.correlationId = req.correlationId;
+    return this.crearAnio.ejecutar(body, alcance);
   }
 
   @Permisos('ESTRUCTURA_ACADEMICA.CALENDARIO.GESTIONAR')
@@ -73,12 +80,12 @@ export class CalendarioControlador {
   async actualizarAnioHandler(
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
     @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: { correlationId?: string },
     @Body() body: ActualizarAnioAcademicoSolicitud,
   ) {
-    await this.actualizarAnio.ejecutar(
-      { id, ...body },
-      alcanceDesdeContexto(ctx),
-    );
+    const alcance = alcanceDesdeContexto(ctx);
+    alcance.correlationId = req.correlationId;
+    await this.actualizarAnio.ejecutar({ id, ...body }, alcance);
   }
 
   @Permisos('ESTRUCTURA_ACADEMICA.CALENDARIO.GESTIONAR')
@@ -86,13 +93,12 @@ export class CalendarioControlador {
   async cambiarEstadoAnioHandler(
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
     @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: { correlationId?: string },
     @Body() body: CambiarEstadoAnioSolicitud,
   ) {
-    await this.cambiarEstadoAnio.ejecutar(
-      id,
-      body.estado,
-      alcanceDesdeContexto(ctx),
-    );
+    const alcance = alcanceDesdeContexto(ctx);
+    alcance.correlationId = req.correlationId;
+    await this.cambiarEstadoAnio.ejecutar(id, body.estado, alcance);
   }
 
   // ── Períodos académicos ───────────────────────────────────────────────────
@@ -102,12 +108,12 @@ export class CalendarioControlador {
   async listarPeriodosHandler(
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
     @Param('idAnio', ParseUUIDPipe) idAnio: string,
-    @Query('estado') estado?: EstadoCalendario,
+    @Query() query: ListarPeriodosQueryDto,
   ) {
     return this.listarPeriodos.ejecutar(
       idAnio,
       alcanceDesdeContexto(ctx),
-      estado,
+      query.estado,
     );
   }
 
@@ -116,11 +122,14 @@ export class CalendarioControlador {
   async crearPeriodoHandler(
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
     @Param('idAnio', ParseUUIDPipe) idAnio: string,
+    @Req() req: { correlationId?: string },
     @Body() body: CrearPeriodoAcademicoSolicitud,
   ) {
+    const alcance = alcanceDesdeContexto(ctx);
+    alcance.correlationId = req.correlationId;
     return this.crearPeriodo.ejecutar(
       { ...body, idAnioAcademico: idAnio },
-      alcanceDesdeContexto(ctx),
+      alcance,
     );
   }
 
@@ -130,11 +139,14 @@ export class CalendarioControlador {
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
     @Param('idAnio', ParseUUIDPipe) idAnio: string,
     @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: { correlationId?: string },
     @Body() body: ActualizarPeriodoAcademicoSolicitud,
   ) {
+    const alcance = alcanceDesdeContexto(ctx);
+    alcance.correlationId = req.correlationId;
     await this.actualizarPeriodo.ejecutar(
       { id, idAnioAcademico: idAnio, ...body },
-      alcanceDesdeContexto(ctx),
+      alcance,
     );
   }
 
@@ -144,13 +156,11 @@ export class CalendarioControlador {
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
     @Param('idAnio', ParseUUIDPipe) idAnio: string,
     @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: { correlationId?: string },
     @Body() body: CambiarEstadoPeriodoSolicitud,
   ) {
-    await this.cambiarEstadoPeriodo.ejecutar(
-      id,
-      idAnio,
-      body.estado,
-      alcanceDesdeContexto(ctx),
-    );
+    const alcance = alcanceDesdeContexto(ctx);
+    alcance.correlationId = req.correlationId;
+    await this.cambiarEstadoPeriodo.ejecutar(id, idAnio, body.estado, alcance);
   }
 }

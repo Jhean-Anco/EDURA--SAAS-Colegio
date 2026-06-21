@@ -1,5 +1,8 @@
-import { IsEnum, IsInt, IsOptional, IsPositive, IsUUID } from 'class-validator';
-import { EstadoOferta } from '../../../dominio/puertos/estructura-academica.puerto';
+import { IsInt, IsOptional, IsPositive, IsUUID, IsIn } from 'class-validator';
+import {
+  ESTADOS_OFERTA,
+  EstadoOferta,
+} from '../../../dominio/estructura-academica.constantes';
 
 export class CrearOfertaGradoSedeSolicitud {
   @IsUUID()
@@ -22,8 +25,9 @@ export class ActualizarOfertaGradoSedeSolicitud {
   @IsInt()
   @IsPositive()
   capacidadReferencial?: number | null;
+}
 
-  @IsOptional()
-  @IsEnum(['PLANIFICADA', 'ACTIVA', 'CERRADA', 'CANCELADA'])
-  estado?: EstadoOferta;
+export class CambiarEstadoOfertaSolicitud {
+  @IsIn(ESTADOS_OFERTA)
+  estado!: EstadoOferta;
 }

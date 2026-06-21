@@ -2,12 +2,15 @@ import {
   AnioAcademicoNoEncontradoError,
   PeriodoCodigoDuplicadoError,
   PeriodoSolapamientoError,
+  TransicionAnioInvalidaError,
 } from '../../dominio/errores-estructura-academica';
 import {
   AlcanceAcceso,
   RepositorioCalendarioAcademico,
   TipoPeriodo,
 } from '../../dominio/puertos/estructura-academica.puerto';
+
+const ESTADOS_VALIDOS_PARA_PERIODO = ['PLANIFICADO', 'ACTIVO'] as const;
 
 export interface EntradaCrearPeriodoAcademico {
   idAnioAcademico: string;
@@ -32,6 +35,28 @@ export class CrearPeriodoAcademicoCasoUso {
       alcance.institucionId,
     );
     if (!anio) throw new AnioAcademicoNoEncontradoError();
+
+    if (
+      !ESTADOS_VALIDOS_PARA_PERIODO.includes(
+        anio.estado as (typeof ESTADOS_VALIDOS_PARA_PERIODO)[number],
+      )
+    ) {
+      throw new TransicionAnioInvalidaError(anio.estado, 'AGREGAR_PERIODO');
+    }
+
+    const fechasAnio = await this.repositorio.obtenerFechasAnio(
+      entrada.idAnioAcademico,
+      alcance.institucionId,
+    );
+
+    if (fechasAnio) {
+      if (
+        entrada.fechaInicio < fechasAnio.fechaInicio ||
+        entrada.fechaFin > fechasAnio.fechaFin
+      ) {
+        throw new PeriodoSolapamientoError();
+      }
+    }
 
     const codigoNormalizado = entrada.codigo.trim().toUpperCase();
     const codigoDuplicado = await this.repositorio.existeCodigoPeriodoEnAnio(

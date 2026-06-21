@@ -1,14 +1,12 @@
 import { OfertaGradoSedeNoEncontradaError } from '../../dominio/errores-estructura-academica';
 import {
   AlcanceAcceso,
-  EstadoOferta,
   RepositorioOfertaAcademica,
 } from '../../dominio/puertos/estructura-academica.puerto';
 
 export interface EntradaActualizarOfertaGradoSede {
   id: string;
   capacidadReferencial?: number | null;
-  estado?: EstadoOferta;
 }
 
 export class ActualizarOfertaGradoSedeCasoUso {
@@ -36,7 +34,6 @@ export class ActualizarOfertaGradoSedeCasoUso {
       id: entrada.id,
       institucionId: alcance.institucionId,
       capacidadReferencial: entrada.capacidadReferencial,
-      estado: entrada.estado,
     });
   }
 }

@@ -152,3 +152,141 @@ export class TutorFueraDeSedeError extends ErrorDominio {
     );
   }
 }
+
+export class NivelOrdenDuplicadoError extends ErrorDominio {
+  constructor() {
+    super(
+      'CODIGO_DUPLICADO',
+      'Ya existe un nivel educativo con ese orden en la institución',
+    );
+  }
+}
+
+export class GradoOrdenDuplicadoError extends ErrorDominio {
+  constructor() {
+    super(
+      'CODIGO_DUPLICADO',
+      'Ya existe un grado con ese orden en el nivel educativo',
+    );
+  }
+}
+
+export class NivelEnUsoError extends ErrorDominio {
+  constructor() {
+    super(
+      'REGLA_NEGOCIO_INVALIDA',
+      'No se puede inactivar un nivel que tiene grados activos',
+    );
+  }
+}
+
+export class GradoEnUsoError extends ErrorDominio {
+  constructor() {
+    super(
+      'REGLA_NEGOCIO_INVALIDA',
+      'No se puede inactivar un grado usado por ofertas activas o planificadas',
+    );
+  }
+}
+
+export class EspacioNoEsAulaError extends ErrorDominio {
+  constructor() {
+    super(
+      'REGLA_NEGOCIO_INVALIDA',
+      'El espacio físico asignado debe ser de tipo AULA',
+    );
+  }
+}
+
+export class EspacioInactivoError extends ErrorDominio {
+  constructor() {
+    super(
+      'REGLA_NEGOCIO_INVALIDA',
+      'El espacio físico asignado está inactivo o fuera de servicio',
+    );
+  }
+}
+
+export class CapacidadSuperaAforoError extends ErrorDominio {
+  constructor() {
+    super(
+      'REGLA_NEGOCIO_INVALIDA',
+      'La capacidad máxima de la sección supera el aforo del espacio físico',
+    );
+  }
+}
+
+export class DocenteTutorInactivoError extends ErrorDominio {
+  constructor() {
+    super('REGLA_NEGOCIO_INVALIDA', 'El docente tutor asignado está inactivo');
+  }
+}
+
+export class DocenteTutorCesadoError extends ErrorDominio {
+  constructor() {
+    super('REGLA_NEGOCIO_INVALIDA', 'El docente tutor asignado está cesado');
+  }
+}
+
+export class TransicionOfertaInvalidaError extends ErrorDominio {
+  constructor(desde: string, hacia: string) {
+    super(
+      'ESTADO_INCOMPATIBLE',
+      `No se puede cambiar el estado de la oferta de ${desde} a ${hacia}`,
+    );
+  }
+}
+
+export class OfertaConSeccionesActivasError extends ErrorDominio {
+  constructor() {
+    super(
+      'REGLA_NEGOCIO_INVALIDA',
+      'No se puede cerrar/cancelar una oferta con secciones activas',
+    );
+  }
+}
+
+export class TransicionSeccionInvalidaError extends ErrorDominio {
+  constructor(desde: string, hacia: string) {
+    super(
+      'ESTADO_INCOMPATIBLE',
+      `No se puede cambiar el estado de la sección de ${desde} a ${hacia}`,
+    );
+  }
+}
+
+export class AnioConPeriodosActivosError extends ErrorDominio {
+  constructor() {
+    super(
+      'REGLA_NEGOCIO_INVALIDA',
+      'No se puede cerrar el año con períodos activos',
+    );
+  }
+}
+
+export class AnioConOfertasActivasError extends ErrorDominio {
+  constructor() {
+    super(
+      'REGLA_NEGOCIO_INVALIDA',
+      'No se puede cerrar el año con ofertas activas o planificadas',
+    );
+  }
+}
+
+export class NivelTransicionInvalidaError extends ErrorDominio {
+  constructor(desde: string, hacia: string) {
+    super(
+      'ESTADO_INCOMPATIBLE',
+      `No se puede cambiar el estado del nivel de ${desde} a ${hacia}`,
+    );
+  }
+}
+
+export class GradoTransicionInvalidaError extends ErrorDominio {
+  constructor(desde: string, hacia: string) {
+    super(
+      'ESTADO_INCOMPATIBLE',
+      `No se puede cambiar el estado del grado de ${desde} a ${hacia}`,
+    );
+  }
+}

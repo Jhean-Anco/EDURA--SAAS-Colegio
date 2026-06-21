@@ -52,7 +52,7 @@ export class RepositorioOfertaAcademicaTypeorm implements RepositorioOfertaAcade
         entrada.excluirId ?? null,
       ],
     );
-    return parseInt(rows[0]?.total ?? '0', 10) > 0;
+    return Number.parseInt(rows[0]?.total ?? '0', 10) > 0;
   }
 
   async crearOfertaGradoSede(entrada: {
@@ -123,6 +123,50 @@ export class RepositorioOfertaAcademicaTypeorm implements RepositorioOfertaAcade
     return affected > 0;
   }
 
+  async cambiarEstadoOferta(
+    id: string,
+    institucionId: string,
+    estado: EstadoOferta,
+  ): Promise<boolean> {
+    const result = await this.ds.query<
+      [unknown, number] | { affected?: number }
+    >(
+      `UPDATE ofertas_grado_sede SET estado = $3, fecha_modificacion = now()
+       WHERE id = $1 AND id_institucion_educativa = $2`,
+      [id, institucionId, estado],
+    );
+    const affected = Array.isArray(result)
+      ? result[1]
+      : (result?.affected ?? 0);
+    return affected > 0;
+  }
+
+  async tieneSeccionesActivasEnOferta(
+    idOferta: string,
+    institucionId: string,
+  ): Promise<boolean> {
+    const rows = await this.ds.query<FilaConteo[]>(
+      `SELECT COUNT(*)::text AS total FROM secciones_academicas
+       WHERE id_oferta_grado_sede = $1 AND id_institucion_educativa = $2
+         AND estado = 'ACTIVA'`,
+      [idOferta, institucionId],
+    );
+    return Number.parseInt(rows[0]?.total ?? '0', 10) > 0;
+  }
+
+  async existeOfertaActivaOPlanificadaEnAnio(
+    idAnio: string,
+    institucionId: string,
+  ): Promise<boolean> {
+    const rows = await this.ds.query<FilaConteo[]>(
+      `SELECT COUNT(*)::text AS total FROM ofertas_grado_sede
+       WHERE id_anio_academico = $1 AND id_institucion_educativa = $2
+         AND estado IN ('ACTIVA', 'PLANIFICADA')`,
+      [idAnio, institucionId],
+    );
+    return Number.parseInt(rows[0]?.total ?? '0', 10) > 0;
+  }
+
   async existeSeccionEnOferta(
     codigoNormalizado: string,
     idOferta: string,
@@ -136,7 +180,7 @@ export class RepositorioOfertaAcademicaTypeorm implements RepositorioOfertaAcade
          AND ($4::uuid IS NULL OR id <> $4)`,
       [idOferta, institucionId, codigoNormalizado, excluirId ?? null],
     );
-    return parseInt(rows[0]?.total ?? '0', 10) > 0;
+    return Number.parseInt(rows[0]?.total ?? '0', 10) > 0;
   }
 
   async crearSeccionAcademica(entrada: {
@@ -179,9 +223,13 @@ export class RepositorioOfertaAcademicaTypeorm implements RepositorioOfertaAcade
     estado: EstadoSeccion;
     idOfertaGradoSede: string;
     idSede: string;
+    capacidadMaxima: number | null;
   } | null> {
-    const rows = await this.ds.query<FilaEstadoSeccion[]>(
-      `SELECT sa.id, sa.estado, sa.id_oferta_grado_sede, ogs.id_sede FROM secciones_academicas sa
+    const rows = await this.ds.query<
+      (FilaEstadoSeccion & { capacidad_maxima: number | null })[]
+    >(
+      `SELECT sa.id, sa.estado, sa.id_oferta_grado_sede, ogs.id_sede, sa.capacidad_maxima
+       FROM secciones_academicas sa
        JOIN ofertas_grado_sede ogs ON ogs.id = sa.id_oferta_grado_sede
        WHERE sa.id = $1 AND sa.id_institucion_educativa = $2`,
       [id, institucionId],
@@ -193,12 +241,15 @@ export class RepositorioOfertaAcademicaTypeorm implements RepositorioOfertaAcade
       estado: r.estado as EstadoSeccion,
       idOfertaGradoSede: r.id_oferta_grado_sede,
       idSede: r.id_sede,
+      capacidadMaxima: r.capacidad_maxima,
     };
   }
 
   async actualizarSeccion(entrada: {
     id: string;
     institucionId: string;
+    codigo?: string;
+    codigoNormalizado?: string;
     nombre?: string;
     turno?: string;
     capacidadMaxima?: number | null;
@@ -209,6 +260,14 @@ export class RepositorioOfertaAcademicaTypeorm implements RepositorioOfertaAcade
     const sets: string[] = ['fecha_modificacion = now()'];
     const params: unknown[] = [entrada.id, entrada.institucionId];
     let idx = 3;
+    if (entrada.codigo !== undefined) {
+      sets.push(`codigo = $${idx++}`);
+      params.push(entrada.codigo);
+    }
+    if (entrada.codigoNormalizado !== undefined) {
+      sets.push(`codigo_normalizado = $${idx++}`);
+      params.push(entrada.codigoNormalizado);
+    }
     if (entrada.nombre !== undefined) {
       sets.push(`nombre = $${idx++}`);
       params.push(entrada.nombre);
@@ -246,28 +305,81 @@ export class RepositorioOfertaAcademicaTypeorm implements RepositorioOfertaAcade
     return affected > 0;
   }
 
+  async cambiarEstadoSeccion(
+    id: string,
+    institucionId: string,
+    estado: EstadoSeccion,
+  ): Promise<boolean> {
+    const result = await this.ds.query<
+      [unknown, number] | { affected?: number }
+    >(
+      `UPDATE secciones_academicas SET estado = $3, fecha_modificacion = now()
+       WHERE id = $1 AND id_institucion_educativa = $2`,
+      [id, institucionId, estado],
+    );
+    const affected = Array.isArray(result)
+      ? result[1]
+      : (result?.affected ?? 0);
+    return affected > 0;
+  }
+
   async verificarEspacioFisicoEnSede(
     idEspacioFisico: string,
     idSede: string,
-  ): Promise<boolean> {
-    const rows = await this.ds.query<FilaConteo[]>(
-      `SELECT COUNT(*)::text AS total FROM elementos_infraestructura
-       WHERE id = $1 AND id_sede = $2`,
+  ): Promise<{
+    esAula: boolean;
+    estaActivo: boolean;
+    aforo: number | null;
+  } | null> {
+    const rows = await this.ds.query<
+      { estado: string; aforo: number | null; tipo_codigo: string }[]
+    >(
+      `SELECT ei.estado, ef.aforo, tef.codigo AS tipo_codigo
+       FROM elementos_infraestructura ei
+       JOIN espacios_fisicos ef ON ef.id_elemento_infraestructura = ei.id
+       JOIN tipos_espacio_fisico tef ON tef.id = ef.id_tipo_espacio_fisico
+       WHERE ei.id = $1 AND ei.id_sede = $2`,
       [idEspacioFisico, idSede],
     );
-    return parseInt(rows[0]?.total ?? '0', 10) > 0;
+    if (!rows.length) return null;
+    const r = rows[0];
+    return {
+      esAula: r.tipo_codigo === 'AULA',
+      estaActivo: r.estado === 'ACTIVO',
+      aforo: r.aforo,
+    };
   }
 
   async verificarDocenteTutorEnSede(
     idDocente: string,
     idSede: string,
     institucionId: string,
-  ): Promise<boolean> {
-    const rows = await this.ds.query<FilaConteo[]>(
+  ): Promise<{
+    estaActivo: boolean;
+    estaCesado: boolean;
+    tieneAsignacion: boolean;
+  }> {
+    // Check docente status
+    const docenteRows = await this.ds.query<{ estado: string }[]>(
+      `SELECT estado FROM docentes
+       WHERE id = $1 AND id_institucion_educativa = $2`,
+      [idDocente, institucionId],
+    );
+    if (!docenteRows.length) {
+      return { estaActivo: false, estaCesado: false, tieneAsignacion: false };
+    }
+    const docente = docenteRows[0];
+    const estaActivo = docente.estado === 'ACTIVO';
+    const estaCesado = docente.estado === 'CESADO';
+
+    // Check sede assignment
+    const asignacionRows = await this.ds.query<FilaConteo[]>(
       `SELECT COUNT(*)::text AS total FROM asignaciones_docente_sede
        WHERE id_docente = $1 AND id_sede = $2 AND id_institucion_educativa = $3 AND estado = 'ACTIVA'`,
       [idDocente, idSede, institucionId],
     );
-    return parseInt(rows[0]?.total ?? '0', 10) > 0;
+    const tieneAsignacion = parseInt(asignacionRows[0]?.total ?? '0', 10) > 0;
+
+    return { estaActivo, estaCesado, tieneAsignacion };
   }
 }

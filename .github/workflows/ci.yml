@@ -31,6 +31,9 @@ defaults:
 
 env:
   NODE_VERSION: '24'
+  # SHA del último commit en main antes de este fix release (REL-006.1).
+  # Actualizar en cada release al SHA del commit que entra en main.
+  PREVIOUS_RELEASE_SHA: '259880406d84faaaf652612f9d034b8d8ac775ab'
 
 jobs:
   calidad-estatica:
@@ -189,7 +192,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Checkout a la version previa
-        run: git checkout 76cdbe511b7adc3ec7aec707645b6848e98adda9
+        run: git checkout ${{ env.PREVIOUS_RELEASE_SHA }}
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}

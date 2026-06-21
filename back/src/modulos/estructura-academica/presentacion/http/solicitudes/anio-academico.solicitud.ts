@@ -1,14 +1,18 @@
 import {
   IsDateString,
-  IsEnum,
   IsInt,
   IsOptional,
   IsString,
   Length,
   Max,
   Min,
+  IsIn,
 } from 'class-validator';
-import { EstadoCalendario } from '../../../dominio/puertos/estructura-academica.puerto';
+import { Transform } from 'class-transformer';
+import {
+  ESTADOS_CALENDARIO,
+  EstadoCalendario,
+} from '../../../dominio/estructura-academica.constantes';
 
 export class CrearAnioAcademicoSolicitud {
   @IsInt()
@@ -17,10 +21,16 @@ export class CrearAnioAcademicoSolicitud {
   anio!: number;
 
   @IsString()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
   @Length(1, 30)
   codigo!: string;
 
   @IsString()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
   @Length(1, 100)
   nombre!: string;
 
@@ -31,17 +41,23 @@ export class CrearAnioAcademicoSolicitud {
   fechaFin!: string;
 
   @IsOptional()
-  @IsEnum(['PLANIFICADO', 'ACTIVO'])
+  @IsIn(['PLANIFICADO', 'ACTIVO'])
   estado?: EstadoCalendario;
 
   @IsOptional()
   @IsString()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
   observacion?: string | null;
 }
 
 export class ActualizarAnioAcademicoSolicitud {
   @IsOptional()
   @IsString()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
   @Length(1, 100)
   nombre?: string;
 
@@ -55,10 +71,13 @@ export class ActualizarAnioAcademicoSolicitud {
 
   @IsOptional()
   @IsString()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
   observacion?: string | null;
 }
 
 export class CambiarEstadoAnioSolicitud {
-  @IsEnum(['PLANIFICADO', 'ACTIVO', 'CERRADO', 'ANULADO'])
+  @IsIn(ESTADOS_CALENDARIO)
   estado!: EstadoCalendario;
 }

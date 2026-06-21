@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseInterceptors,
 } from '@nestjs/common';
 import { Permisos } from '../../../../../compartido/presentacion/http/decoradores/permisos.decorador';
@@ -16,19 +17,26 @@ import { AuditoriaEstructuraAcademicaInterceptor } from '../interceptores/audito
 import { alcanceDesdeContexto } from '../alcance-desde-contexto';
 import { CrearNivelEducativoCasoUso } from '../../../aplicacion/catalogos/crear-nivel-educativo.caso-uso';
 import { ActualizarNivelEducativoCasoUso } from '../../../aplicacion/catalogos/actualizar-nivel-educativo.caso-uso';
+import { CambiarEstadoNivelEducativoCasoUso } from '../../../aplicacion/catalogos/cambiar-estado-nivel-educativo.caso-uso';
 import { ListarNivelesEducativosCasoUso } from '../../../aplicacion/catalogos/listar-niveles-educativos.caso-uso';
 import { CrearGradoEducativoCasoUso } from '../../../aplicacion/catalogos/crear-grado-educativo.caso-uso';
 import { ActualizarGradoEducativoCasoUso } from '../../../aplicacion/catalogos/actualizar-grado-educativo.caso-uso';
+import { CambiarEstadoGradoEducativoCasoUso } from '../../../aplicacion/catalogos/cambiar-estado-grado-educativo.caso-uso';
 import { ListarGradosEducativosCasoUso } from '../../../aplicacion/catalogos/listar-grados-educativos.caso-uso';
 import {
   ActualizarNivelEducativoSolicitud,
+  CambiarEstadoNivelSolicitud,
   CrearNivelEducativoSolicitud,
 } from '../solicitudes/nivel-educativo.solicitud';
 import {
   ActualizarGradoEducativoSolicitud,
+  CambiarEstadoGradoSolicitud,
   CrearGradoEducativoSolicitud,
 } from '../solicitudes/grado-educativo.solicitud';
-import { EstadoNivel } from '../../../dominio/puertos/estructura-academica.puerto';
+import {
+  ListarNivelesQueryDto,
+  ListarGradosQueryDto,
+} from '../solicitudes/consultas.solicitud';
 
 @UseInterceptors(AuditoriaEstructuraAcademicaInterceptor)
 @Controller('estructura-academica')
@@ -36,9 +44,11 @@ export class CatalogosControlador {
   constructor(
     private readonly crearNivel: CrearNivelEducativoCasoUso,
     private readonly actualizarNivel: ActualizarNivelEducativoCasoUso,
+    private readonly cambiarEstadoNivel: CambiarEstadoNivelEducativoCasoUso,
     private readonly listarNiveles: ListarNivelesEducativosCasoUso,
     private readonly crearGrado: CrearGradoEducativoCasoUso,
     private readonly actualizarGrado: ActualizarGradoEducativoCasoUso,
+    private readonly cambiarEstadoGrado: CambiarEstadoGradoEducativoCasoUso,
     private readonly listarGrados: ListarGradosEducativosCasoUso,
   ) {}
 
@@ -48,18 +58,21 @@ export class CatalogosControlador {
   @Get('niveles')
   async listarNivelesHandler(
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
-    @Query('estado') estado?: EstadoNivel,
+    @Query() query: ListarNivelesQueryDto,
   ) {
-    return this.listarNiveles.ejecutar(alcanceDesdeContexto(ctx), estado);
+    return this.listarNiveles.ejecutar(alcanceDesdeContexto(ctx), query.estado);
   }
 
   @Permisos('ESTRUCTURA_ACADEMICA.CATALOGOS.GESTIONAR')
   @Post('niveles')
   async crearNivelHandler(
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
+    @Req() req: { correlationId?: string },
     @Body() body: CrearNivelEducativoSolicitud,
   ) {
-    return this.crearNivel.ejecutar(body, alcanceDesdeContexto(ctx));
+    const alcance = alcanceDesdeContexto(ctx);
+    alcance.correlationId = req.correlationId;
+    return this.crearNivel.ejecutar(body, alcance);
   }
 
   @Permisos('ESTRUCTURA_ACADEMICA.CATALOGOS.GESTIONAR')
@@ -67,12 +80,25 @@ export class CatalogosControlador {
   async actualizarNivelHandler(
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
     @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: { correlationId?: string },
     @Body() body: ActualizarNivelEducativoSolicitud,
   ) {
-    await this.actualizarNivel.ejecutar(
-      { id, ...body },
-      alcanceDesdeContexto(ctx),
-    );
+    const alcance = alcanceDesdeContexto(ctx);
+    alcance.correlationId = req.correlationId;
+    await this.actualizarNivel.ejecutar({ id, ...body }, alcance);
+  }
+
+  @Permisos('ESTRUCTURA_ACADEMICA.CATALOGOS.GESTIONAR')
+  @Patch('niveles/:id/estado')
+  async cambiarEstadoNivelHandler(
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: { correlationId?: string },
+    @Body() body: CambiarEstadoNivelSolicitud,
+  ) {
+    const alcance = alcanceDesdeContexto(ctx);
+    alcance.correlationId = req.correlationId;
+    await this.cambiarEstadoNivel.ejecutar(id, body.estado, alcance);
   }
 
   // ── Grados educativos ─────────────────────────────────────────────────────
@@ -81,13 +107,12 @@ export class CatalogosControlador {
   @Get('grados')
   async listarGradosHandler(
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
-    @Query('idNivel') idNivel?: string,
-    @Query('estado') estado?: EstadoNivel,
+    @Query() query: ListarGradosQueryDto,
   ) {
     return this.listarGrados.ejecutar(
       alcanceDesdeContexto(ctx),
-      idNivel,
-      estado,
+      query.idNivel,
+      query.estado,
     );
   }
 
@@ -95,9 +120,12 @@ export class CatalogosControlador {
   @Post('grados')
   async crearGradoHandler(
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
+    @Req() req: { correlationId?: string },
     @Body() body: CrearGradoEducativoSolicitud,
   ) {
-    return this.crearGrado.ejecutar(body, alcanceDesdeContexto(ctx));
+    const alcance = alcanceDesdeContexto(ctx);
+    alcance.correlationId = req.correlationId;
+    return this.crearGrado.ejecutar(body, alcance);
   }
 
   @Permisos('ESTRUCTURA_ACADEMICA.CATALOGOS.GESTIONAR')
@@ -105,11 +133,24 @@ export class CatalogosControlador {
   async actualizarGradoHandler(
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
     @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: { correlationId?: string },
     @Body() body: ActualizarGradoEducativoSolicitud,
   ) {
-    await this.actualizarGrado.ejecutar(
-      { id, ...body },
-      alcanceDesdeContexto(ctx),
-    );
+    const alcance = alcanceDesdeContexto(ctx);
+    alcance.correlationId = req.correlationId;
+    await this.actualizarGrado.ejecutar({ id, ...body }, alcance);
+  }
+
+  @Permisos('ESTRUCTURA_ACADEMICA.CATALOGOS.GESTIONAR')
+  @Patch('grados/:id/estado')
+  async cambiarEstadoGradoHandler(
+    @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: { correlationId?: string },
+    @Body() body: CambiarEstadoGradoSolicitud,
+  ) {
+    const alcance = alcanceDesdeContexto(ctx);
+    alcance.correlationId = req.correlationId;
+    await this.cambiarEstadoGrado.ejecutar(id, body.estado, alcance);
   }
 }
