@@ -276,6 +276,24 @@ export const permisosSistema = [
     codigo: 'ESTRUCTURA_ACADEMICA.SECCIONES.ASIGNAR_TUTOR',
     descripcion: 'Asignar docente tutor a sección',
   },
+  {
+    recurso: 'CURRICULO',
+    accion: 'LEER',
+    codigo: 'CURRICULO.LEER',
+    descripcion: 'Ver catálogo de currículo y planes de estudio',
+  },
+  {
+    recurso: 'CURRICULO',
+    accion: 'CATALOGOS.GESTIONAR',
+    codigo: 'CURRICULO.CATALOGOS.GESTIONAR',
+    descripcion: 'Gestionar áreas curriculares y asignaturas',
+  },
+  {
+    recurso: 'CURRICULO',
+    accion: 'PLANES.GESTIONAR',
+    codigo: 'CURRICULO.PLANES.GESTIONAR',
+    descripcion: 'Gestionar planes de estudio y sus asignaciones',
+  },
 ] as const;
 
 export const rolesSistema = [
@@ -350,6 +368,9 @@ export const permisosAdministradorInstitucion = [
   'ESTRUCTURA_ACADEMICA.SECCIONES.GESTIONAR',
   'ESTRUCTURA_ACADEMICA.SECCIONES.ASIGNAR_ESPACIO',
   'ESTRUCTURA_ACADEMICA.SECCIONES.ASIGNAR_TUTOR',
+  'CURRICULO.LEER',
+  'CURRICULO.CATALOGOS.GESTIONAR',
+  'CURRICULO.PLANES.GESTIONAR',
 ] as const;
 
 export const permisosDirectorSede = [
@@ -378,6 +399,8 @@ export const permisosDirectorSede = [
   'ESTRUCTURA_ACADEMICA.SECCIONES.GESTIONAR',
   'ESTRUCTURA_ACADEMICA.SECCIONES.ASIGNAR_ESPACIO',
   'ESTRUCTURA_ACADEMICA.SECCIONES.ASIGNAR_TUTOR',
+  'CURRICULO.LEER',
+  'CURRICULO.PLANES.GESTIONAR',
 ] as const;
 
 export const permisosDocente = [
@@ -385,4 +408,5 @@ export const permisosDocente = [
   'ESPECIALIDADES_PROFESIONALES.LEER',
   'PANEL_INSTITUCIONAL.RESUMEN.LEER',
   'ESTRUCTURA_ACADEMICA.LEER',
+  'CURRICULO.LEER',
 ] as const;

@@ -13,6 +13,7 @@ import { PanelInstitucionalModule } from './modulos/panel-institucional/panel-in
 import { EstudiantesModule } from './modulos/estudiantes/estudiantes.module';
 import { DocentesModule } from './modulos/docentes/docentes.module';
 import { EstructuraAcademicaModule } from './modulos/estructura-academica/estructura-academica.module';
+import { CurriculoModule } from './modulos/curriculo/curriculo.module';
 import { GuardiaJwt } from './modulos/identidad-acceso/presentacion/http/guardias/guardia-jwt';
 import { GuardiaPermisos } from './compartido/presentacion/http/guardias/guardia-permisos';
 
@@ -31,10 +32,11 @@ import { GuardiaPermisos } from './compartido/presentacion/http/guardias/guardia
     EstudiantesModule,
     DocentesModule,
     EstructuraAcademicaModule,
+    CurriculoModule,
   ],
   providers: [
     { provide: APP_GUARD, useExisting: GuardiaJwt },
     { provide: APP_GUARD, useExisting: GuardiaPermisos },
   ],
 })
-export class AppModule {}
+export class AppModule { }

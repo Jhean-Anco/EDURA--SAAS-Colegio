@@ -66,6 +66,12 @@ import { AnioAcademicoEntidad } from '../../modulos/estructura-academica/infraes
 import { PeriodoAcademicoEntidad } from '../../modulos/estructura-academica/infraestructura/persistencia/typeorm/entidades/periodo-academico.typeorm-entidad';
 import { OfertaGradoSedeEntidad } from '../../modulos/estructura-academica/infraestructura/persistencia/typeorm/entidades/oferta-grado-sede.typeorm-entidad';
 import { SeccionAcademicaEntidad } from '../../modulos/estructura-academica/infraestructura/persistencia/typeorm/entidades/seccion-academica.typeorm-entidad';
+import {
+  AreaCurricularEntidad,
+  AsignaturaEntidad,
+  PlanEstudioEntidad,
+  DetallePlanEstudioEntidad,
+} from '../../modulos/curriculo/infraestructura/persistencia/typeorm/entidades/curriculo.typeorm-entidades';
 
 export const entidadesTypeOrm = [
   InstitucionEducativaTypeormEntidad,
@@ -128,5 +134,9 @@ export const entidadesTypeOrm = [
   PeriodoAcademicoEntidad,
   OfertaGradoSedeEntidad,
   SeccionAcademicaEntidad,
+  AreaCurricularEntidad,
+  AsignaturaEntidad,
+  PlanEstudioEntidad,
+  DetallePlanEstudioEntidad,
 ] as unknown as ConstructorEntidad[];
 type ConstructorEntidad = new (...argumentos: never[]) => unknown;
