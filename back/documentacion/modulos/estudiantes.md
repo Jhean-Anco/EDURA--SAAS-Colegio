@@ -59,15 +59,64 @@ Gestionar estudiantes, sus apoderados y sus documentos administrativos reutiliza
 - El panel institucional consume el conteo real de estudiantes activos desde `estudiantes`.
 - Si la tabla no existe en un entorno parcial, el resumen no debe romper el contrato base.
 
+## Inyeccion de dependencias
+
+Los casos de uso reciben sus dependencias por constructor sin decoradores NestJS:
+
+```
+REPOSITORIO_ESTUDIANTES (Symbol) → EstudiantesTypeormRepositorio
+CONSULTA_ESTUDIANTES    (Symbol) → EstudiantesTypeormConsulta
+```
+
+El modulo usa `useFactory + inject` para construirlos. Esto mantiene la capa de aplicacion libre de NestJS y TypeORM.
+
+## Errores de dominio
+
+| Clase | Codigo HTTP |
+|---|---|
+| `EstudianteNoEncontradoError` | 404 |
+| `EstudianteCodigoDuplicadoError` | 409 |
+| `PersonaYaEsEstudianteError` | 409 |
+| `SedeFueraDeInstitucionError` | 422 |
+| `PersonaFueraDeInstitucionError` | 422 |
+| `ApoderadoPrincipalExistenteError` | 422 |
+
+## Integridad en base de datos (V14)
+
+- `CHECK (estado IN ('ACTIVO','INACTIVO','RETIRADO','EGRESADO'))` en `estudiantes`.
+- `CHECK (trim(codigo) <> '')` en `estudiantes`.
+- `CHECK (fecha_retiro >= fecha_ingreso)` en `estudiantes`.
+- FK compuesta `(id_persona, id_institucion_educativa)` garantiza que la persona pertenece a la misma institucion.
+- FK compuesta `(id_estudiante, id_institucion_educativa)` en `apoderados_estudiante` y `documentos_estudiante`.
+- Indice parcial `UNIQUE (id_institucion_educativa, id_persona) WHERE estado = 'ACTIVO'` impide doble matricula activa.
+- `CHECK (estado IN ('ACTIVO','INACTIVO'))` en `apoderados_estudiante`.
+- `CHECK (estado IN ('PENDIENTE','ENTREGADO','VENCIDO','ANULADO'))` en `documentos_estudiante`.
+
 ## Pruebas
 
+### Unitarias (`test/unitarias/estudiantes.spec.ts`) — 85/85
+
 - Crear estudiante valido.
-- Rechazar sede o persona de otra institucion.
+- Rechazar sede de otra institucion.
+- Rechazar persona de otra institucion.
 - Rechazar codigo duplicado.
-- Obtener ficha completa.
+- Rechazar persona ya matriculada.
 - Agregar apoderado valido.
 - Rechazar segundo apoderado principal activo.
 - Cambiar estado sin borrar fisicamente.
+- Registrar documento administrativo.
+
+### E2E (`test/estudiantes-flujo.e2e-spec.ts`) — requiere `BD_HOST`
+
+- `GET /api/v1/estudiantes` sin token retorna 401.
+- Listado vacio inicial al autenticarse.
+- `POST /api/v1/estudiantes` crea estudiante y retorna `{ id }`.
+- Codigo duplicado retorna 409.
+- Sede de otra institucion retorna 422.
+- `GET /api/v1/estudiantes/:id` retorna ficha del estudiante creado.
+- Estudiante de otra institucion retorna 404.
+- Listados de A y B no comparten IDs (aislamiento SaaS verificable).
+- `PATCH /api/v1/estudiantes/:id/estado` cambia estado sin borrar.
 
 ## Evolucion futura
 
