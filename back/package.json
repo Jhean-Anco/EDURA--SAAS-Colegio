@@ -21,7 +21,7 @@
     "test": "jest --config ./test/jest-unit.json",
     "test:unit": "jest --config ./test/jest-unit.json --runInBand",
     "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
+    "test:cov": "jest --config ./test/jest-unit.json --coverage --runInBand",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json --runInBand",
     "db:migration:create": "typeorm-ts-node-commonjs migration:create src/base-datos/typeorm/migraciones/$npm_config_name",

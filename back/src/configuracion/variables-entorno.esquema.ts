@@ -27,11 +27,33 @@ export const variablesEntornoEsquema = Joi.object({
     .integer()
     .positive()
     .default(2592000),
-  BD_HOST: Joi.string().required(),
-  BD_PUERTO: Joi.number().port().required(),
-  BD_USUARIO: Joi.string().required(),
-  BD_CLAVE: Joi.string().required(),
-  BD_NOMBRE: Joi.string().required(),
+  BD_HOST: Joi.string().when('ENTORNO', {
+    is: 'produccion',
+    then: Joi.required(),
+    otherwise: Joi.string().default('localhost'),
+  }),
+  BD_PUERTO: Joi.number()
+    .port()
+    .when('ENTORNO', {
+      is: 'produccion',
+      then: Joi.required(),
+      otherwise: Joi.number().port().default(5432),
+    }),
+  BD_USUARIO: Joi.string().when('ENTORNO', {
+    is: 'produccion',
+    then: Joi.required(),
+    otherwise: Joi.string().default('postgres'),
+  }),
+  BD_CLAVE: Joi.string().when('ENTORNO', {
+    is: 'produccion',
+    then: Joi.required(),
+    otherwise: Joi.string().default('postgres'),
+  }),
+  BD_NOMBRE: Joi.string().when('ENTORNO', {
+    is: 'produccion',
+    then: Joi.required(),
+    otherwise: Joi.string().default('edura'),
+  }),
   BD_SSL: Joi.boolean().truthy('true').falsy('false').default(false),
   BD_REGISTRO_CONSULTAS: Joi.boolean()
     .truthy('true')

@@ -11,6 +11,7 @@ import { PersonasModule } from './modulos/personas/personas.module';
 import { IntegracionesExternasModule } from './modulos/integraciones-externas/integraciones-externas.module';
 import { PanelInstitucionalModule } from './modulos/panel-institucional/panel-institucional.module';
 import { EstudiantesModule } from './modulos/estudiantes/estudiantes.module';
+import { DocentesModule } from './modulos/docentes/docentes.module';
 import { GuardiaJwt } from './modulos/identidad-acceso/presentacion/http/guardias/guardia-jwt';
 import { GuardiaPermisos } from './compartido/presentacion/http/guardias/guardia-permisos';
 
@@ -27,6 +28,7 @@ import { GuardiaPermisos } from './compartido/presentacion/http/guardias/guardia
     IntegracionesExternasModule,
     PanelInstitucionalModule,
     EstudiantesModule,
+    DocentesModule,
   ],
   providers: [
     { provide: APP_GUARD, useExisting: GuardiaJwt },
