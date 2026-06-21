@@ -43,6 +43,7 @@ import { ListarPlanesEstudioConsulta } from './aplicacion/planes-estudio/listar-
 import { ObtenerPlanEstudioConsulta } from './aplicacion/planes-estudio/obtener-plan-estudio.consulta';
 import { ResolverPlanVigenteConsulta } from './aplicacion/planes-estudio/resolver-plan-vigente.consulta';
 import { DuplicarPlanEstudioCasoUso } from './aplicacion/planes-estudio/duplicar-plan-estudio.caso-uso';
+import { AprobarPlanEstudioCasoUso } from './aplicacion/planes-estudio/aprobar-plan-estudio.caso-uso';
 
 // Detalles Use Cases
 import { AgregarDetallePlanEstudioCasoUso } from './aplicacion/planes-estudio/agregar-detalle-plan-estudio.caso-uso';
@@ -171,6 +172,11 @@ import { ListarDetallesPlanEstudioConsulta } from './aplicacion/planes-estudio/l
       useFactory: (r: RepositorioPlanesEstudio) => new DuplicarPlanEstudioCasoUso(r),
       inject: [REPOSITORIO_PLANES_ESTUDIO],
     },
+    {
+      provide: AprobarPlanEstudioCasoUso,
+      useFactory: (r: RepositorioPlanesEstudio) => new AprobarPlanEstudioCasoUso(r),
+      inject: [REPOSITORIO_PLANES_ESTUDIO],
+    },
 
     // Detalles cases
     {
@@ -199,6 +205,7 @@ import { ListarDetallesPlanEstudioConsulta } from './aplicacion/planes-estudio/l
     CrearAsignaturaCasoUso,
     CrearPlanEstudioCasoUso,
     ResolverPlanVigenteConsulta,
+    AprobarPlanEstudioCasoUso,
   ],
 })
 export class CurriculoModule { }

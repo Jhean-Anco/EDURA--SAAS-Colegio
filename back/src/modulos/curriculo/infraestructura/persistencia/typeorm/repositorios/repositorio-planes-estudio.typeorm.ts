@@ -31,7 +31,7 @@ interface FilaId {
 
 @Injectable()
 export class RepositorioPlanesEstudioTypeorm implements RepositorioPlanesEstudio {
-  constructor(@InjectDataSource() private readonly ds: DataSource) {}
+  constructor(@InjectDataSource() private readonly ds: DataSource) { }
 
   async existeAnioEnInstitucion(idAnio: string, institucionId: string): Promise<boolean> {
     const rows = await this.ds.query<FilaConteo[]>(
@@ -90,7 +90,19 @@ export class RepositorioPlanesEstudioTypeorm implements RepositorioPlanesEstudio
     );
     return Number.parseInt(rows[0]?.total ?? '0', 10) > 0;
   }
-
+  async obtenerSiguienteVersionPlan(
+    idAnio: string,
+    idGrado: string,
+    institucionId: string,
+  ): Promise<number> {
+    const rows = await this.ds.query<{ max_version: number | null }[]>(
+      `SELECT MAX(version) AS max_version FROM planes_estudio
+       WHERE id_institucion_educativa = $1 AND id_anio_academico = $2 AND id_grado_educativo = $3`,
+      [institucionId, idAnio, idGrado],
+    );
+    const maxVal = rows[0]?.max_version ?? 0;
+    return maxVal + 1;
+  }
   async crearPlan(entrada: {
     institucionId: string;
     idAnioAcademico: string;
@@ -169,6 +181,7 @@ export class RepositorioPlanesEstudioTypeorm implements RepositorioPlanesEstudio
     institucionId: string,
     estado: EstadoPlan,
     aprobacion?: { fechaAprobacion: string; idUsuarioAprobador: string },
+    activacion?: { fechaVigencia: string; idUsuarioActivador: string },
   ): Promise<boolean> {
     let sql: string;
     let params: unknown[];
@@ -178,6 +191,12 @@ export class RepositorioPlanesEstudioTypeorm implements RepositorioPlanesEstudio
                  fecha_modificacion = now()
              WHERE id = $1 AND id_institucion_educativa = $2 RETURNING id`;
       params = [id, institucionId, estado, aprobacion.fechaAprobacion, aprobacion.idUsuarioAprobador];
+    } else if (activacion) {
+      sql = `UPDATE planes_estudio
+             SET estado = $3, fecha_vigencia = $4, id_usuario_activador = $5,
+                 fecha_modificacion = now()
+             WHERE id = $1 AND id_institucion_educativa = $2 RETURNING id`;
+      params = [id, institucionId, estado, activacion.fechaVigencia, activacion.idUsuarioActivador];
     } else {
       sql = `UPDATE planes_estudio SET estado = $3, fecha_modificacion = now()
              WHERE id = $1 AND id_institucion_educativa = $2 RETURNING id`;

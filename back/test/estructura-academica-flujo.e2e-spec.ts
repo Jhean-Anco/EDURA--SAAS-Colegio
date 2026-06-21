@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { randomUUID } from 'crypto';
 import * as argon2 from 'argon2';
@@ -333,7 +333,14 @@ describeE2E('Flujo estructura académica E2E (requiere BD)', () => {
       imports: [AppModule],
     }).compile();
     app = modulo.createNestApplication();
-    configurarAplicacion(app, true);
+    configurarAplicacion(app, { swaggerHabilitado: false } as any);
+    app.useGlobalPipes(
+      new ValidationPipe({
+        transform: true,
+        whitelist: true,
+        forbidNonWhitelisted: true,
+      }),
+    );
     await app.init();
     ds = modulo.get(DataSource);
 

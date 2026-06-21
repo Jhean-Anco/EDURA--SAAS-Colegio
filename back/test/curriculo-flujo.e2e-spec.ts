@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { randomUUID } from 'crypto';
 import * as argon2 from 'argon2';
@@ -211,7 +211,14 @@ describeE2E('Flujo currículo y planes de estudio E2E (requiere BD)', () => {
       imports: [AppModule],
     }).compile();
     app = modulo.createNestApplication();
-    configurarAplicacion(app, true);
+    configurarAplicacion(app, { swaggerHabilitado: false } as any);
+    app.useGlobalPipes(
+      new ValidationPipe({
+        transform: true,
+        whitelist: true,
+        forbidNonWhitelisted: true,
+      }),
+    );
     await app.init();
     ds = modulo.get(DataSource);
 
@@ -416,12 +423,18 @@ describeE2E('Flujo currículo y planes de estudio E2E (requiere BD)', () => {
     });
 
     it('Flujo completo de estado BORRADOR -> APROBADO -> VIGENTE', async () => {
-      // 1. BORRADOR -> APROBADO
+      // 1. BORRADOR -> APROBADO via isolated endpoint
+      await request(app.getHttpServer())
+        .post(`/api/v1/curriculo/planes/${planId}/aprobar`)
+        .set('Authorization', `Bearer ${tokenAdmin}`)
+        .expect(201);
+
+      // Verify direct PATCH to APROBADO is rejected with 400 Bad Request
       await request(app.getHttpServer())
         .patch(`/api/v1/curriculo/planes/${planId}/estado`)
         .set('Authorization', `Bearer ${tokenAdmin}`)
         .send({ estado: 'APROBADO' })
-        .expect(200);
+        .expect(400);
 
       let res = await request(app.getHttpServer())
         .get(`/api/v1/curriculo/planes/${planId}`)
@@ -445,7 +458,7 @@ describeE2E('Flujo currículo y planes de estudio E2E (requiere BD)', () => {
 
     it('GET /curriculo/planes/resolver resuelve plan vigente correctamente', async () => {
       const res = await request(app.getHttpServer())
-        .get(`/api/v1/curriculo/planes/resolver?idAnioAcademico=${anioId}&idGradoEducativo=${gradoId}`)
+        .get(`/api/v1/curriculo/planes/resolver?idAnio=${anioId}&idGrado=${gradoId}`)
         .set('Authorization', `Bearer ${tokenAdmin}`)
         .expect(200);
 

@@ -9,6 +9,7 @@ import { CrearPlanEstudioCasoUso } from '../../src/modulos/curriculo/aplicacion/
 import { ActualizarPlanEstudioCasoUso } from '../../src/modulos/curriculo/aplicacion/planes-estudio/actualizar-plan-estudio.caso-uso';
 import { CambiarEstadoPlanEstudioCasoUso } from '../../src/modulos/curriculo/aplicacion/planes-estudio/cambiar-estado-plan-estudio.caso-uso';
 import { DuplicarPlanEstudioCasoUso } from '../../src/modulos/curriculo/aplicacion/planes-estudio/duplicar-plan-estudio.caso-uso';
+import { AprobarPlanEstudioCasoUso } from '../../src/modulos/curriculo/aplicacion/planes-estudio/aprobar-plan-estudio.caso-uso';
 import { AgregarDetallePlanEstudioCasoUso } from '../../src/modulos/curriculo/aplicacion/planes-estudio/agregar-detalle-plan-estudio.caso-uso';
 import { ActualizarDetallePlanEstudioCasoUso } from '../../src/modulos/curriculo/aplicacion/planes-estudio/actualizar-detalle-plan-estudio.caso-uso';
 import { CambiarEstadoDetallePlanEstudioCasoUso } from '../../src/modulos/curriculo/aplicacion/planes-estudio/cambiar-estado-detalle-plan-estudio.caso-uso';
@@ -187,6 +188,7 @@ describe('Curriculo y Planes de Estudio Unit Tests', () => {
         obtenerEstadoAnio: jest.fn(),
         existeCodigoPlanEnInstitucion: jest.fn(),
         existeVersionPlanEnAnioGrado: jest.fn(),
+        obtenerSiguienteVersionPlan: jest.fn(),
         crearPlan: jest.fn(),
         obtenerPlanBase: jest.fn(),
         actualizarPlan: jest.fn(),
@@ -209,7 +211,7 @@ describe('Curriculo y Planes de Estudio Unit Tests', () => {
       repo.existeGradoEnInstitucion.mockResolvedValue(true);
       repo.obtenerEstadoAnio.mockResolvedValue('ACTIVO');
       repo.existeCodigoPlanEnInstitucion.mockResolvedValue(false);
-      repo.existeVersionPlanEnAnioGrado.mockResolvedValue(false);
+      repo.obtenerSiguienteVersionPlan.mockResolvedValue(1);
       repo.crearPlan.mockResolvedValue({ id: 'plan-1' });
 
       const caso = new CrearPlanEstudioCasoUso(repo);
@@ -223,12 +225,12 @@ describe('Curriculo y Planes de Estudio Unit Tests', () => {
       expect(res.id).toBe('plan-1');
     });
 
-    it('CambiarEstadoPlanEstudioCasoUso de BORRADOR a APROBADO requiere detalles activos', async () => {
+    it('AprobarPlanEstudioCasoUso de BORRADOR a APROBADO requiere detalles activos', async () => {
       repo.obtenerPlanBase.mockResolvedValue({ id: 'plan-1', estado: 'BORRADOR', idAnioAcademico: 'anio-1', idGradoEducativo: 'grado-1' });
       repo.contarDetallesActivos.mockResolvedValue(0);
 
-      const caso = new CambiarEstadoPlanEstudioCasoUso(repo);
-      await expect(caso.ejecutar('plan-1', 'APROBADO', alcance)).rejects.toBeInstanceOf(PlanSinDetallesError);
+      const caso = new AprobarPlanEstudioCasoUso(repo);
+      await expect(caso.ejecutar('plan-1', alcance)).rejects.toBeInstanceOf(PlanSinDetallesError);
     });
 
     it('CambiarEstadoPlanEstudioCasoUso de APROBADO a VIGENTE valida que no exista otro plan vigente', async () => {
@@ -264,16 +266,15 @@ describe('Curriculo y Planes de Estudio Unit Tests', () => {
       repo.existeAnioEnInstitucion.mockResolvedValue(true);
       repo.obtenerEstadoAnio.mockResolvedValue('ACTIVO');
       repo.existeCodigoPlanEnInstitucion.mockResolvedValue(false);
-      repo.existeVersionPlanEnAnioGrado.mockResolvedValue(false);
+      repo.obtenerSiguienteVersionPlan.mockResolvedValue(1);
       repo.duplicarPlan.mockResolvedValue({ id: 'plan-2' });
 
       const caso = new DuplicarPlanEstudioCasoUso(repo);
       const res = await caso.ejecutar({
         idPlanOrigen: 'plan-1',
-        idAnioAcademicoDestino: 'anio-2',
+        idAnioAcademico: 'anio-2',
         codigo: 'PLAN-2-DUP',
         nombre: 'Plan Duplicado',
-        version: 1,
       }, alcance);
 
       expect(res.id).toBe('plan-2');

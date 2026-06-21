@@ -8,16 +8,16 @@ export class AreaCurricularEntidad {
   @Column({ name: 'id_institucion_educativa', type: 'uuid' })
   idInstitucionEducativa!: string;
 
-  @Column({ name: 'codigo', length: 30 })
+  @Column({ name: 'codigo', type: 'varchar', length: 30 })
   codigo!: string;
 
-  @Column({ name: 'codigo_normalizado', length: 30 })
+  @Column({ name: 'codigo_normalizado', type: 'varchar', length: 30 })
   codigoNormalizado!: string;
 
-  @Column({ name: 'nombre', length: 150 })
+  @Column({ name: 'nombre', type: 'varchar', length: 150 })
   nombre!: string;
 
-  @Column({ name: 'nombre_normalizado', length: 150 })
+  @Column({ name: 'nombre_normalizado', type: 'varchar', length: 150 })
   nombreNormalizado!: string;
 
   @Column({ name: 'descripcion', type: 'text', nullable: true })
@@ -26,7 +26,7 @@ export class AreaCurricularEntidad {
   @Column({ name: 'orden', type: 'smallint' })
   orden!: number;
 
-  @Column({ name: 'estado', length: 20, default: 'ACTIVA' })
+  @Column({ name: 'estado', type: 'varchar', length: 20, default: 'ACTIVA' })
   estado!: string;
 
   @Column({ name: 'fecha_creacion', type: 'timestamptz', default: () => 'now()' })
@@ -47,16 +47,16 @@ export class AsignaturaEntidad {
   @Column({ name: 'id_area_curricular', type: 'uuid' })
   idAreaCurricular!: string;
 
-  @Column({ name: 'codigo', length: 30 })
+  @Column({ name: 'codigo', type: 'varchar', length: 30 })
   codigo!: string;
 
-  @Column({ name: 'codigo_normalizado', length: 30 })
+  @Column({ name: 'codigo_normalizado', type: 'varchar', length: 30 })
   codigoNormalizado!: string;
 
-  @Column({ name: 'nombre', length: 150 })
+  @Column({ name: 'nombre', type: 'varchar', length: 150 })
   nombre!: string;
 
-  @Column({ name: 'nombre_corto', length: 60, nullable: true })
+  @Column({ name: 'nombre_corto', type: 'varchar', length: 60, nullable: true })
   nombreCorto!: string | null;
 
   @Column({ name: 'descripcion', type: 'text', nullable: true })
@@ -65,7 +65,7 @@ export class AsignaturaEntidad {
   @Column({ name: 'orden', type: 'smallint' })
   orden!: number;
 
-  @Column({ name: 'estado', length: 20, default: 'ACTIVA' })
+  @Column({ name: 'estado', type: 'varchar', length: 20, default: 'ACTIVA' })
   estado!: string;
 
   @Column({ name: 'fecha_creacion', type: 'timestamptz', default: () => 'now()' })
@@ -89,19 +89,19 @@ export class PlanEstudioEntidad {
   @Column({ name: 'id_grado_educativo', type: 'uuid' })
   idGradoEducativo!: string;
 
-  @Column({ name: 'codigo', length: 40 })
+  @Column({ name: 'codigo', type: 'varchar', length: 40 })
   codigo!: string;
 
-  @Column({ name: 'codigo_normalizado', length: 40 })
+  @Column({ name: 'codigo_normalizado', type: 'varchar', length: 40 })
   codigoNormalizado!: string;
 
-  @Column({ name: 'nombre', length: 180 })
+  @Column({ name: 'nombre', type: 'varchar', length: 180 })
   nombre!: string;
 
   @Column({ name: 'version', type: 'smallint' })
   version!: number;
 
-  @Column({ name: 'estado', length: 20, default: 'BORRADOR' })
+  @Column({ name: 'estado', type: 'varchar', length: 20, default: 'BORRADOR' })
   estado!: string;
 
   @Column({ name: 'observacion', type: 'text', nullable: true })
@@ -134,7 +134,7 @@ export class DetallePlanEstudioEntidad {
   @Column({ name: 'id_asignatura', type: 'uuid' })
   idAsignatura!: string;
 
-  @Column({ name: 'tipo', length: 20 })
+  @Column({ name: 'tipo', type: 'varchar', length: 20 })
   tipo!: string;
 
   @Column({ name: 'horas_semanales', type: 'smallint' })
@@ -146,7 +146,7 @@ export class DetallePlanEstudioEntidad {
   @Column({ name: 'orden', type: 'smallint' })
   orden!: number;
 
-  @Column({ name: 'estado', length: 20, default: 'ACTIVO' })
+  @Column({ name: 'estado', type: 'varchar', length: 20, default: 'ACTIVO' })
   estado!: string;
 
   @Column({ name: 'observacion', type: 'text', nullable: true })

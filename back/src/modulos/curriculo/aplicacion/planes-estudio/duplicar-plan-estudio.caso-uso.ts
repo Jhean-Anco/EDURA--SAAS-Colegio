@@ -16,7 +16,6 @@ export interface EntradaDuplicarPlanEstudio {
   idAnioAcademico?: string;
   codigo: string;
   nombre: string;
-  version: number;
   observacion?: string | null;
 }
 
@@ -50,11 +49,13 @@ export class DuplicarPlanEstudioCasoUso {
     if (await this.repositorio.existeCodigoPlanEnInstitucion(codigoNorm, alcance.institucionId)) {
       throw new PlanCodigoDuplicadoError();
     }
-    if (await this.repositorio.existeVersionPlanEnAnioGrado(
-      entrada.version, idAnio, planOrigen.idGradoEducativo, alcance.institucionId,
-    )) {
-      throw new PlanVersionDuplicadaError();
-    }
+
+    // Auto-calculate version transacted/locked on the server side
+    const version = await this.repositorio.obtenerSiguienteVersionPlan(
+      idAnio,
+      planOrigen.idGradoEducativo,
+      alcance.institucionId,
+    );
 
     return this.repositorio.duplicarPlan({
       idPlanOrigen: entrada.idPlanOrigen,
@@ -63,7 +64,7 @@ export class DuplicarPlanEstudioCasoUso {
       codigo: entrada.codigo.trim(),
       codigoNormalizado: codigoNorm,
       nombre: entrada.nombre.trim(),
-      version: entrada.version,
+      version,
       observacion: entrada.observacion ?? null,
     });
   }

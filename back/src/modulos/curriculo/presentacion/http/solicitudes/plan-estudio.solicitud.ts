@@ -34,10 +34,6 @@ export class CrearPlanEstudioSolicitud {
   @Length(1, 180)
   nombre!: string;
 
-  @IsInt()
-  @Min(1)
-  version!: number;
-
   @IsOptional()
   @IsString()
   @Transform(({ value }: { value: unknown }) =>
@@ -94,10 +90,6 @@ export class DuplicarPlanEstudioSolicitud {
   )
   @Length(1, 180)
   nombre!: string;
-
-  @IsInt()
-  @Min(1)
-  version!: number;
 
   @IsOptional()
   @IsString()
