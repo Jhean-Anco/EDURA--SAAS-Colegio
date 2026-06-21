@@ -5,10 +5,12 @@ export class SeleccionarContextoSolicitud {
   ambito!: 'PLATAFORMA' | 'INSTITUCION' | 'SEDE';
 
   @IsString()
-  rolCodigo!: string;
+  @IsOptional()
+  rolCodigo?: string;
 
   @IsUUID()
-  rolId!: string;
+  @IsOptional()
+  rolId?: string;
 
   @IsUUID()
   @IsOptional()

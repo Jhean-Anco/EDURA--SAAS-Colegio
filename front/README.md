@@ -33,6 +33,16 @@ Interfaz web del sistema de gestión educativa EDURA.
 
 El backend debe estar corriendo en `http://localhost:3000`.
 
+## Arranque desde la raiz
+
+Desde `D:\EDURA\sistema`:
+
+```bash
+npm run dev
+```
+
+Ese comando levanta el backend y el frontend en paralelo.
+
 ## Scripts
 
 | Comando | Descripción |

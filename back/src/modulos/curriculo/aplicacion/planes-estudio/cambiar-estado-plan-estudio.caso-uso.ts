@@ -29,9 +29,13 @@ export class CambiarEstadoPlanEstudioCasoUso {
     nuevoEstado: EstadoPlan,
     alcance: AlcanceAcceso,
   ): Promise<void> {
-    if (alcance.ambito !== 'INSTITUCION') throw new AmbiteInstitucionRequeridoError();
+    if (alcance.ambito !== 'INSTITUCION')
+      throw new AmbiteInstitucionRequeridoError();
 
-    const plan = await this.repositorio.obtenerPlanBase(id, alcance.institucionId);
+    const plan = await this.repositorio.obtenerPlanBase(
+      id,
+      alcance.institucionId,
+    );
     if (!plan) throw new PlanEstudioNoEncontradoError();
 
     // RN-CUR-011: validar transición
@@ -42,24 +46,42 @@ export class CambiarEstadoPlanEstudioCasoUso {
 
     // RN-CUR-014: pre-vigencia
     if (nuevoEstado === 'VIGENTE') {
-      const estadoAnio = await this.repositorio.obtenerEstadoAnio(plan.idAnioAcademico, alcance.institucionId);
+      const estadoAnio = await this.repositorio.obtenerEstadoAnio(
+        plan.idAnioAcademico,
+        alcance.institucionId,
+      );
       if (estadoAnio === 'CERRADO' || estadoAnio === 'ANULADO') {
         throw new PlanAnioNoDisponibleError();
       }
 
       // RN-CUR-012: solo un plan vigente por institución, año y grado
-      if (await this.repositorio.existePlanVigenteParaAnioGrado(
-        plan.idAnioAcademico, plan.idGradoEducativo, alcance.institucionId, id,
-      )) {
+      if (
+        await this.repositorio.existePlanVigenteParaAnioGrado(
+          plan.idAnioAcademico,
+          plan.idGradoEducativo,
+          alcance.institucionId,
+          id,
+        )
+      ) {
         throw new PlanVigenteYaExisteError();
       }
     }
 
     // Datos de activación para VIGENTE
-    const activacion = nuevoEstado === 'VIGENTE'
-      ? { fechaVigencia: new Date().toISOString(), idUsuarioActivador: alcance.usuarioId }
-      : undefined;
+    const activacion =
+      nuevoEstado === 'VIGENTE'
+        ? {
+            fechaVigencia: new Date().toISOString(),
+            idUsuarioActivador: alcance.usuarioId,
+          }
+        : undefined;
 
-    await this.repositorio.cambiarEstadoPlan(id, alcance.institucionId, nuevoEstado, undefined, activacion);
+    await this.repositorio.cambiarEstadoPlan(
+      id,
+      alcance.institucionId,
+      nuevoEstado,
+      undefined,
+      activacion,
+    );
   }
 }

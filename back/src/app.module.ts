@@ -14,6 +14,7 @@ import { EstudiantesModule } from './modulos/estudiantes/estudiantes.module';
 import { DocentesModule } from './modulos/docentes/docentes.module';
 import { EstructuraAcademicaModule } from './modulos/estructura-academica/estructura-academica.module';
 import { CurriculoModule } from './modulos/curriculo/curriculo.module';
+import { MatriculasModule } from './modulos/matriculas/matriculas.module';
 import { GuardiaJwt } from './modulos/identidad-acceso/presentacion/http/guardias/guardia-jwt';
 import { GuardiaPermisos } from './compartido/presentacion/http/guardias/guardia-permisos';
 
@@ -33,10 +34,11 @@ import { GuardiaPermisos } from './compartido/presentacion/http/guardias/guardia
     DocentesModule,
     EstructuraAcademicaModule,
     CurriculoModule,
+    MatriculasModule,
   ],
   providers: [
     { provide: APP_GUARD, useExisting: GuardiaJwt },
     { provide: APP_GUARD, useExisting: GuardiaPermisos },
   ],
 })
-export class AppModule { }
+export class AppModule {}

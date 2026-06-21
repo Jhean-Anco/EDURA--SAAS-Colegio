@@ -23,9 +23,13 @@ export class CambiarEstadoAreaCurricularCasoUso {
     nuevoEstado: EstadoArea,
     alcance: AlcanceAcceso,
   ): Promise<void> {
-    if (alcance.ambito !== 'INSTITUCION') throw new AmbiteInstitucionRequeridoError();
+    if (alcance.ambito !== 'INSTITUCION')
+      throw new AmbiteInstitucionRequeridoError();
 
-    const area = await this.repositorio.obtenerAreaBase(id, alcance.institucionId);
+    const area = await this.repositorio.obtenerAreaBase(
+      id,
+      alcance.institucionId,
+    );
     if (!area) throw new AreaCurricularNoEncontradaError();
 
     const permitidos = TRANSICIONES_AREA[area.estado] ?? [];
@@ -35,11 +39,20 @@ export class CambiarEstadoAreaCurricularCasoUso {
 
     // RN-CUR-003: no inactivar con asignaturas activas
     if (nuevoEstado === 'INACTIVA') {
-      if (await this.repositorio.tieneAsignaturasActivas(id, alcance.institucionId)) {
+      if (
+        await this.repositorio.tieneAsignaturasActivas(
+          id,
+          alcance.institucionId,
+        )
+      ) {
         throw new AreaConAsignaturasActivasError();
       }
     }
 
-    await this.repositorio.cambiarEstadoArea(id, alcance.institucionId, nuevoEstado);
+    await this.repositorio.cambiarEstadoArea(
+      id,
+      alcance.institucionId,
+      nuevoEstado,
+    );
   }
 }

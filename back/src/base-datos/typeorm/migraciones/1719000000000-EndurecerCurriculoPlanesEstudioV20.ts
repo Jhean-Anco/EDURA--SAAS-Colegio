@@ -1,7 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class EndurecerCurriculoPlanesEstudioV201719000000000
-  implements MigrationInterface {
+export class EndurecerCurriculoPlanesEstudioV201719000000000 implements MigrationInterface {
   name = 'EndurecerCurriculoPlanesEstudioV201719000000000';
 
   async up(queryRunner: QueryRunner): Promise<void> {
@@ -52,22 +51,38 @@ export class EndurecerCurriculoPlanesEstudioV201719000000000
 
   async down(queryRunner: QueryRunner): Promise<void> {
     // 5. Remover checks de strings no vacíos
-    await queryRunner.query(`ALTER TABLE planes_estudio DROP CONSTRAINT IF EXISTS pe_chk_nombre_no_vacio`);
-    await queryRunner.query(`ALTER TABLE planes_estudio DROP CONSTRAINT IF EXISTS pe_chk_codigo_no_vacio`);
-    await queryRunner.query(`ALTER TABLE asignaturas DROP CONSTRAINT IF EXISTS asig_chk_nombre_no_vacio`);
-    await queryRunner.query(`ALTER TABLE asignaturas DROP CONSTRAINT IF EXISTS asig_chk_codigo_no_vacio`);
+    await queryRunner.query(
+      `ALTER TABLE planes_estudio DROP CONSTRAINT IF EXISTS pe_chk_nombre_no_vacio`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE planes_estudio DROP CONSTRAINT IF EXISTS pe_chk_codigo_no_vacio`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE asignaturas DROP CONSTRAINT IF EXISTS asig_chk_nombre_no_vacio`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE asignaturas DROP CONSTRAINT IF EXISTS asig_chk_codigo_no_vacio`,
+    );
 
     // 4. Remover índices
     await queryRunner.query(`DROP INDEX IF EXISTS idx_dpe_plan_asignatura`);
     await queryRunner.query(`DROP INDEX IF EXISTS idx_pe_anio_grado_estado`);
 
     // 3. Remover checks coherentes
-    await queryRunner.query(`ALTER TABLE planes_estudio DROP CONSTRAINT pe_chk_vigencia_coherente`);
-    await queryRunner.query(`ALTER TABLE planes_estudio DROP CONSTRAINT pe_chk_aprobacion_coherente`);
+    await queryRunner.query(
+      `ALTER TABLE planes_estudio DROP CONSTRAINT pe_chk_vigencia_coherente`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE planes_estudio DROP CONSTRAINT pe_chk_aprobacion_coherente`,
+    );
 
     // 2. Remover FKs
-    await queryRunner.query(`ALTER TABLE planes_estudio DROP CONSTRAINT pe_fk_usuario_activador`);
-    await queryRunner.query(`ALTER TABLE planes_estudio DROP CONSTRAINT pe_fk_usuario_aprobador`);
+    await queryRunner.query(
+      `ALTER TABLE planes_estudio DROP CONSTRAINT pe_fk_usuario_activador`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE planes_estudio DROP CONSTRAINT pe_fk_usuario_aprobador`,
+    );
 
     // 1. Remover columnas nuevas
     await queryRunner.query(`

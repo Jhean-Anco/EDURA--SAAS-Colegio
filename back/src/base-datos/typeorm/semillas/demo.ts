@@ -105,7 +105,16 @@ async function sembrarEstructuraAcademica(
     `INSERT INTO secciones_academicas
        (id, id_institucion_educativa, id_oferta_grado_sede, codigo, codigo_normalizado, nombre, turno,
         capacidad_maxima, estado, fecha_creacion, fecha_modificacion)
-     VALUES (gen_random_uuid(), $1, $2, 'A', 'A', 'A', 'MANANA', 25, 'PLANIFICADA', now(), now())
+     VALUES (gen_random_uuid(), $1, $2, 'A', 'A', 'A', 'MANANA', 25, 'ACTIVA', now(), now())
+     ON CONFLICT (id_institucion_educativa, id_oferta_grado_sede, codigo_normalizado) DO NOTHING`,
+    [institucionId, oferta.id],
+  );
+
+  await manager.query(
+    `INSERT INTO secciones_academicas
+       (id, id_institucion_educativa, id_oferta_grado_sede, codigo, codigo_normalizado, nombre, turno,
+        capacidad_maxima, estado, fecha_creacion, fecha_modificacion)
+     VALUES (gen_random_uuid(), $1, $2, 'B', 'B', 'B', 'MANANA', 1, 'ACTIVA', now(), now())
      ON CONFLICT (id_institucion_educativa, id_oferta_grado_sede, codigo_normalizado) DO NOTHING`,
     [institucionId, oferta.id],
   );
@@ -492,6 +501,194 @@ async function ejecutarDemo(): Promise<void> {
        ON CONFLICT DO NOTHING`,
       [institucionId, sedeId, usuarioAdminId],
     );
+
+    // ── Matrículas Demo ───────────────────────────────────────────────────────
+    const anioActual = new Date().getFullYear();
+    const [anio] = await manager.query<{ id: string }[]>(
+      `SELECT id FROM anios_academicos WHERE id_institucion_educativa = $1 AND anio = $2 LIMIT 1`,
+      [institucionId, anioActual],
+    );
+    const [grado] = await manager.query<
+      { id: string; idNivelEducativo: string }[]
+    >(
+      `SELECT id, id_nivel_educativo as "idNivelEducativo" FROM grados_educativos WHERE id_institucion_educativa = $1 AND codigo_normalizado = '1ERO' LIMIT 1`,
+      [institucionId],
+    );
+
+    if (anio && grado) {
+      const [oferta] = await manager.query<{ id: string }[]>(
+        `SELECT id FROM ofertas_grado_sede WHERE id_institucion_educativa = $1 AND id_sede = $2 AND id_grado_educativo = $3 AND id_anio_academico = $4 LIMIT 1`,
+        [institucionId, sedeId, grado.id, anio.id],
+      );
+
+      if (oferta) {
+        const [secA] = await manager.query<{ id: string }[]>(
+          `SELECT id FROM secciones_academicas WHERE id_institucion_educativa = $1 AND id_oferta_grado_sede = $2 AND codigo_normalizado = 'A' LIMIT 1`,
+          [institucionId, oferta.id],
+        );
+        const [secB] = await manager.query<{ id: string }[]>(
+          `SELECT id FROM secciones_academicas WHERE id_institucion_educativa = $1 AND id_oferta_grado_sede = $2 AND codigo_normalizado = 'B' LIMIT 1`,
+          [institucionId, oferta.id],
+        );
+
+        const [est1] = await manager.query<{ id: string }[]>(
+          `SELECT id FROM estudiantes WHERE id_institucion_educativa = $1 AND codigo = 'EST-001' LIMIT 1`,
+          [institucionId],
+        );
+        const [est2] = await manager.query<{ id: string }[]>(
+          `SELECT id FROM estudiantes WHERE id_institucion_educativa = $1 AND codigo = 'EST-002' LIMIT 1`,
+          [institucionId],
+        );
+        const [est3] = await manager.query<{ id: string }[]>(
+          `SELECT id FROM estudiantes WHERE id_institucion_educativa = $1 AND codigo = 'EST-003' LIMIT 1`,
+          [institucionId],
+        );
+
+        // 1. Matrícula activa en sección A (con capacidad disponible)
+        if (est1 && secA) {
+          const matId = crypto.randomUUID();
+          await manager.query(
+            `INSERT INTO matriculas (
+              id, id_institucion_educativa, id_sede, id_estudiante, id_anio_academico,
+              id_nivel_educativo, id_grado_educativo, id_oferta_grado_sede, id_seccion_academica,
+              codigo_matricula, fecha_matricula, estado, observacion, id_usuario_creador,
+              id_usuario_activador, fecha_activacion, fecha_creacion, fecha_modificacion
+            ) VALUES (
+              $1, $2, $3, $4, $5, $6, $7, $8, $9, 'MAT-DEMO-001', CURRENT_DATE, 'ACTIVA', 'Matricula demo activa', $10, $10, now(), now(), now()
+            ) ON CONFLICT (id_institucion_educativa, codigo_matricula) DO NOTHING`,
+            [
+              matId,
+              institucionId,
+              sedeId,
+              est1.id,
+              anio.id,
+              grado.idNivelEducativo,
+              grado.id,
+              oferta.id,
+              secA.id,
+              usuarioAdminId,
+            ],
+          );
+
+          // Seed history entry
+          const [insertedMat] = await manager.query<{ id: string }[]>(
+            `SELECT id FROM matriculas WHERE id_institucion_educativa = $1 AND codigo_matricula = 'MAT-DEMO-001' LIMIT 1`,
+            [institucionId],
+          );
+          if (insertedMat) {
+            await manager.query(
+              `INSERT INTO historial_estados_matricula (id, id_institucion_educativa, id_matricula, estado_anterior, estado_nuevo, motivo, id_usuario, fecha)
+               VALUES (gen_random_uuid(), $1, $2, NULL, 'BORRADOR', 'Creacion', $3, now())
+               ON CONFLICT DO NOTHING`,
+              [institucionId, insertedMat.id, usuarioAdminId],
+            );
+            await manager.query(
+              `INSERT INTO historial_estados_matricula (id, id_institucion_educativa, id_matricula, estado_anterior, estado_nuevo, motivo, id_usuario, fecha)
+               VALUES (gen_random_uuid(), $1, $2, 'BORRADOR', 'ACTIVA', 'Activacion', $3, now() + interval '1 second')
+               ON CONFLICT DO NOTHING`,
+              [institucionId, insertedMat.id, usuarioAdminId],
+            );
+            await manager.query(
+              `INSERT INTO historial_cambios_seccion_matricula (id, id_institucion_educativa, id_matricula, id_seccion_anterior, id_seccion_nueva, motivo, id_usuario, fecha)
+               VALUES (gen_random_uuid(), $1, $2, NULL, $3, 'Asignacion', $4, now())
+               ON CONFLICT DO NOTHING`,
+              [institucionId, insertedMat.id, secA.id, usuarioAdminId],
+            );
+          }
+        }
+
+        // 2. Matrícula en borrador
+        if (est2) {
+          const matId = crypto.randomUUID();
+          await manager.query(
+            `INSERT INTO matriculas (
+              id, id_institucion_educativa, id_sede, id_estudiante, id_anio_academico,
+              id_nivel_educativo, id_grado_educativo, id_oferta_grado_sede, id_seccion_academica,
+              codigo_matricula, fecha_matricula, estado, observacion, id_usuario_creador,
+              fecha_creacion, fecha_modificacion
+            ) VALUES (
+              $1, $2, $3, $4, $5, $6, $7, $8, NULL, 'MAT-DEMO-002', CURRENT_DATE, 'BORRADOR', 'Matricula demo borrador', $9, now(), now()
+            ) ON CONFLICT (id_institucion_educativa, codigo_matricula) DO NOTHING`,
+            [
+              matId,
+              institucionId,
+              sedeId,
+              est2.id,
+              anio.id,
+              grado.idNivelEducativo,
+              grado.id,
+              oferta.id,
+              usuarioAdminId,
+            ],
+          );
+
+          const [insertedMat] = await manager.query<{ id: string }[]>(
+            `SELECT id FROM matriculas WHERE id_institucion_educativa = $1 AND codigo_matricula = 'MAT-DEMO-002' LIMIT 1`,
+            [institucionId],
+          );
+          if (insertedMat) {
+            await manager.query(
+              `INSERT INTO historial_estados_matricula (id, id_institucion_educativa, id_matricula, estado_anterior, estado_nuevo, motivo, id_usuario, fecha)
+               VALUES (gen_random_uuid(), $1, $2, NULL, 'BORRADOR', 'Creacion', $3, now())
+               ON CONFLICT DO NOTHING`,
+              [institucionId, insertedMat.id, usuarioAdminId],
+            );
+          }
+        }
+
+        // 3. Matrícula activa en sección B (capacidad 1, por tanto seccion llena)
+        if (est3 && secB) {
+          const matId = crypto.randomUUID();
+          await manager.query(
+            `INSERT INTO matriculas (
+              id, id_institucion_educativa, id_sede, id_estudiante, id_anio_academico,
+              id_nivel_educativo, id_grado_educativo, id_oferta_grado_sede, id_seccion_academica,
+              codigo_matricula, fecha_matricula, estado, observacion, id_usuario_creador,
+              id_usuario_activador, fecha_activacion, fecha_creacion, fecha_modificacion
+            ) VALUES (
+              $1, $2, $3, $4, $5, $6, $7, $8, $9, 'MAT-DEMO-003', CURRENT_DATE, 'ACTIVA', 'Matricula demo activa llena', $10, $10, now(), now(), now()
+            ) ON CONFLICT (id_institucion_educativa, codigo_matricula) DO NOTHING`,
+            [
+              matId,
+              institucionId,
+              sedeId,
+              est3.id,
+              anio.id,
+              grado.idNivelEducativo,
+              grado.id,
+              oferta.id,
+              secB.id,
+              usuarioAdminId,
+            ],
+          );
+
+          const [insertedMat] = await manager.query<{ id: string }[]>(
+            `SELECT id FROM matriculas WHERE id_institucion_educativa = $1 AND codigo_matricula = 'MAT-DEMO-003' LIMIT 1`,
+            [institucionId],
+          );
+          if (insertedMat) {
+            await manager.query(
+              `INSERT INTO historial_estados_matricula (id, id_institucion_educativa, id_matricula, estado_anterior, estado_nuevo, motivo, id_usuario, fecha)
+               VALUES (gen_random_uuid(), $1, $2, NULL, 'BORRADOR', 'Creacion', $3, now())
+               ON CONFLICT DO NOTHING`,
+              [institucionId, insertedMat.id, usuarioAdminId],
+            );
+            await manager.query(
+              `INSERT INTO historial_estados_matricula (id, id_institucion_educativa, id_matricula, estado_anterior, estado_nuevo, motivo, id_usuario, fecha)
+               VALUES (gen_random_uuid(), $1, $2, 'BORRADOR', 'ACTIVA', 'Activacion', $3, now() + interval '1 second')
+               ON CONFLICT DO NOTHING`,
+              [institucionId, insertedMat.id, usuarioAdminId],
+            );
+            await manager.query(
+              `INSERT INTO historial_cambios_seccion_matricula (id, id_institucion_educativa, id_matricula, id_seccion_anterior, id_seccion_nueva, motivo, id_usuario, fecha)
+               VALUES (gen_random_uuid(), $1, $2, NULL, $3, 'Asignacion', $4, now())
+               ON CONFLICT DO NOTHING`,
+              [institucionId, insertedMat.id, secB.id, usuarioAdminId],
+            );
+          }
+        }
+      }
+    }
 
     console.log(
       `Semilla demo aplicada (idempotente). Institución codigo=${CODIGO_INST} id=${institucionId}`,

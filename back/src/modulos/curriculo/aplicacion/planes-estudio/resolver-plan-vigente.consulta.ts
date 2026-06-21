@@ -1,6 +1,4 @@
-import {
-  PlanVigenteNoEncontradoError,
-} from '../../dominio/errores-curriculo';
+import { PlanVigenteNoEncontradoError } from '../../dominio/errores-curriculo';
 import {
   AlcanceAcceso,
   ConsultadorCurriculo,
@@ -16,7 +14,9 @@ export class ResolverPlanVigenteConsulta {
     alcance: AlcanceAcceso,
   ): Promise<PlanEstudioResumen> {
     const plan = await this.consultador.resolverPlanVigente(
-      idAnio, idGrado, alcance.institucionId,
+      idAnio,
+      idGrado,
+      alcance.institucionId,
     );
     if (!plan) throw new PlanVigenteNoEncontradoError();
     return plan;

@@ -16,9 +16,8 @@ interface FilaEstadoArea {
 }
 
 @Injectable()
-export class RepositorioAreasCurricularesTypeorm
-  implements RepositorioAreasCurriculares {
-  constructor(@InjectDataSource() private readonly ds: DataSource) { }
+export class RepositorioAreasCurricularesTypeorm implements RepositorioAreasCurriculares {
+  constructor(@InjectDataSource() private readonly ds: DataSource) {}
 
   async existeCodigoAreaEnInstitucion(
     codigoNormalizado: string,
@@ -87,7 +86,7 @@ export class RepositorioAreasCurricularesTypeorm
         entrada.orden,
       ],
     );
-    return { id: rows[0]!.id };
+    return { id: rows[0].id };
   }
 
   async obtenerAreaBase(
@@ -117,12 +116,30 @@ export class RepositorioAreasCurricularesTypeorm
     const sets: string[] = ['fecha_modificacion = now()'];
     const params: unknown[] = [entrada.id, entrada.institucionId];
     let i = 3;
-    if (entrada.codigo !== undefined) { sets.push(`codigo = $${i++}`); params.push(entrada.codigo); }
-    if (entrada.codigoNormalizado !== undefined) { sets.push(`codigo_normalizado = $${i++}`); params.push(entrada.codigoNormalizado); }
-    if (entrada.nombre !== undefined) { sets.push(`nombre = $${i++}`); params.push(entrada.nombre); }
-    if (entrada.nombreNormalizado !== undefined) { sets.push(`nombre_normalizado = $${i++}`); params.push(entrada.nombreNormalizado); }
-    if (entrada.descripcion !== undefined) { sets.push(`descripcion = $${i++}`); params.push(entrada.descripcion); }
-    if (entrada.orden !== undefined) { sets.push(`orden = $${i++}`); params.push(entrada.orden); }
+    if (entrada.codigo !== undefined) {
+      sets.push(`codigo = $${i++}`);
+      params.push(entrada.codigo);
+    }
+    if (entrada.codigoNormalizado !== undefined) {
+      sets.push(`codigo_normalizado = $${i++}`);
+      params.push(entrada.codigoNormalizado);
+    }
+    if (entrada.nombre !== undefined) {
+      sets.push(`nombre = $${i++}`);
+      params.push(entrada.nombre);
+    }
+    if (entrada.nombreNormalizado !== undefined) {
+      sets.push(`nombre_normalizado = $${i++}`);
+      params.push(entrada.nombreNormalizado);
+    }
+    if (entrada.descripcion !== undefined) {
+      sets.push(`descripcion = $${i++}`);
+      params.push(entrada.descripcion);
+    }
+    if (entrada.orden !== undefined) {
+      sets.push(`orden = $${i++}`);
+      params.push(entrada.orden);
+    }
     const result = await this.ds.query<{ id: string }[]>(
       `UPDATE areas_curriculares SET ${sets.join(', ')}
        WHERE id = $1 AND id_institucion_educativa = $2 RETURNING id`,

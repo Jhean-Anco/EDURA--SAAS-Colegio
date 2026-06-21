@@ -21,38 +21,70 @@ export interface EntradaActualizarAsignatura {
 }
 
 export class ActualizarAsignaturaCasoUso {
-  constructor(private readonly repositorio: RepositorioAsignaturas) { }
+  constructor(private readonly repositorio: RepositorioAsignaturas) {}
 
   async ejecutar(
     entrada: EntradaActualizarAsignatura,
     alcance: AlcanceAcceso,
   ): Promise<void> {
-    if (alcance.ambito !== 'INSTITUCION') throw new AmbiteInstitucionRequeridoError();
+    if (alcance.ambito !== 'INSTITUCION')
+      throw new AmbiteInstitucionRequeridoError();
 
-    const asignatura = await this.repositorio.obtenerAsignaturaBase(entrada.id, alcance.institucionId);
+    const asignatura = await this.repositorio.obtenerAsignaturaBase(
+      entrada.id,
+      alcance.institucionId,
+    );
     if (!asignatura) throw new AsignaturaNoEncontradaError();
 
     // RN-CUR-005: no cambiar área si usada en plan activo
-    if (entrada.idAreaCurricular && entrada.idAreaCurricular !== asignatura.idAreaCurricular) {
-      if (!(await this.repositorio.existeAreaEnInstitucion(entrada.idAreaCurricular, alcance.institucionId))) {
+    if (
+      entrada.idAreaCurricular &&
+      entrada.idAreaCurricular !== asignatura.idAreaCurricular
+    ) {
+      if (
+        !(await this.repositorio.existeAreaEnInstitucion(
+          entrada.idAreaCurricular,
+          alcance.institucionId,
+        ))
+      ) {
         throw new AsignaturaAreaFueraDeInstitucionError();
       }
-      if (await this.repositorio.estaAsignaturaEnPlanActivo(entrada.id, alcance.institucionId)) {
+      if (
+        await this.repositorio.estaAsignaturaEnPlanActivo(
+          entrada.id,
+          alcance.institucionId,
+        )
+      ) {
         throw new AsignaturaAreaFueraDeInstitucionError();
       }
     }
 
-    const codigoNorm = entrada.codigo ? entrada.codigo.trim().toUpperCase() : undefined;
+    const codigoNorm = entrada.codigo
+      ? entrada.codigo.trim().toUpperCase()
+      : undefined;
 
     if (codigoNorm) {
-      if (await this.repositorio.existeCodigoAsignaturaEnInstitucion(codigoNorm, alcance.institucionId, entrada.id)) {
+      if (
+        await this.repositorio.existeCodigoAsignaturaEnInstitucion(
+          codigoNorm,
+          alcance.institucionId,
+          entrada.id,
+        )
+      ) {
         throw new AsignaturaCodigoDuplicadoError();
       }
     }
 
-    const idAreaEfectivo = entrada.idAreaCurricular ?? asignatura.idAreaCurricular;
+    const idAreaEfectivo =
+      entrada.idAreaCurricular ?? asignatura.idAreaCurricular;
     if (entrada.orden !== undefined) {
-      if (await this.repositorio.existeOrdenAsignaturaEnArea(entrada.orden, idAreaEfectivo, entrada.id)) {
+      if (
+        await this.repositorio.existeOrdenAsignaturaEnArea(
+          entrada.orden,
+          idAreaEfectivo,
+          entrada.id,
+        )
+      ) {
         throw new AsignaturaOrdenDuplicadoError();
       }
     }

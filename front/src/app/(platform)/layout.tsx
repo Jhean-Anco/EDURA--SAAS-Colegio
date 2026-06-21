@@ -6,9 +6,9 @@ import type { SesionCliente } from '@/types/auth';
 
 export default async function PlatformLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}): Promise<React.JSX.Element> {
+}>): Promise<React.JSX.Element> {
   const sesion = await obtenerSesionServidor();
 
   if (!sesion.accessToken) {
@@ -24,10 +24,10 @@ export default async function PlatformLayout({
     contexto: sesion.contexto,
   };
 
-  const navItems = resolverNavegacion(sesion.contexto);
+  const grupos = resolverNavegacion(sesion.contexto);
 
   return (
-    <Shell sesion={sesionCliente} navItems={navItems}>
+    <Shell sesion={sesionCliente} grupos={grupos}>
       {children}
     </Shell>
   );

@@ -20,7 +20,10 @@ interface FilaAsignaturaBase {
 export class RepositorioAsignaturasTypeorm implements RepositorioAsignaturas {
   constructor(@InjectDataSource() private readonly ds: DataSource) {}
 
-  async existeAreaEnInstitucion(idArea: string, institucionId: string): Promise<boolean> {
+  async existeAreaEnInstitucion(
+    idArea: string,
+    institucionId: string,
+  ): Promise<boolean> {
     const rows = await this.ds.query<FilaConteo[]>(
       `SELECT COUNT(*)::text AS total FROM areas_curriculares
        WHERE id = $1 AND id_institucion_educativa = $2`,
@@ -84,13 +87,17 @@ export class RepositorioAsignaturasTypeorm implements RepositorioAsignaturas {
         entrada.orden,
       ],
     );
-    return { id: rows[0]!.id };
+    return { id: rows[0].id };
   }
 
   async obtenerAsignaturaBase(
     id: string,
     institucionId: string,
-  ): Promise<{ id: string; estado: EstadoAsignatura; idAreaCurricular: string } | null> {
+  ): Promise<{
+    id: string;
+    estado: EstadoAsignatura;
+    idAreaCurricular: string;
+  } | null> {
     const rows = await this.ds.query<FilaAsignaturaBase[]>(
       `SELECT id, estado, id_area_curricular FROM asignaturas
        WHERE id = $1 AND id_institucion_educativa = $2`,
@@ -119,13 +126,34 @@ export class RepositorioAsignaturasTypeorm implements RepositorioAsignaturas {
     const sets: string[] = ['fecha_modificacion = now()'];
     const params: unknown[] = [entrada.id, entrada.institucionId];
     let i = 3;
-    if (entrada.idAreaCurricular !== undefined) { sets.push(`id_area_curricular = $${i++}`); params.push(entrada.idAreaCurricular); }
-    if (entrada.codigo !== undefined) { sets.push(`codigo = $${i++}`); params.push(entrada.codigo); }
-    if (entrada.codigoNormalizado !== undefined) { sets.push(`codigo_normalizado = $${i++}`); params.push(entrada.codigoNormalizado); }
-    if (entrada.nombre !== undefined) { sets.push(`nombre = $${i++}`); params.push(entrada.nombre); }
-    if (entrada.nombreCorto !== undefined) { sets.push(`nombre_corto = $${i++}`); params.push(entrada.nombreCorto); }
-    if (entrada.descripcion !== undefined) { sets.push(`descripcion = $${i++}`); params.push(entrada.descripcion); }
-    if (entrada.orden !== undefined) { sets.push(`orden = $${i++}`); params.push(entrada.orden); }
+    if (entrada.idAreaCurricular !== undefined) {
+      sets.push(`id_area_curricular = $${i++}`);
+      params.push(entrada.idAreaCurricular);
+    }
+    if (entrada.codigo !== undefined) {
+      sets.push(`codigo = $${i++}`);
+      params.push(entrada.codigo);
+    }
+    if (entrada.codigoNormalizado !== undefined) {
+      sets.push(`codigo_normalizado = $${i++}`);
+      params.push(entrada.codigoNormalizado);
+    }
+    if (entrada.nombre !== undefined) {
+      sets.push(`nombre = $${i++}`);
+      params.push(entrada.nombre);
+    }
+    if (entrada.nombreCorto !== undefined) {
+      sets.push(`nombre_corto = $${i++}`);
+      params.push(entrada.nombreCorto);
+    }
+    if (entrada.descripcion !== undefined) {
+      sets.push(`descripcion = $${i++}`);
+      params.push(entrada.descripcion);
+    }
+    if (entrada.orden !== undefined) {
+      sets.push(`orden = $${i++}`);
+      params.push(entrada.orden);
+    }
     const result = await this.ds.query<{ id: string }[]>(
       `UPDATE asignaturas SET ${sets.join(', ')}
        WHERE id = $1 AND id_institucion_educativa = $2 RETURNING id`,

@@ -1,6 +1,4 @@
-import {
-  PlanEstudioNoEncontradoError,
-} from '../../dominio/errores-curriculo';
+import { PlanEstudioNoEncontradoError } from '../../dominio/errores-curriculo';
 import {
   AlcanceAcceso,
   ConsultadorCurriculo,
@@ -14,7 +12,10 @@ export class ListarDetallesPlanEstudioConsulta {
     idPlan: string,
     alcance: AlcanceAcceso,
   ): Promise<PlanEstudioResumen> {
-    const plan = await this.consultador.obtenerPlan(idPlan, alcance.institucionId);
+    const plan = await this.consultador.obtenerPlan(
+      idPlan,
+      alcance.institucionId,
+    );
     if (!plan) throw new PlanEstudioNoEncontradoError();
     return plan;
   }

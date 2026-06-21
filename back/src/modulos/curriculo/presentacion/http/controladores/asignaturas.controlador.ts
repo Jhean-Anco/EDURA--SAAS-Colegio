@@ -44,7 +44,11 @@ export class AsignaturasControlador {
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
     @Query() query: ListarAsignaturasQueryDto,
   ) {
-    return this.listarAsignaturas.ejecutar(alcanceDesdeContexto(ctx), query.idArea, query.estado);
+    return this.listarAsignaturas.ejecutar(
+      alcanceDesdeContexto(ctx),
+      query.idArea,
+      query.estado,
+    );
   }
 
   @Permisos('CURRICULO.LEER')

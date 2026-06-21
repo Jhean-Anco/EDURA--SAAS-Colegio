@@ -85,27 +85,32 @@ import { ListarDetallesPlanEstudioConsulta } from './aplicacion/planes-estudio/l
     // Areas cases
     {
       provide: CrearAreaCurricularCasoUso,
-      useFactory: (r: RepositorioAreasCurriculares) => new CrearAreaCurricularCasoUso(r),
+      useFactory: (r: RepositorioAreasCurriculares) =>
+        new CrearAreaCurricularCasoUso(r),
       inject: [REPOSITORIO_AREAS_CURRICULARES],
     },
     {
       provide: ActualizarAreaCurricularCasoUso,
-      useFactory: (r: RepositorioAreasCurriculares) => new ActualizarAreaCurricularCasoUso(r),
+      useFactory: (r: RepositorioAreasCurriculares) =>
+        new ActualizarAreaCurricularCasoUso(r),
       inject: [REPOSITORIO_AREAS_CURRICULARES],
     },
     {
       provide: CambiarEstadoAreaCurricularCasoUso,
-      useFactory: (r: RepositorioAreasCurriculares) => new CambiarEstadoAreaCurricularCasoUso(r),
+      useFactory: (r: RepositorioAreasCurriculares) =>
+        new CambiarEstadoAreaCurricularCasoUso(r),
       inject: [REPOSITORIO_AREAS_CURRICULARES],
     },
     {
       provide: ListarAreasCurricularesConsulta,
-      useFactory: (c: ConsultadorCurriculo) => new ListarAreasCurricularesConsulta(c),
+      useFactory: (c: ConsultadorCurriculo) =>
+        new ListarAreasCurricularesConsulta(c),
       inject: [CONSULTADOR_CURRICULO],
     },
     {
       provide: ObtenerAreaCurricularConsulta,
-      useFactory: (c: ConsultadorCurriculo) => new ObtenerAreaCurricularConsulta(c),
+      useFactory: (c: ConsultadorCurriculo) =>
+        new ObtenerAreaCurricularConsulta(c),
       inject: [CONSULTADOR_CURRICULO],
     },
 
@@ -117,12 +122,14 @@ import { ListarDetallesPlanEstudioConsulta } from './aplicacion/planes-estudio/l
     },
     {
       provide: ActualizarAsignaturaCasoUso,
-      useFactory: (r: RepositorioAsignaturas) => new ActualizarAsignaturaCasoUso(r),
+      useFactory: (r: RepositorioAsignaturas) =>
+        new ActualizarAsignaturaCasoUso(r),
       inject: [REPOSITORIO_ASIGNATURAS],
     },
     {
       provide: CambiarEstadoAsignaturaCasoUso,
-      useFactory: (r: RepositorioAsignaturas) => new CambiarEstadoAsignaturaCasoUso(r),
+      useFactory: (r: RepositorioAsignaturas) =>
+        new CambiarEstadoAsignaturaCasoUso(r),
       inject: [REPOSITORIO_ASIGNATURAS],
     },
     {
@@ -139,64 +146,76 @@ import { ListarDetallesPlanEstudioConsulta } from './aplicacion/planes-estudio/l
     // Planes cases
     {
       provide: CrearPlanEstudioCasoUso,
-      useFactory: (r: RepositorioPlanesEstudio) => new CrearPlanEstudioCasoUso(r),
+      useFactory: (r: RepositorioPlanesEstudio) =>
+        new CrearPlanEstudioCasoUso(r),
       inject: [REPOSITORIO_PLANES_ESTUDIO],
     },
     {
       provide: ActualizarPlanEstudioCasoUso,
-      useFactory: (r: RepositorioPlanesEstudio) => new ActualizarPlanEstudioCasoUso(r),
+      useFactory: (r: RepositorioPlanesEstudio) =>
+        new ActualizarPlanEstudioCasoUso(r),
       inject: [REPOSITORIO_PLANES_ESTUDIO],
     },
     {
       provide: CambiarEstadoPlanEstudioCasoUso,
-      useFactory: (r: RepositorioPlanesEstudio) => new CambiarEstadoPlanEstudioCasoUso(r),
+      useFactory: (r: RepositorioPlanesEstudio) =>
+        new CambiarEstadoPlanEstudioCasoUso(r),
       inject: [REPOSITORIO_PLANES_ESTUDIO],
     },
     {
       provide: ListarPlanesEstudioConsulta,
-      useFactory: (c: ConsultadorCurriculo) => new ListarPlanesEstudioConsulta(c),
+      useFactory: (c: ConsultadorCurriculo) =>
+        new ListarPlanesEstudioConsulta(c),
       inject: [CONSULTADOR_CURRICULO],
     },
     {
       provide: ObtenerPlanEstudioConsulta,
-      useFactory: (c: ConsultadorCurriculo) => new ObtenerPlanEstudioConsulta(c),
+      useFactory: (c: ConsultadorCurriculo) =>
+        new ObtenerPlanEstudioConsulta(c),
       inject: [CONSULTADOR_CURRICULO],
     },
     {
       provide: ResolverPlanVigenteConsulta,
-      useFactory: (c: ConsultadorCurriculo) => new ResolverPlanVigenteConsulta(c),
+      useFactory: (c: ConsultadorCurriculo) =>
+        new ResolverPlanVigenteConsulta(c),
       inject: [CONSULTADOR_CURRICULO],
     },
     {
       provide: DuplicarPlanEstudioCasoUso,
-      useFactory: (r: RepositorioPlanesEstudio) => new DuplicarPlanEstudioCasoUso(r),
+      useFactory: (r: RepositorioPlanesEstudio) =>
+        new DuplicarPlanEstudioCasoUso(r),
       inject: [REPOSITORIO_PLANES_ESTUDIO],
     },
     {
       provide: AprobarPlanEstudioCasoUso,
-      useFactory: (r: RepositorioPlanesEstudio) => new AprobarPlanEstudioCasoUso(r),
+      useFactory: (r: RepositorioPlanesEstudio) =>
+        new AprobarPlanEstudioCasoUso(r),
       inject: [REPOSITORIO_PLANES_ESTUDIO],
     },
 
     // Detalles cases
     {
       provide: AgregarDetallePlanEstudioCasoUso,
-      useFactory: (r: RepositorioPlanesEstudio) => new AgregarDetallePlanEstudioCasoUso(r),
+      useFactory: (r: RepositorioPlanesEstudio) =>
+        new AgregarDetallePlanEstudioCasoUso(r),
       inject: [REPOSITORIO_PLANES_ESTUDIO],
     },
     {
       provide: ActualizarDetallePlanEstudioCasoUso,
-      useFactory: (r: RepositorioPlanesEstudio) => new ActualizarDetallePlanEstudioCasoUso(r),
+      useFactory: (r: RepositorioPlanesEstudio) =>
+        new ActualizarDetallePlanEstudioCasoUso(r),
       inject: [REPOSITORIO_PLANES_ESTUDIO],
     },
     {
       provide: CambiarEstadoDetallePlanEstudioCasoUso,
-      useFactory: (r: RepositorioPlanesEstudio) => new CambiarEstadoDetallePlanEstudioCasoUso(r),
+      useFactory: (r: RepositorioPlanesEstudio) =>
+        new CambiarEstadoDetallePlanEstudioCasoUso(r),
       inject: [REPOSITORIO_PLANES_ESTUDIO],
     },
     {
       provide: ListarDetallesPlanEstudioConsulta,
-      useFactory: (c: ConsultadorCurriculo) => new ListarDetallesPlanEstudioConsulta(c),
+      useFactory: (c: ConsultadorCurriculo) =>
+        new ListarDetallesPlanEstudioConsulta(c),
       inject: [CONSULTADOR_CURRICULO],
     },
   ],
@@ -208,4 +227,4 @@ import { ListarDetallesPlanEstudioConsulta } from './aplicacion/planes-estudio/l
     AprobarPlanEstudioCasoUso,
   ],
 })
-export class CurriculoModule { }
+export class CurriculoModule {}

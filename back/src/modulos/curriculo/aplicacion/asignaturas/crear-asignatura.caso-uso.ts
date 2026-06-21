@@ -25,19 +25,35 @@ export class CrearAsignaturaCasoUso {
     entrada: EntradaCrearAsignatura,
     alcance: AlcanceAcceso,
   ): Promise<{ id: string }> {
-    if (alcance.ambito !== 'INSTITUCION') throw new AmbiteInstitucionRequeridoError();
+    if (alcance.ambito !== 'INSTITUCION')
+      throw new AmbiteInstitucionRequeridoError();
 
     // RN-CUR-001: área pertenece a la institución
-    if (!(await this.repositorio.existeAreaEnInstitucion(entrada.idAreaCurricular, alcance.institucionId))) {
+    if (
+      !(await this.repositorio.existeAreaEnInstitucion(
+        entrada.idAreaCurricular,
+        alcance.institucionId,
+      ))
+    ) {
       throw new AsignaturaAreaFueraDeInstitucionError();
     }
 
     const codigoNorm = entrada.codigo.trim().toUpperCase();
 
-    if (await this.repositorio.existeCodigoAsignaturaEnInstitucion(codigoNorm, alcance.institucionId)) {
+    if (
+      await this.repositorio.existeCodigoAsignaturaEnInstitucion(
+        codigoNorm,
+        alcance.institucionId,
+      )
+    ) {
       throw new AsignaturaCodigoDuplicadoError();
     }
-    if (await this.repositorio.existeOrdenAsignaturaEnArea(entrada.orden, entrada.idAreaCurricular)) {
+    if (
+      await this.repositorio.existeOrdenAsignaturaEnArea(
+        entrada.orden,
+        entrada.idAreaCurricular,
+      )
+    ) {
       throw new AsignaturaOrdenDuplicadoError();
     }
 

@@ -5,6 +5,9 @@ import {
   Post,
   Req,
   UnauthorizedException,
+  HttpCode,
+  HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { ContextoSolicitudAutenticada } from '../../../../../compartido/aplicacion/contexto-solicitud-autenticada';
@@ -51,12 +54,21 @@ export class AutenticacionControlador {
   }
 
   @Publico()
+  @HttpCode(HttpStatus.OK)
   @Post('iniciar-sesion')
   iniciar(@Body() solicitud: IniciarSesionSolicitud) {
-    return this.iniciarSesion.ejecutar(solicitud);
+    const correo = solicitud.correo ?? solicitud.email;
+    const clave = solicitud.clave ?? solicitud.password;
+    if (!correo || !clave) {
+      throw new BadRequestException(
+        'El correo y la contraseña son obligatorios.',
+      );
+    }
+    return this.iniciarSesion.ejecutar({ correo, clave });
   }
 
   @Publico()
+  @HttpCode(HttpStatus.OK)
   @Post('renovar')
   renovar(@Body() solicitud: RenovarSesionSolicitud) {
     return this.renovarSesion.ejecutar(solicitud);
@@ -84,6 +96,7 @@ export class AutenticacionControlador {
     return this.listarContextos.ejecutar(this.obtenerUsuario(request).sub);
   }
 
+  @HttpCode(HttpStatus.OK)
   @Post('seleccionar-contexto')
   seleccionar(
     @Req() request: Request,
