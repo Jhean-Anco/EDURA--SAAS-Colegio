@@ -34,6 +34,14 @@ export class ActualizarAsignacionDocenteSedeCasoUso {
     );
     if (!asignacion) throw new AsignacionDocenteSedNoEncontradaError();
 
+    if (
+      alcance.ambito === 'SEDE' &&
+      alcance.sedeId &&
+      asignacion.idSede !== alcance.sedeId
+    ) {
+      throw new AsignacionDocenteSedNoEncontradaError();
+    }
+
     // Si se inactiva la asignación, verificar que no sea la última sede activa de un docente ACTIVO
     if (entrada.estado === 'INACTIVA' && asignacion.estado === 'ACTIVA') {
       if (docente.estado === 'ACTIVO') {

@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class PrepararIntegridadSedesParaDocentesV14_51718945000000
-  implements MigrationInterface
-{
+export class PrepararIntegridadSedesParaDocentesV14_51718945000000 implements MigrationInterface {
   name = 'PrepararIntegridadSedesParaDocentesV14_51718945000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

@@ -10,6 +10,107 @@ const CODIGO_SEDE = 'DEMO-001';
 const CORREO_ADMIN = normalizarCorreo('admin.demo@institucion.local');
 const CORREO_PERSONA = normalizarCorreo('persona.demo@institucion.local');
 
+type Manager = { query: <T>(sql: string, params?: unknown[]) => Promise<T> };
+
+async function sembrarEstructuraAcademica(
+  manager: Manager,
+  institucionId: string,
+  sedeId: string,
+): Promise<void> {
+  await manager.query(
+    `INSERT INTO niveles_educativos
+       (id, id_institucion_educativa, codigo, codigo_normalizado, nombre, orden, estado,
+        fecha_creacion, fecha_modificacion)
+     VALUES (gen_random_uuid(), $1, 'PRIMARIA', 'PRIMARIA', 'Educación Primaria', 1, 'ACTIVO', now(), now())
+     ON CONFLICT (id_institucion_educativa, codigo_normalizado) DO NOTHING`,
+    [institucionId],
+  );
+
+  const [nivel] = await manager.query<{ id: string }[]>(
+    `SELECT id FROM niveles_educativos
+     WHERE id_institucion_educativa = $1 AND codigo_normalizado = 'PRIMARIA' LIMIT 1`,
+    [institucionId],
+  );
+  if (!nivel) return;
+
+  await manager.query(
+    `INSERT INTO grados_educativos
+       (id, id_institucion_educativa, id_nivel_educativo, codigo, codigo_normalizado,
+        nombre, orden, estado, fecha_creacion, fecha_modificacion)
+     VALUES (gen_random_uuid(), $1, $2, '1ERO', '1ERO', 'Primer Grado', 1, 'ACTIVO', now(), now())
+     ON CONFLICT (id_nivel_educativo, codigo_normalizado) DO NOTHING`,
+    [institucionId, nivel.id],
+  );
+
+  const anioActual = new Date().getFullYear();
+  await manager.query(
+    `INSERT INTO anios_academicos
+       (id, id_institucion_educativa, anio, codigo, codigo_normalizado, nombre, fecha_inicio, fecha_fin,
+        estado, fecha_creacion, fecha_modificacion)
+     VALUES (gen_random_uuid(), $1, $2, $3, $3, $4, $5, $6, 'ACTIVO', now(), now())
+     ON CONFLICT (id_institucion_educativa, anio) DO NOTHING`,
+    [
+      institucionId,
+      anioActual,
+      anioActual.toString(),
+      `Año Académico ${anioActual}`,
+      `${anioActual}-03-01`,
+      `${anioActual}-12-20`,
+    ],
+  );
+
+  const [anio] = await manager.query<{ id: string }[]>(
+    `SELECT id FROM anios_academicos
+     WHERE id_institucion_educativa = $1 AND anio = $2 LIMIT 1`,
+    [institucionId, anioActual],
+  );
+  if (!anio) return;
+
+  await manager.query(
+    `INSERT INTO periodos_academicos
+       (id, id_institucion_educativa, id_anio_academico, codigo, codigo_normalizado, nombre, tipo,
+        fecha_inicio, fecha_fin, estado, fecha_creacion, fecha_modificacion)
+     VALUES (gen_random_uuid(), $1, $2, 'B1', 'B1', 'Primer Bimestre', 'BIMESTRE',
+             $3, $4, 'ACTIVO', now(), now())
+     ON CONFLICT (id_anio_academico, codigo_normalizado) DO NOTHING`,
+    [institucionId, anio.id, `${anioActual}-03-01`, `${anioActual}-04-30`],
+  );
+
+  const [grado] = await manager.query<{ id: string }[]>(
+    `SELECT id FROM grados_educativos
+     WHERE id_institucion_educativa = $1 AND codigo_normalizado = '1ERO' LIMIT 1`,
+    [institucionId],
+  );
+  if (!grado) return;
+
+  await manager.query(
+    `INSERT INTO ofertas_grado_sede
+       (id, id_institucion_educativa, id_sede, id_grado_educativo, id_anio_academico,
+        estado, fecha_creacion, fecha_modificacion)
+     VALUES (gen_random_uuid(), $1, $2, $3, $4, 'ACTIVA', now(), now())
+     ON CONFLICT (id_institucion_educativa, id_sede, id_grado_educativo, id_anio_academico)
+     DO NOTHING`,
+    [institucionId, sedeId, grado.id, anio.id],
+  );
+
+  const [oferta] = await manager.query<{ id: string }[]>(
+    `SELECT id FROM ofertas_grado_sede
+     WHERE id_institucion_educativa = $1 AND id_sede = $2
+       AND id_grado_educativo = $3 AND id_anio_academico = $4 LIMIT 1`,
+    [institucionId, sedeId, grado.id, anio.id],
+  );
+  if (!oferta) return;
+
+  await manager.query(
+    `INSERT INTO secciones_academicas
+       (id, id_institucion_educativa, id_oferta_grado_sede, codigo, codigo_normalizado, nombre, turno,
+        estado, fecha_creacion, fecha_modificacion)
+     VALUES (gen_random_uuid(), $1, $2, 'A', 'A', 'A', 'MANANA', 'ACTIVA', now(), now())
+     ON CONFLICT (id_institucion_educativa, id_oferta_grado_sede, codigo_normalizado) DO NOTHING`,
+    [institucionId, oferta.id],
+  );
+}
+
 async function ejecutarDemo(): Promise<void> {
   const entorno = process.env['NODE_ENV'] ?? 'development';
 
@@ -124,7 +225,7 @@ async function ejecutarDemo(): Promise<void> {
     await manager.query(
       `INSERT INTO personas
          (id, id_institucion_educativa, nombres, apellido_paterno, apellido_materno,
-          fecha_nacimiento, sexo, estado, fecha_creacion, fecha_actualizacion)
+          fecha_nacimiento, sexo_registral, estado, fecha_creacion, fecha_modificacion)
        VALUES (gen_random_uuid(), $1, 'Persona', 'Demo', 'Ejemplo',
                '1990-01-01', 'NO_ESPECIFICADO', 'ACTIVA', now(), now())
        ON CONFLICT DO NOTHING`,
@@ -149,7 +250,7 @@ async function ejecutarDemo(): Promise<void> {
         await manager.query(
           `INSERT INTO documentos_identidad_persona
              (id, id_persona, id_institucion_educativa, id_tipo_documento,
-              numero, numero_normalizado, es_principal, estado, fecha_creacion, fecha_actualizacion)
+              numero, numero_normalizado, es_principal, estado, fecha_creacion, fecha_modificacion)
            VALUES (gen_random_uuid(), $1, $2, $3, '00000001', '00000001', true, 'ACTIVO', now(), now())
            ON CONFLICT DO NOTHING`,
           [personaId, institucionId, tipoDoc.id],
@@ -159,7 +260,7 @@ async function ejecutarDemo(): Promise<void> {
       await manager.query(
         `INSERT INTO medios_contacto_persona
            (id, id_persona, id_institucion_educativa, tipo, valor, valor_normalizado,
-            es_principal, estado, fecha_creacion, fecha_actualizacion)
+            es_principal, estado, fecha_creacion, fecha_modificacion)
          VALUES (gen_random_uuid(), $1, $2, 'CORREO', $3, $3, true, 'ACTIVO', now(), now())
          ON CONFLICT DO NOTHING`,
         [personaId, institucionId, CORREO_PERSONA],
@@ -168,7 +269,7 @@ async function ejecutarDemo(): Promise<void> {
       await manager.query(
         `INSERT INTO direcciones_persona
            (id, id_persona, id_institucion_educativa, direccion_linea, referencia,
-            es_principal, estado, fecha_creacion, fecha_actualizacion)
+            es_principal, estado, fecha_creacion, fecha_modificacion)
          VALUES (gen_random_uuid(), $1, $2,
                  'Av. Demo 000, Ciudad Demo', 'Referencia de ejemplo',
                  true, 'ACTIVA', now(), now())
@@ -241,7 +342,7 @@ async function ejecutarDemo(): Promise<void> {
       await manager.query(
         `INSERT INTO personas
            (id, id_institucion_educativa, nombres, apellido_paterno, apellido_materno,
-            fecha_nacimiento, sexo, estado, fecha_creacion, fecha_actualizacion)
+            fecha_nacimiento, sexo_registral, estado, fecha_creacion, fecha_modificacion)
          VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, 'ACTIVA', now(), now())
          ON CONFLICT DO NOTHING`,
         [institucionId, pe.nombres, pe.ap, pe.am, pe.fn, pe.sexo],
@@ -269,7 +370,7 @@ async function ejecutarDemo(): Promise<void> {
     await manager.query(
       `INSERT INTO personas
          (id, id_institucion_educativa, nombres, apellido_paterno, apellido_materno,
-          fecha_nacimiento, sexo, estado, fecha_creacion, fecha_actualizacion)
+          fecha_nacimiento, sexo_registral, estado, fecha_creacion, fecha_modificacion)
        VALUES (gen_random_uuid(), $1, 'Carlos', 'Gomez', 'Soto',
                '1985-04-01', 'MASCULINO', 'ACTIVA', now(), now())
        ON CONFLICT DO NOTHING`,
@@ -297,6 +398,9 @@ async function ejecutarDemo(): Promise<void> {
         [institucionId, estudiantePrincipal.id, apoderado.id],
       );
     }
+
+    // ── Estructura académica demo ─────────────────────────────────────────────
+    await sembrarEstructuraAcademica(manager, institucionId, sedeId);
 
     // ── Alertas y comunicados demo ────────────────────────────────────────────
     await manager.query(

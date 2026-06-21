@@ -60,6 +60,12 @@ import { DocenteTypeormEntidad } from '../../modulos/docentes/infraestructura/pe
 import { EspecialidadProfesionalTypeormEntidad } from '../../modulos/docentes/infraestructura/persistencia/typeorm/entidades/especialidad-profesional.typeorm-entidad';
 import { AsignacionDocenteSedeTypeormEntidad } from '../../modulos/docentes/infraestructura/persistencia/typeorm/entidades/asignacion-docente-sede.typeorm-entidad';
 import { DocenteEspecialidadTypeormEntidad } from '../../modulos/docentes/infraestructura/persistencia/typeorm/entidades/docente-especialidad.typeorm-entidad';
+import { NivelEducativoEntidad } from '../../modulos/estructura-academica/infraestructura/persistencia/typeorm/entidades/nivel-educativo.typeorm-entidad';
+import { GradoEducativoEntidad } from '../../modulos/estructura-academica/infraestructura/persistencia/typeorm/entidades/grado-educativo.typeorm-entidad';
+import { AnioAcademicoEntidad } from '../../modulos/estructura-academica/infraestructura/persistencia/typeorm/entidades/anio-academico.typeorm-entidad';
+import { PeriodoAcademicoEntidad } from '../../modulos/estructura-academica/infraestructura/persistencia/typeorm/entidades/periodo-academico.typeorm-entidad';
+import { OfertaGradoSedeEntidad } from '../../modulos/estructura-academica/infraestructura/persistencia/typeorm/entidades/oferta-grado-sede.typeorm-entidad';
+import { SeccionAcademicaEntidad } from '../../modulos/estructura-academica/infraestructura/persistencia/typeorm/entidades/seccion-academica.typeorm-entidad';
 
 export const entidadesTypeOrm = [
   InstitucionEducativaTypeormEntidad,
@@ -116,5 +122,11 @@ export const entidadesTypeOrm = [
   EspecialidadProfesionalTypeormEntidad,
   AsignacionDocenteSedeTypeormEntidad,
   DocenteEspecialidadTypeormEntidad,
+  NivelEducativoEntidad,
+  GradoEducativoEntidad,
+  AnioAcademicoEntidad,
+  PeriodoAcademicoEntidad,
+  OfertaGradoSedeEntidad,
+  SeccionAcademicaEntidad,
 ] as unknown as ConstructorEntidad[];
 type ConstructorEntidad = new (...argumentos: never[]) => unknown;

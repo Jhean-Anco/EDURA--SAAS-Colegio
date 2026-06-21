@@ -32,7 +32,7 @@ interface FilaDocenteDetalle {
   nombres: string;
   apellido_paterno: string | null;
   apellido_materno: string | null;
-  doc_principal: Array<{ tipo_documento: string; numero: string }> | null;
+  doc_principal: Array<{ tipo_documento: string; tipo_codigo: string; numero: string }> | null;
   tiene_cuenta: boolean;
 }
 
@@ -187,6 +187,19 @@ export class ConsultadorDocentesTypeorm implements ConsultadorDocentes {
     id: string,
     alcance: AlcanceAcceso,
   ): Promise<FichaDocente | null> {
+    if (alcance.ambito === 'SEDE' && alcance.sedeId) {
+      const tieneAsignacion = await this.ds.query<{ existe: boolean }[]>(
+        `SELECT EXISTS (
+          SELECT 1 FROM asignaciones_docente_sede
+          WHERE id_docente = $1 AND id_sede = $2 AND estado = 'ACTIVA'
+        ) AS existe`,
+        [id, alcance.sedeId],
+      );
+      if (!tieneAsignacion[0]?.existe) {
+        return null;
+      }
+    }
+
     const rows = await this.ds.query<FilaDocenteDetalle[]>(
       `SELECT
         d.id, d.codigo, d.estado, d.fecha_ingreso, d.fecha_cese,
@@ -202,7 +215,7 @@ export class ConsultadorDocentesTypeorm implements ConsultadorDocentes {
             FROM documentos_identidad_persona di2
             JOIN tipos_documento_identidad tdi ON tdi.id = di2.id_tipo_documento
             WHERE di2.id_persona = p.id AND di2.es_principal = true
-              AND di2.estado = 'ACTIVO'
+              AND di2.estado = 'ACTIVO' AND di2.id_institucion_educativa = $2
             LIMIT 1
           ) di
         ) AS doc_principal,
@@ -222,8 +235,11 @@ export class ConsultadorDocentesTypeorm implements ConsultadorDocentes {
     if (!rows.length) return null;
 
     const row = rows[0];
-    const sedes = await this.obtenerSedesDocente(id);
-    const especialidades = await this.obtenerEspecialidadesDocente(id);
+    const sedes = await this.obtenerSedesDocente(id, alcance);
+    const especialidades = await this.obtenerEspecialidadesDocente(
+      id,
+      alcance.institucionId,
+    );
 
     const docPpal =
       row.doc_principal && row.doc_principal.length > 0
@@ -246,7 +262,7 @@ export class ConsultadorDocentesTypeorm implements ConsultadorDocentes {
         apellidoPaterno: row.apellido_paterno ?? null,
         apellidoMaterno: row.apellido_materno ?? null,
         documentoPrincipal: docPpal
-          ? { tipo: docPpal.tipo_documento, numero: docPpal.numero }
+          ? { tipo: docPpal.tipo_codigo, numero: docPpal.numero }
           : null,
       },
       sedes,
@@ -257,17 +273,23 @@ export class ConsultadorDocentesTypeorm implements ConsultadorDocentes {
 
   private async obtenerSedesDocente(
     idDocente: string,
+    alcance: AlcanceAcceso,
   ): Promise<FichaDocente['sedes']> {
-    const rows = await this.ds.query<FilaAsignacionSede[]>(
-      `SELECT
+    let sql = `SELECT
         ads.id, ads.id_sede, s.nombre AS nombre_sede,
         ads.es_principal, ads.estado, ads.fecha_inicio, ads.fecha_fin
       FROM asignaciones_docente_sede ads
       JOIN sedes s ON s.id = ads.id_sede
-      WHERE ads.id_docente = $1
-      ORDER BY ads.es_principal DESC, ads.fecha_inicio DESC`,
-      [idDocente],
-    );
+      WHERE ads.id_docente = $1 AND ads.id_institucion_educativa = $2`;
+    const params: unknown[] = [idDocente, alcance.institucionId];
+
+    if (alcance.ambito === 'SEDE' && alcance.sedeId) {
+      sql += ` AND ads.id_sede = $3`;
+      params.push(alcance.sedeId);
+    }
+
+    sql += ` ORDER BY ads.es_principal DESC, ads.fecha_inicio DESC`;
+    const rows = await this.ds.query<FilaAsignacionSede[]>(sql, params);
     return rows.map((r) => ({
       id: r.id,
       idSede: r.id_sede,
@@ -281,6 +303,7 @@ export class ConsultadorDocentesTypeorm implements ConsultadorDocentes {
 
   private async obtenerEspecialidadesDocente(
     idDocente: string,
+    institucionId: string,
   ): Promise<FichaDocente['especialidades']> {
     const rows = await this.ds.query<FilaAsignacionEspecialidad[]>(
       `SELECT
@@ -288,9 +311,9 @@ export class ConsultadorDocentesTypeorm implements ConsultadorDocentes {
         dep.es_principal, dep.anios_experiencia, dep.estado
       FROM docentes_especialidades_profesionales dep
       JOIN especialidades_profesionales ep ON ep.id = dep.id_especialidad_profesional
-      WHERE dep.id_docente = $1
+      WHERE dep.id_docente = $1 AND dep.id_institucion_educativa = $2
       ORDER BY dep.es_principal DESC, ep.nombre ASC`,
-      [idDocente],
+      [idDocente, institucionId],
     );
     return rows.map((r) => ({
       id: r.id,
@@ -323,8 +346,7 @@ export class ConsultadorDocentesTypeorm implements ConsultadorDocentes {
   }
 
   async obtenerPorUsuario(
-    idUsuario: string,
-    institucionId: string,
+    alcance: AlcanceAcceso,
   ): Promise<FichaDocente | null> {
     const rows = await this.ds.query<FilaIdDocente[]>(
       `SELECT d.id FROM docentes d
@@ -334,16 +356,11 @@ export class ConsultadorDocentesTypeorm implements ConsultadorDocentes {
        WHERE mi.id_usuario = $1
          AND d.id_institucion_educativa = $2
        LIMIT 1`,
-      [idUsuario, institucionId],
+      [alcance.usuarioId, alcance.institucionId],
     );
     if (!rows.length) return null;
 
-    return this.obtener(rows[0].id, {
-      usuarioId: idUsuario,
-      institucionId,
-      ambito: 'INSTITUCION',
-      sedeId: null,
-    });
+    return this.obtener(rows[0].id, alcance);
   }
 
   async listarEspecialidades(

@@ -35,7 +35,7 @@ export class CodigoDocenteDuplicadoError extends ErrorDominio {
 
 export class SedeFueraDeInstitucionDocenteError extends ErrorDominio {
   constructor() {
-    super('REGLA_NEGOCIO_INVALIDA', 'La sede no pertenece a esta institución');
+    super('ENTIDAD_NO_PROCESABLE', 'La sede no pertenece a esta institución');
   }
 }
 

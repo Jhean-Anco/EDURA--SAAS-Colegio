@@ -8,6 +8,7 @@ import {
   NotFoundException,
   HttpException,
   HttpStatus,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { ErrorDominio } from '../../../dominio/error-dominio';
@@ -27,6 +28,9 @@ export class FiltroHttpGlobal implements ExceptionFilter {
         CONTEXTO_NO_AUTORIZADO: new ForbiddenException(exception.message),
         REGLA_NEGOCIO_INVALIDA: new BadRequestException(exception.message),
         ESTADO_INCOMPATIBLE: new BadRequestException(exception.message),
+        ENTIDAD_NO_PROCESABLE: new UnprocessableEntityException(
+          exception.message,
+        ),
       };
       const httpException =
         mapa[exception.codigo] ?? new BadRequestException(exception.message);

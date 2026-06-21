@@ -16,11 +16,10 @@ export class ListarDocentesCasoUso {
     pagina: number;
     limite: number;
   }): Promise<{ datos: DocenteResumen[]; total: number }> {
-    // En alcance SEDE filtrar automáticamente por sedeId
     const idSede =
       entrada.alcance.ambito === 'SEDE'
-        ? (entrada.alcance.sedeId ?? entrada.idSede)
-        : entrada.idSede;
+        ? (entrada.alcance.sedeId ?? null)
+        : (entrada.idSede ?? null);
 
     return this.consultador.listar({
       alcance: entrada.alcance,

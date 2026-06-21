@@ -48,8 +48,8 @@ async function crearContextoCompleto(
     );
     await manager.query(
       `INSERT INTO sedes
-         (id, id_institucion_educativa, codigo, nombre, tipo, estado, fecha_creacion, fecha_modificacion)
-       VALUES ($1, $2, $3, $4, 'PRINCIPAL', 'ACTIVA', now(), now())`,
+         (id, id_institucion_educativa, codigo, nombre, es_principal, estado, fecha_creacion, fecha_modificacion)
+       VALUES ($1, $2, $3, $4, true, 'ACTIVA', now(), now())`,
       [sedeId, institucionId, `SEDE-${sufijo}`, `Sede ${sufijo}`],
     );
 

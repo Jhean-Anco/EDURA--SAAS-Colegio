@@ -81,10 +81,7 @@ export class DocentesControlador {
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
   ) {
     const alcance = alcanceDesdeContexto(ctx);
-    return this.obtenerMiPerfil.ejecutar(
-      alcance.usuarioId,
-      alcance.institucionId,
-    );
+    return this.obtenerMiPerfil.ejecutar(alcance);
   }
 
   @Permisos('DOCENTES.LEER')
