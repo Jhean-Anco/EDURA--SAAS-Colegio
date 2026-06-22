@@ -4,13 +4,15 @@ import type { ContextoDescriptor } from '@/types/auth';
 
 const contextoBase: ContextoDescriptor = {
   institucionId: 'inst-001',
-  nombreInstitucion: 'I.E. San Pedro',
+  institucionNombre: 'I.E. San Pedro',
   ambito: 'INSTITUCION',
   sedeId: null,
-  nombreSede: null,
-  permisos: ['PANEL_INSTITUCIONAL.RESUMEN.LEER', 'CURRICULO.LEER'],
-  roles: ['DIRECTIVO'],
+  sedeNombre: null,
+  permisos: ['PANEL_INSTITUCIONAL.RESUMEN.LEER', 'CURRICULO.LEER', 'CURRICULO.PLANES.GESTIONAR'],
+  rolId: 'rol-id-test',
+  rolCodigo: 'ADMINISTRADOR_INSTITUCION',
 };
+
 
 describe('REGISTRO_NAVEGACION (plano)', () => {
   it('contiene al menos el item panel', () => {
@@ -63,7 +65,7 @@ describe('resolverNavegacion (grupos)', () => {
       ...contextoBase,
       ambito: 'SEDE',
       sedeId: 'sede-001',
-      nombreSede: 'Sede Norte',
+      sedeNombre: 'Sede Norte',
     };
     const grupos = resolverNavegacion(sede);
     const items = grupos.flatMap((g) => g.items);

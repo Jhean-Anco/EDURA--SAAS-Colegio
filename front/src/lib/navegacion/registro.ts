@@ -7,12 +7,36 @@ export const GRUPOS_NAVEGACION: NavGroup[] = [
     etiqueta: 'Inicio',
     items: [
       {
+        codigo: 'panel-plataforma',
+        etiqueta: 'Panel',
+        ruta: '/panel',
+        icono: LayoutDashboard,
+        permisos: [],
+        ambitos: ['PLATAFORMA'],
+      },
+      {
         codigo: 'panel',
         etiqueta: 'Panel',
         ruta: '/panel',
         icono: LayoutDashboard,
         permisos: ['PANEL_INSTITUCIONAL.RESUMEN.LEER'],
         ambitos: ['INSTITUCION', 'SEDE'],
+      },
+      {
+        codigo: 'panel-estudiante',
+        etiqueta: 'Mi Panel',
+        ruta: '/panel',
+        icono: LayoutDashboard,
+        permisos: ['ESTUDIANTES.MI_PERFIL.LEER'],
+        ambitos: ['SEDE'],
+      },
+      {
+        codigo: 'panel-apoderado',
+        etiqueta: 'Mi Panel',
+        ruta: '/panel',
+        icono: LayoutDashboard,
+        permisos: ['APODERADOS.MIS_ESTUDIANTES.LEER'],
+        ambitos: ['INSTITUCION'],
       },
     ],
   },
@@ -24,7 +48,7 @@ export const GRUPOS_NAVEGACION: NavGroup[] = [
         etiqueta: 'Planes de estudio',
         ruta: '/panel/curriculo/planes-estudio',
         icono: BookOpen,
-        permisos: ['CURRICULO.LEER'],
+        permisos: ['CURRICULO.LEER', 'CURRICULO.PLANES.GESTIONAR'],
         ambitos: ['INSTITUCION'],
       },
       {
@@ -38,6 +62,7 @@ export const GRUPOS_NAVEGACION: NavGroup[] = [
     ],
   },
 ];
+
 
 // Compatibilidad con layout existente que usa NavItem[]
 export const REGISTRO_NAVEGACION: NavItem[] = GRUPOS_NAVEGACION.flatMap(

@@ -23,7 +23,7 @@ export default async function PaginaEditarPlan({ params }: Params): Promise<Reac
     <EditarPlanClient
       id={id}
       ctx={{
-        institucionId: sesion.contexto.institucionId,
+        institucionId: sesion.contexto.institucionId ?? '',
         ambito: sesion.contexto.ambito,
         sedeId: sesion.contexto.sedeId,
       }}

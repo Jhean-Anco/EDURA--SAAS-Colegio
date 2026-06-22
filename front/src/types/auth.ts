@@ -1,13 +1,14 @@
-export type Ambito = 'INSTITUCION' | 'SEDE';
+export type Ambito = 'PLATAFORMA' | 'INSTITUCION' | 'SEDE';
 
 export interface ContextoDescriptor {
-  institucionId: string;
-  nombreInstitucion: string;
   ambito: Ambito;
+  rolId: string;
+  rolCodigo: string;
+  institucionId: string | null;
+  institucionNombre: string | null;
   sedeId: string | null;
-  nombreSede: string | null;
+  sedeNombre: string | null;
   permisos: string[];
-  roles: string[];
 }
 
 export interface SesionCliente {
@@ -23,4 +24,6 @@ export interface EduraSession {
   nombreCompleto?: string;
   email?: string;
   csrfToken?: string;
+  usuarioId?: string;
+  requiereCambioClave?: boolean;
 }

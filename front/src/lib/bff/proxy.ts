@@ -1,9 +1,12 @@
-import { NextResponse } from 'next/server';
-import type { EduraSession } from '@/types/auth';
-import type { IronSession } from 'iron-session';
-import { esBackendError } from '@/types/api';
+import { NextResponse } from "next/server";
+import type { EduraSession } from "@/types/auth";
+import type { IronSession } from "iron-session";
+import { esBackendError } from "@/types/api";
+import { obtenerSesionServidor } from "@/lib/auth/sesion";
 
-const BACKEND_URL = process.env.BACKEND_URL ?? 'http://localhost:3000';
+const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:3000";
+
+let activeRefreshPromise: Promise<boolean> | null = null;
 
 export interface ProxyOptions {
   method?: string;
@@ -22,13 +25,28 @@ export async function llamarBackend<T>(
   ruta: string,
   opciones: ProxyOptions = {},
 ): Promise<ProxyResult<T>> {
-  const { method = 'GET', body, accessToken, signal } = opciones;
+  const { method = "GET", body, accessToken, signal } = opciones;
+
+  // Seguridad: Impedir que se llame a URLs externas o arbitrarias
+  if (
+    ruta.startsWith("http://") ||
+    ruta.startsWith("https://") ||
+    ruta.startsWith("//")
+  ) {
+    return {
+      status: 400,
+      error: {
+        codigo: "ACCESO_DENEGADO",
+        mensaje: "Dirección destino no permitida",
+      },
+    };
+  }
 
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
   if (accessToken) {
-    headers['Authorization'] = `Bearer ${accessToken}`;
+    headers["Authorization"] = `Bearer ${accessToken}`;
   }
 
   let res: Response;
@@ -40,12 +58,21 @@ export async function llamarBackend<T>(
       signal,
     });
   } catch (err) {
-    if (err instanceof Error && err.name === 'AbortError') {
-      return { status: 499, error: { codigo: 'SOLICITUD_CANCELADA', mensaje: 'Solicitud cancelada' } };
+    if (err instanceof Error && err.name === "AbortError") {
+      return {
+        status: 499,
+        error: {
+          codigo: "SOLICITUD_CANCELADA",
+          mensaje: "Solicitud cancelada",
+        },
+      };
     }
     return {
       status: 503,
-      error: { codigo: 'ERROR_RED', mensaje: 'No se pudo conectar con el servidor' },
+      error: {
+        codigo: "ERROR_RED",
+        mensaje: "No se pudo conectar con el servidor",
+      },
     };
   }
 
@@ -59,7 +86,10 @@ export async function llamarBackend<T>(
   } catch {
     return {
       status: res.status,
-      error: { codigo: 'ERROR_SERVIDOR', mensaje: 'Respuesta inesperada del servidor' },
+      error: {
+        codigo: "ERROR_SERVIDOR",
+        mensaje: "Respuesta inesperada del servidor",
+      },
     };
   }
 
@@ -74,13 +104,13 @@ export function errorBff(
   codigo: string,
   mensaje: string,
   status: number,
-  ruta = '',
+  ruta = "",
 ): NextResponse {
   return NextResponse.json(
     {
       codigo,
       mensaje,
-      correlacionId: '',
+      correlacionId: "",
       ruta,
       fecha: new Date().toISOString(),
     },
@@ -94,10 +124,10 @@ export function errorResponse(error: unknown, status: number): NextResponse {
   }
   return NextResponse.json(
     {
-      codigo: 'ERROR_SERVIDOR',
-      mensaje: 'Error inesperado',
-      correlacionId: '',
-      ruta: '',
+      codigo: "ERROR_SERVIDOR",
+      mensaje: "Error inesperado",
+      correlacionId: "",
+      ruta: "",
       fecha: new Date().toISOString(),
     },
     { status: 500 },
@@ -109,46 +139,84 @@ export async function renovarSesion(
 ): Promise<boolean> {
   if (!sesion.refreshToken) return false;
 
-  const resultado = await llamarBackend<{ accessToken: string; refreshToken: string }>(
-    '/api/v1/autenticacion/renovar',
-    {
-      method: 'POST',
-      body: { refreshToken: sesion.refreshToken },
-    },
-  );
-
-  if (resultado.status !== 200 || !resultado.data) {
-    await sesion.destroy();
-    return false;
-  }
-
-  sesion.accessToken = resultado.data.accessToken;
-  sesion.refreshToken = resultado.data.refreshToken;
-
-  if (sesion.contexto) {
-    const reselect = await llamarBackend<{ accessToken: string }>(
-      '/api/v1/autenticacion/seleccionar-contexto',
-      {
-        method: 'POST',
-        body: {
-          institucionId: sesion.contexto.institucionId,
-          ambito: sesion.contexto.ambito,
-          sedeId: sesion.contexto.sedeId,
-        },
-        accessToken: resultado.data.accessToken,
-      },
-    );
-
-    if (reselect.status === 200 && reselect.data) {
-      sesion.accessToken = reselect.data.accessToken;
-    } else {
-      sesion.contexto = undefined;
+  // Prevenir condiciones de carrera: Si ya hay una renovación activa, esperar por ella
+  if (activeRefreshPromise) {
+    try {
+      const exito = await activeRefreshPromise;
+      if (exito) {
+        const nuevaSesion = await obtenerSesionServidor();
+        sesion.accessToken = nuevaSesion.accessToken;
+        sesion.refreshToken = nuevaSesion.refreshToken;
+        sesion.contexto = nuevaSesion.contexto;
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
     }
   }
 
-  await sesion.save();
-  return true;
+  activeRefreshPromise = (async () => {
+    try {
+      const resultado = await llamarBackend<{
+        accessToken: string;
+        refreshToken: string;
+      }>("/api/v1/autenticacion/renovar", {
+        method: "POST",
+        body: { refreshToken: sesion.refreshToken },
+      });
+
+      if (resultado.status !== 200 || !resultado.data) {
+        await sesion.destroy();
+        return false;
+      }
+
+      sesion.accessToken = resultado.data.accessToken;
+      sesion.refreshToken = resultado.data.refreshToken;
+
+      if (sesion.contexto) {
+        const reselect = await llamarBackend<{
+          accessToken: string;
+          contexto: any;
+          permisos: string[];
+        }>("/api/v1/autenticacion/seleccionar-contexto", {
+          method: "POST",
+          body: {
+            ambito: sesion.contexto.ambito,
+            rolId: sesion.contexto.rolId,
+            rolCodigo: sesion.contexto.rolCodigo,
+            institucionId: sesion.contexto.institucionId,
+            sedeId: sesion.contexto.sedeId,
+            institucionNombre: sesion.contexto.institucionNombre,
+            sedeNombre: sesion.contexto.sedeNombre,
+          },
+          accessToken: resultado.data.accessToken,
+        });
+
+        if (reselect.status === 200 && reselect.data) {
+          sesion.accessToken = reselect.data.accessToken;
+          sesion.contexto = {
+            ...reselect.data.contexto,
+            permisos: reselect.data.permisos,
+          };
+        } else {
+          sesion.contexto = undefined;
+        }
+      }
+
+      await sesion.save();
+      return true;
+    } catch {
+      await sesion.destroy();
+      return false;
+    } finally {
+      activeRefreshPromise = null;
+    }
+  })();
+
+  return activeRefreshPromise;
 }
+
 
 /**
  * Ejecuta una llamada autenticada al backend con renovación automática de token.
@@ -157,20 +225,32 @@ export async function renovarSesion(
 export async function llamarAutenticado<T>(
   sesion: IronSession<EduraSession>,
   ruta: string,
-  opciones: Omit<ProxyOptions, 'accessToken'> = {},
+  opciones: Omit<ProxyOptions, "accessToken"> = {},
 ): Promise<ProxyResult<T>> {
   if (!sesion.accessToken) {
-    return { status: 401, error: { codigo: 'SESION_EXPIRADA', mensaje: 'Sesión no válida' } };
+    return {
+      status: 401,
+      error: { codigo: "SESION_EXPIRADA", mensaje: "Sesión no válida" },
+    };
   }
 
-  let resultado = await llamarBackend<T>(ruta, { ...opciones, accessToken: sesion.accessToken });
+  let resultado = await llamarBackend<T>(ruta, {
+    ...opciones,
+    accessToken: sesion.accessToken,
+  });
 
   if (resultado.status === 401) {
     const renovado = await renovarSesion(sesion);
     if (!renovado || !sesion.accessToken) {
-      return { status: 401, error: { codigo: 'SESION_EXPIRADA', mensaje: 'Sesión expirada' } };
+      return {
+        status: 401,
+        error: { codigo: "SESION_EXPIRADA", mensaje: "Sesión expirada" },
+      };
     }
-    resultado = await llamarBackend<T>(ruta, { ...opciones, accessToken: sesion.accessToken });
+    resultado = await llamarBackend<T>(ruta, {
+      ...opciones,
+      accessToken: sesion.accessToken,
+    });
   }
 
   return resultado;

@@ -20,7 +20,7 @@ export default async function PaginaDetallePlan({ params }: Params): Promise<Rea
     <DetallePlanClient
       id={id}
       ctx={{
-        institucionId: sesion.contexto.institucionId,
+        institucionId: sesion.contexto.institucionId ?? '',
         ambito: sesion.contexto.ambito,
         sedeId: sesion.contexto.sedeId,
       }}

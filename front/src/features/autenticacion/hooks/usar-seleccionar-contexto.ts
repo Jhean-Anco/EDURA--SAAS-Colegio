@@ -7,10 +7,15 @@ import type { ErrorApi } from '@/lib/errores/traducir-error';
 import type { Ambito } from '@/types/auth';
 
 interface EntradaSeleccion {
-  institucionId: string;
   ambito: Ambito;
-  sedeId?: string | null;
+  rolId: string;
+  rolCodigo: string;
+  institucionId: string | null;
+  sedeId: string | null;
+  institucionNombre: string | null;
+  sedeNombre: string | null;
 }
+
 
 function leerCsrfToken(): string {
   return (

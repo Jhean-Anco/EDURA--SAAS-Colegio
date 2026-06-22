@@ -2,29 +2,36 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { obtenerSesionServidor, generarCsrfToken, CSRF_COOKIE } from '@/lib/auth/sesion';
 import { llamarBackend, errorResponse } from '@/lib/bff/proxy';
+import { verificarSesionYCsrf } from '@/lib/bff/guards';
 import type { ContextoDescriptor } from '@/types/auth';
 
 interface CuerpoSeleccion {
-  institucionId: string;
-  ambito: 'INSTITUCION' | 'SEDE';
-  sedeId?: string | null;
+  ambito: 'PLATAFORMA' | 'INSTITUCION' | 'SEDE';
+  rolId: string;
+  rolCodigo: string;
+  institucionId: string | null;
+  sedeId: string | null;
+  institucionNombre: string | null;
+  sedeNombre: string | null;
 }
 
 interface RespuestaSeleccion {
   accessToken: string;
-  contexto: ContextoDescriptor;
+  contexto: {
+    ambito: 'PLATAFORMA' | 'INSTITUCION' | 'SEDE';
+    rolId: string;
+    rolCodigo: string;
+    institucionId: string | null;
+    institucionNombre: string | null;
+    sedeId: string | null;
+    sedeNombre: string | null;
+  };
+  permisos: string[];
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  const sesion = await obtenerSesionServidor();
-  if (!sesion.accessToken) {
-    return NextResponse.json({ codigo: 'SESION_EXPIRADA', mensaje: 'No hay sesión activa' }, { status: 401 });
-  }
-
-  const csrfHeader = req.headers.get('x-csrf-token');
-  if (!sesion.csrfToken || csrfHeader !== sesion.csrfToken) {
-    return NextResponse.json({ codigo: 'ACCESO_DENEGADO', mensaje: 'Token CSRF inválido' }, { status: 403 });
-  }
+  const { sesion, error } = await verificarSesionYCsrf(req);
+  if (error) return error;
 
   let body: CuerpoSeleccion;
   try {
@@ -42,11 +49,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return errorResponse(resultado.error, resultado.status);
   }
 
-  const { accessToken, contexto } = resultado.data;
+  const { accessToken, contexto, permisos } = resultado.data;
   const csrfToken = generarCsrfToken();
 
   sesion.accessToken = accessToken;
-  sesion.contexto = contexto;
+  sesion.contexto = {
+    ...contexto,
+    permisos,
+  };
   sesion.csrfToken = csrfToken;
   await sesion.save();
 
@@ -61,3 +71,4 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   return NextResponse.json({ ok: true }, { status: 200 });
 }
+

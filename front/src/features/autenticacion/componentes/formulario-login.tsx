@@ -35,7 +35,10 @@ export function FormularioLogin(): React.JSX.Element {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
-      {error && <ErrorDisplay error={error} />}
+      <div aria-live="assertive" className="empty:hidden">
+        {error && <ErrorDisplay error={error} />}
+      </div>
+
 
       <div className="space-y-1.5">
         <Label htmlFor="email">Correo electrónico</Label>

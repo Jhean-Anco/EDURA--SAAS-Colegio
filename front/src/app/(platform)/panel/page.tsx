@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { Users, BookOpen, LayoutGrid } from 'lucide-react';
 import { obtenerSesionServidor } from '@/lib/auth/sesion';
 import { PanelClientWrapper } from './_componentes/panel-client-wrapper';
+import { PanelRolMinimo } from '@/features/panel/componentes/panel-rol-minimo';
 
 export const metadata: Metadata = {
   title: 'Panel',
@@ -12,6 +13,16 @@ export default async function PaginaPanel(): Promise<React.JSX.Element> {
   const sesion = await obtenerSesionServidor();
   if (!sesion.accessToken || !sesion.contexto) {
     redirect('/iniciar-sesion');
+  }
+
+  const rol = sesion.contexto.rolCodigo;
+
+  if (rol !== 'ADMINISTRADOR_INSTITUCION') {
+    const usuario = {
+      nombreCompleto: sesion.nombreCompleto ?? 'Usuario',
+      email: sesion.email ?? '',
+    };
+    return <PanelRolMinimo usuario={usuario} contexto={sesion.contexto} />;
   }
 
   const contexto = {
@@ -35,3 +46,4 @@ export default async function PaginaPanel(): Promise<React.JSX.Element> {
     </div>
   );
 }
+

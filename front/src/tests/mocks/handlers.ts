@@ -24,10 +24,10 @@ export const handlers = [
     return HttpResponse.json([
       {
         institucionId: 'inst-001',
-        nombreInstitucion: 'I.E. San Pedro',
+        institucionNombre: 'I.E. San Pedro',
         ambito: 'INSTITUCION',
         sedeId: null,
-        nombreSede: null,
+        sedeNombre: null,
         permisos: [
           'PANEL_INSTITUCIONAL.RESUMEN.LEER',
           'CURRICULO.LEER',
@@ -35,22 +35,25 @@ export const handlers = [
           'CURRICULO.PLANES.APROBAR',
           'CURRICULO.PLANES.CAMBIAR_ESTADO',
         ],
-        roles: ['DIRECTIVO'],
+        rolId: 'rol-directivo-uuid',
+        rolCodigo: 'ADMINISTRADOR_INSTITUCION',
       },
       {
         institucionId: 'inst-001',
-        nombreInstitucion: 'I.E. San Pedro',
+        institucionNombre: 'I.E. San Pedro',
         ambito: 'SEDE',
         sedeId: 'sede-001',
-        nombreSede: 'Sede Principal',
+        sedeNombre: 'Sede Principal',
         permisos: [
           'PANEL_INSTITUCIONAL.RESUMEN.LEER',
           'CURRICULO.LEER',
         ],
-        roles: ['DOCENTE'],
+        rolId: 'rol-docente-uuid',
+        rolCodigo: 'DOCENTE',
       },
     ]);
   }),
+
 
   http.post('/api/autenticacion/seleccionar-contexto', () => {
     return HttpResponse.json({ ok: true }, { status: 200 });

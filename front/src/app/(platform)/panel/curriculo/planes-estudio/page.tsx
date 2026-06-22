@@ -12,7 +12,7 @@ export default async function PaginaListadoPlanes(): Promise<React.JSX.Element> 
   }
 
   const ctx = {
-    institucionId: sesion.contexto.institucionId,
+    institucionId: sesion.contexto.institucionId ?? '',
     ambito: sesion.contexto.ambito,
     sedeId: sesion.contexto.sedeId,
   };

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import type { ContextoDescriptor } from '@/types/auth';
+import type { ContextoDescriptor } from "@/types/auth";
 
 interface PermissionGateProps {
   contexto: ContextoDescriptor;

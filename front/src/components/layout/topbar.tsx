@@ -41,9 +41,12 @@ export function TopBar({ sesion, onToggleAside }: TopBarProps): React.JSX.Elemen
   };
 
   const contextoLabel =
-    sesion.contexto.ambito === 'INSTITUCION'
-      ? sesion.contexto.nombreInstitucion
-      : `${sesion.contexto.nombreSede ?? sesion.contexto.nombreInstitucion}`;
+    sesion.contexto.ambito === 'PLATAFORMA'
+      ? 'Plataforma EDURA'
+      : sesion.contexto.ambito === 'INSTITUCION'
+      ? sesion.contexto.institucionNombre
+      : `${sesion.contexto.sedeNombre ?? sesion.contexto.institucionNombre}`;
+
 
   return (
     <header className="flex h-[--topbar-height] items-center gap-3 border-b border-[--color-border] bg-[--color-surface] px-4">
