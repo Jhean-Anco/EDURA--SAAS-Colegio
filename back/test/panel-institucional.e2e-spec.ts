@@ -124,7 +124,7 @@ describeE2E('Panel institucional E2E (requiere BD)', () => {
       await manager.query(
         `INSERT INTO asignaciones_rol_usuario (id, id_usuario, id_rol, id_membresia_institucion, id_sede, estado, fecha_inicio, fecha_creacion)
          VALUES ($1, $2, $3, $4, $5, 'ACTIVA', CURRENT_DATE, now())`,
-        [randomUUID(), usuarioId, rol.id, membresiaId, sedePrincipalId],
+        [randomUUID(), usuarioId, rol.id, membresiaId, null],
       );
 
       await manager.query(
