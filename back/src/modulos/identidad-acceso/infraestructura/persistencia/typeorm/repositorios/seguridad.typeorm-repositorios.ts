@@ -17,6 +17,7 @@ import {
   RepositorioRoles,
   RepositorioSesiones,
   RepositorioUsuarios,
+  CredencialCompleta,
 } from '../../../../dominio/puertos/repositorios';
 import { Usuario } from '../../../../dominio/usuarios/usuario';
 import { CorreoElectronico } from '../../../../dominio/valores/correo-electronico';
@@ -126,6 +127,19 @@ export class CredencialTypeormRepositorio implements RepositorioCredenciales {
       where: { idUsuario: usuarioId },
     });
     return entidad ? HashClave.crear(entidad.hashClave) : null;
+  }
+  async obtenerPorUsuario(usuarioId: string): Promise<CredencialCompleta | null> {
+    const entidad = await this.repositorio.findOne({
+      where: { idUsuario: usuarioId },
+    });
+    return entidad
+      ? {
+          hashClave: entidad.hashClave,
+          intentosFallidos: entidad.intentosFallidos,
+          bloqueadoHasta: entidad.bloqueadoHasta,
+          requiereCambio: entidad.requiereCambio,
+        }
+      : null;
   }
   async actualizarIntentosFallidos(
     usuarioId: string,

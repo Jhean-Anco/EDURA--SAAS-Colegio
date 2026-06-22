@@ -8,6 +8,8 @@ import {
   permisosAdministradorInstitucion,
   permisosDirectorSede,
   permisosDocente,
+  permisosEstudiante,
+  permisosApoderado,
 } from './permisos-roles';
 
 async function upsertPorCodigo(
@@ -105,6 +107,8 @@ async function sembrarPermisosYRoles(manager: EntityManager): Promise<void> {
   );
   await asignarPermisos(manager, 'DIRECTOR_SEDE', permisosDirectorSede);
   await asignarPermisos(manager, 'DOCENTE', permisosDocente);
+  await asignarPermisos(manager, 'ESTUDIANTE', permisosEstudiante);
+  await asignarPermisos(manager, 'APODERADO', permisosApoderado);
 
   const permisosOwner = permisosSistema.map((p) => p.codigo);
   await asignarPermisos(manager, 'PROPIETARIO_PLATAFORMA', permisosOwner);

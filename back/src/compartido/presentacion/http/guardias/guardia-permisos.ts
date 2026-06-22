@@ -52,7 +52,7 @@ export class GuardiaPermisos implements CanActivate {
       sedeId: ctx.sedeId,
     });
 
-    const tienePermisos = permisosRequeridos.every((p) =>
+    const tienePermisos = permisosRequeridos.some((p) =>
       permisosEfectivos.includes(p),
     );
     if (!tienePermisos) {

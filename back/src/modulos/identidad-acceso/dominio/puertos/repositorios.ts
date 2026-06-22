@@ -26,8 +26,16 @@ export interface RepositorioUsuarios {
   incrementarVersionSeguridad(usuarioId: string): Promise<void>;
 }
 
+export interface CredencialCompleta {
+  hashClave: string;
+  intentosFallidos: number;
+  bloqueadoHasta: Date | null;
+  requiereCambio: boolean;
+}
+
 export interface RepositorioCredenciales {
   obtenerHashPorUsuario(usuarioId: string): Promise<HashClave | null>;
+  obtenerPorUsuario(usuarioId: string): Promise<CredencialCompleta | null>;
   actualizarIntentosFallidos(
     usuarioId: string,
     intentosFallidos: number,

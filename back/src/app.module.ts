@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { ConfiguracionModule } from './configuracion/configuracion.module';
 import { TypeOrmDatabaseModule } from './base-datos/typeorm/typeorm.module';
 import { SaludModule } from './salud/salud.module';
@@ -35,10 +36,42 @@ import { GuardiaPermisos } from './compartido/presentacion/http/guardias/guardia
     EstructuraAcademicaModule,
     CurriculoModule,
     MatriculasModule,
+    ThrottlerModule.forRoot([
+      {
+        name: 'defecto',
+        ttl: 60000,
+        limit: 100,
+      },
+      {
+        name: 'login',
+        ttl: 60000,
+        limit: 5,
+      },
+      {
+        name: 'refresh',
+        ttl: 60000,
+        limit: 15,
+      },
+      {
+        name: 'recuperacion',
+        ttl: 60000,
+        limit: 3,
+      },
+    ]),
   ],
   providers: [
     { provide: APP_GUARD, useExisting: GuardiaJwt },
     { provide: APP_GUARD, useExisting: GuardiaPermisos },
+    {
+      provide: APP_GUARD,
+      useClass: process.env.NODE_ENV === 'test'
+        ? class SkipThrottlerGuard extends ThrottlerGuard {
+            protected override async shouldSkip(): Promise<boolean> {
+              return true;
+            }
+          }
+        : ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

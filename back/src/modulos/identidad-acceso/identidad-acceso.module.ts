@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { CerrarSesionCasoUso } from './aplicacion/autenticacion/cerrar-sesion.caso-uso';
 import { CerrarTodasSesionesCasoUso } from './aplicacion/autenticacion/cerrar-todas-sesiones.caso-uso';
 import { IniciarSesionCasoUso } from './aplicacion/autenticacion/iniciar-sesion.caso-uso';
@@ -48,6 +49,10 @@ import { InstitucionEducativaTypeormEntidad } from '../estructura-institucional/
 import { SedeTypeormEntidad } from '../estructura-institucional/infraestructura/persistencia/typeorm/entidades/sede.typeorm-entidad';
 import { ConfiguracionAplicacion } from '../../configuracion/configuracion-aplicacion';
 import { ConfiguracionModule } from '../../configuracion/configuracion.module';
+import {
+  CONSULTADOR_PERMISOS_EFECTIVOS,
+  ConsultadorPermisosEfectivos,
+} from '../../compartido/infraestructura/persistencia/consultador-permisos.typeorm';
 
 @Module({
   imports: [
@@ -157,6 +162,7 @@ import { ConfiguracionModule } from '../../configuracion/configuracion.module';
         tokenRefresh: ServicioTokenOpacoCriptografico,
         tokenAcceso: ServicioTokenAccesoJwt,
         configuracion: ConfiguracionAplicacion,
+        dataSource: DataSource,
       ) =>
         new RenovarSesionCasoUso(
           sesiones,
@@ -166,6 +172,7 @@ import { ConfiguracionModule } from '../../configuracion/configuracion.module';
           tokenAcceso,
           configuracion.jwtAccesoTtlSegundos,
           configuracion.tokenRefreshTtlSegundos,
+          dataSource,
         ),
       inject: [
         REPOSITORIO_SESIONES,
@@ -174,6 +181,7 @@ import { ConfiguracionModule } from '../../configuracion/configuracion.module';
         ServicioTokenOpacoCriptografico,
         ServicioTokenAccesoJwt,
         ConfiguracionAplicacion,
+        DataSource,
       ],
     },
     {
@@ -199,18 +207,21 @@ import { ConfiguracionModule } from '../../configuracion/configuracion.module';
         auditoria: RepositorioAuditoria,
         tokenAcceso: ServicioTokenAccesoJwt,
         configuracion: ConfiguracionAplicacion,
+        permisos: ConsultadorPermisosEfectivos,
       ) =>
         new SeleccionarContextoCasoUso(
           consultador,
           auditoria,
           tokenAcceso,
           configuracion.jwtAccesoTtlSegundos,
+          permisos,
         ),
       inject: [
         CONSULTADOR_CONTEXTOS,
         REPOSITORIO_AUDITORIA,
         ServicioTokenAccesoJwt,
         ConfiguracionAplicacion,
+        CONSULTADOR_PERMISOS_EFECTIVOS,
       ],
     },
     {
@@ -252,6 +263,7 @@ import { ConfiguracionModule } from '../../configuracion/configuracion.module';
     GuardiaJwt,
     REPOSITORIO_SESIONES,
     REPOSITORIO_USUARIOS,
+    REPOSITORIO_CREDENCIALES,
   ],
 })
 export class IdentidadAccesoModule {}

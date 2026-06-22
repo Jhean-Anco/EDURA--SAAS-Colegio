@@ -342,6 +342,30 @@ export const permisosSistema = [
     codigo: 'MATRICULAS.ANULAR',
     descripcion: 'Anular matrículas',
   },
+  {
+    recurso: 'ESTUDIANTES',
+    accion: 'MI_PERFIL.LEER',
+    codigo: 'ESTUDIANTES.MI_PERFIL.LEER',
+    descripcion: 'Ver propio perfil de estudiante',
+  },
+  {
+    recurso: 'MATRICULAS',
+    accion: 'MI_MATRICULA.LEER',
+    codigo: 'MATRICULAS.MI_MATRICULA.LEER',
+    descripcion: 'Ver propia matrícula',
+  },
+  {
+    recurso: 'APODERADOS',
+    accion: 'MIS_ESTUDIANTES.LEER',
+    codigo: 'APODERADOS.MIS_ESTUDIANTES.LEER',
+    descripcion: 'Ver estudiantes a su cargo',
+  },
+  {
+    recurso: 'APODERADOS',
+    accion: 'MATRICULAS_ASOCIADAS.LEER',
+    codigo: 'APODERADOS.MATRICULAS_ASOCIADAS.LEER',
+    descripcion: 'Ver matrículas de estudiantes a su cargo',
+  },
 ] as const;
 
 export const rolesSistema = [
@@ -368,6 +392,18 @@ export const rolesSistema = [
     nombre: 'Docente',
     descripcion: 'Acceso al perfil propio del docente',
     ambito: 'SEDE',
+  },
+  {
+    codigo: 'ESTUDIANTE',
+    nombre: 'Estudiante',
+    descripcion: 'Acceso al perfil propio y matrícula del estudiante',
+    ambito: 'SEDE',
+  },
+  {
+    codigo: 'APODERADO',
+    nombre: 'Apoderado',
+    descripcion: 'Acceso a los estudiantes a su cargo',
+    ambito: 'INSTITUCION',
   },
 ] as const;
 
@@ -470,4 +506,14 @@ export const permisosDocente = [
   'PANEL_INSTITUCIONAL.RESUMEN.LEER',
   'ESTRUCTURA_ACADEMICA.LEER',
   'CURRICULO.LEER',
+] as const;
+
+export const permisosEstudiante = [
+  'ESTUDIANTES.MI_PERFIL.LEER',
+  'MATRICULAS.MI_MATRICULA.LEER',
+] as const;
+
+export const permisosApoderado = [
+  'APODERADOS.MIS_ESTUDIANTES.LEER',
+  'APODERADOS.MATRICULAS_ASOCIADAS.LEER',
 ] as const;

@@ -1,4 +1,5 @@
 import { JwtService } from '@nestjs/jwt';
+import { UnauthorizedException } from '@nestjs/common';
 import { PayloadAcceso } from '../../dominio/valores/payload-acceso';
 
 export class ServicioTokenAccesoJwt {
@@ -15,14 +16,28 @@ export class ServicioTokenAccesoJwt {
       issuer: this.emisor,
       audience: this.audiencia,
       expiresIn: ttlSegundos,
+      algorithm: 'HS256',
     });
   }
 
-  verificar(token: string): Promise<PayloadAcceso> {
-    return this.jwt.verifyAsync<PayloadAcceso>(token, {
-      secret: this.secreto,
-      issuer: this.emisor,
-      audience: this.audiencia,
-    });
+  async verificar(token: string): Promise<PayloadAcceso> {
+    // Defense in depth: Check token size limit (max 4096 characters)
+    if (!token || token.length > 4096) {
+      throw new UnauthorizedException('TOKEN_SIZE_LIMIT_EXCEEDED');
+    }
+    try {
+      const payload = await this.jwt.verifyAsync<PayloadAcceso>(token, {
+        secret: this.secreto,
+        issuer: this.emisor,
+        audience: this.audiencia,
+        algorithms: ['HS256'],
+      });
+      if (!payload || !payload.sub || !payload.sid || !payload.tipoToken) {
+        throw new UnauthorizedException('TOKEN_INVALIDO');
+      }
+      return payload;
+    } catch (e) {
+      throw new UnauthorizedException('TOKEN_INVALIDO');
+    }
   }
 }

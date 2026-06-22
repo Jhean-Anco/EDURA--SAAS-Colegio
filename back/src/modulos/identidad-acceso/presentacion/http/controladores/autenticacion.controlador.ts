@@ -8,8 +8,10 @@ import {
   HttpCode,
   HttpStatus,
   BadRequestException,
+  Inject,
 } from '@nestjs/common';
 import { Request } from 'express';
+import { Throttle } from '@nestjs/throttler';
 import { ContextoSolicitudAutenticada } from '../../../../../compartido/aplicacion/contexto-solicitud-autenticada';
 import { CerrarSesionCasoUso } from '../../../aplicacion/autenticacion/cerrar-sesion.caso-uso';
 import { CerrarTodasSesionesCasoUso } from '../../../aplicacion/autenticacion/cerrar-todas-sesiones.caso-uso';
@@ -22,6 +24,18 @@ import { Publico } from '../../../../../compartido/presentacion/http/decoradores
 import { IniciarSesionSolicitud } from '../solicitudes/iniciar-sesion.solicitud';
 import { RenovarSesionSolicitud } from '../solicitudes/renovar-sesion.solicitud';
 import { SeleccionarContextoSolicitud } from '../solicitudes/seleccionar-contexto.solicitud';
+import {
+  REPOSITORIO_USUARIOS,
+  REPOSITORIO_CREDENCIALES,
+} from '../../../dominio/puertos/indice';
+import {
+  RepositorioUsuarios,
+  RepositorioCredenciales,
+} from '../../../dominio/puertos/repositorios';
+import {
+  CONSULTADOR_PERMISOS_EFECTIVOS,
+  ConsultadorPermisosEfectivos,
+} from '../../../../../compartido/infraestructura/persistencia/consultador-permisos.typeorm';
 
 @Controller('autenticacion')
 export class AutenticacionControlador {
@@ -32,6 +46,12 @@ export class AutenticacionControlador {
     private readonly cerrarTodas: CerrarTodasSesionesCasoUso,
     private readonly seleccionarContexto: SeleccionarContextoCasoUso,
     private readonly listarContextos: ListarContextosUsuarioConsulta,
+    @Inject(REPOSITORIO_USUARIOS)
+    private readonly usuariosRepo: RepositorioUsuarios,
+    @Inject(REPOSITORIO_CREDENCIALES)
+    private readonly credencialesRepo: RepositorioCredenciales,
+    @Inject(CONSULTADOR_PERMISOS_EFECTIVOS)
+    private readonly consultadorPermisos: ConsultadorPermisosEfectivos,
   ) {}
 
   private obtenerUsuario(request: Request): PayloadAcceso {
@@ -54,6 +74,7 @@ export class AutenticacionControlador {
   }
 
   @Publico()
+  @Throttle({ login: { limit: 5, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
   @Post('iniciar-sesion')
   iniciar(@Body() solicitud: IniciarSesionSolicitud) {
@@ -68,6 +89,7 @@ export class AutenticacionControlador {
   }
 
   @Publico()
+  @Throttle({ refresh: { limit: 15, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
   @Post('renovar')
   renovar(@Body() solicitud: RenovarSesionSolicitud) {
@@ -109,5 +131,43 @@ export class AutenticacionControlador {
       contexto: solicitud,
       versionSeguridad: usuario.versionSeguridad,
     });
+  }
+
+  @Get('sesion-actual')
+  async sesionActual(@Req() request: Request) {
+    const usuarioPayload = this.obtenerUsuario(request);
+    const usuario = await this.usuariosRepo.buscarPorId(usuarioPayload.sub);
+    if (!usuario) {
+      throw new UnauthorizedException('USUARIO_NO_ENCONTRADO');
+    }
+    const credencial = await this.credencialesRepo.obtenerHashPorUsuario(usuario.id);
+    const requiereCambioClave = credencial ? credencial.requiereCambio : false;
+
+    let permisosEfectivos: string[] = [];
+    if (usuarioPayload.rolId) {
+      permisosEfectivos = await this.consultadorPermisos.listar({
+        usuarioId: usuario.id,
+        rolId: usuarioPayload.rolId,
+        institucionId: usuarioPayload.institucionId,
+        sedeId: usuarioPayload.sedeId,
+      });
+    }
+
+    return {
+      usuario: {
+        id: usuario.id,
+        nombreMostrado: usuario.nombreMostrado,
+        correo: usuario.correo,
+      },
+      contexto: usuarioPayload.ambito ? {
+        ambito: usuarioPayload.ambito,
+        rolId: usuarioPayload.rolId,
+        institucionId: usuarioPayload.institucionId,
+        sedeId: usuarioPayload.sedeId,
+      } : null,
+      permisos: permisosEfectivos,
+      versionSeguridad: usuario.versionSeguridad,
+      requiereCambioClave,
+    };
   }
 }

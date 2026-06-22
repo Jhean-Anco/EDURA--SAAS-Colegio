@@ -33,9 +33,11 @@
     "db:seed:catalogos": "ts-node -r tsconfig-paths/register src/base-datos/typeorm/semillas/sembrar.ts catalogos",
     "db:seed:seguridad": "ts-node -r tsconfig-paths/register src/base-datos/typeorm/semillas/sembrar.ts seguridad",
     "db:seed:bootstrap": "ts-node -r tsconfig-paths/register src/base-datos/typeorm/semillas/bootstrap-admin.ts",
-    "db:seed:demo": "ts-node -r tsconfig-paths/register src/base-datos/typeorm/semillas/demo.ts",
+    "db:seed:demo": "node -e \"if(process.env.ENTORNO==='produccion'||process.env.ENTORNO==='production'||(process.env.NODE_ENV||'').includes('prod')) { console.error('ERROR: No se puede sembrar demo en produccion'); process.exit(1); }\" && ts-node -r tsconfig-paths/register src/base-datos/typeorm/semillas/demo.ts",
     "db:seed:all": "ts-node -r tsconfig-paths/register src/base-datos/typeorm/semillas/sembrar-todo.ts",
-    "db:reseed:local": "ts-node -r tsconfig-paths/register src/base-datos/typeorm/semillas/reiniciar-local.ts"
+    "db:reseed:local": "ts-node -r tsconfig-paths/register src/base-datos/typeorm/semillas/reiniciar-local.ts",
+    "db:audit": "ts-node -r tsconfig-paths/register src/base-datos/typeorm/utilidades/auditor-base-datos.ts",
+    "security:audit": "npm audit && npm run db:audit"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

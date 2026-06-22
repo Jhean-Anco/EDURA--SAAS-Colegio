@@ -9,8 +9,7 @@ export class SeleccionarContextoSolicitud {
   rolCodigo?: string;
 
   @IsUUID()
-  @IsOptional()
-  rolId?: string;
+  rolId!: string;
 
   @IsUUID()
   @IsOptional()

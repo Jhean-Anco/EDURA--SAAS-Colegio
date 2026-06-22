@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { UnauthorizedException } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 import {
   RepositorioAuditoria,
   RepositorioSesiones,
@@ -10,6 +11,11 @@ import { ServicioTokenOpacoCriptografico } from '../../infraestructura/tokens/se
 import { ServicioTokenAccesoJwt } from '../../infraestructura/tokens/servicio-token-acceso-jwt';
 import { SesionUsuario } from '../../dominio/sesiones/sesion-usuario';
 import { PayloadAcceso } from '../../dominio/valores/payload-acceso';
+import {
+  SesionUsuarioTypeormEntidad,
+  UsuarioTypeormEntidad,
+  EventoAuditoriaTypeormEntidad,
+} from '../../infraestructura/persistencia/typeorm/entidades/seguridad.typeorm-entidades';
 
 export interface RenovarSesionEntrada {
   refreshToken: string;
@@ -29,74 +35,169 @@ export class RenovarSesionCasoUso {
     private readonly tokenAcceso: ServicioTokenAccesoJwt,
     private readonly jwtAccesoTtlSegundos: number,
     private readonly tokenRefreshTtlSegundos: number,
+    private readonly dataSource: DataSource,
   ) {}
 
   async ejecutar(entrada: RenovarSesionEntrada): Promise<RenovarSesionSalida> {
     const hash = this.tokenRefresh.hash(entrada.refreshToken);
-    const sesion = await this.sesiones.buscarPorHashRefresh(hash);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    if (
-      !sesion ||
-      sesion.fechaRevocacion !== null ||
-      (sesion.fechaExpiracion !== null && sesion.fechaExpiracion < new Date())
-    ) {
-      await this.auditoria.registrar(
-        new EventoAuditoria(
-          randomUUID(),
-          'REFRESH_INVALIDO',
-          'sesion',
-          'FALLO',
-        ),
+    try {
+      // Find the session with FOR UPDATE to prevent race conditions & concurrent renewals
+      const sesionEntidad = await queryRunner.manager.findOne(SesionUsuarioTypeormEntidad, {
+        where: { tokenActualizacionHash: hash },
+        lock: { mode: 'pessimistic_write' },
+      });
+
+      if (!sesionEntidad) {
+        const auditEvent = queryRunner.manager.create(EventoAuditoriaTypeormEntidad, {
+          id: randomUUID(),
+          accion: 'REFRESH_INVALIDO',
+          recurso: 'sesion',
+          resultado: 'FALLO',
+          idCorrelacion: randomUUID(),
+        });
+        await queryRunner.manager.save(EventoAuditoriaTypeormEntidad, auditEvent);
+        await queryRunner.commitTransaction();
+        throw new UnauthorizedException('SESION_INVALIDA');
+      }
+
+      // Reuse detection: if the session has already been revoked, revoke the entire family!
+      if (sesionEntidad.fechaRevocacion !== null) {
+        await queryRunner.manager.update(
+          SesionUsuarioTypeormEntidad,
+          { identificadorFamilia: sesionEntidad.identificadorFamilia },
+          {
+            fechaRevocacion: new Date(),
+            motivoRevocacion: 'REUSE_DETECTED',
+          },
+        );
+
+        const auditEvent = queryRunner.manager.create(EventoAuditoriaTypeormEntidad, {
+          id: randomUUID(),
+          accion: 'REFRESH_REINTEGRO_DETECTOR_REUSO',
+          recurso: 'sesion',
+          recursoId: sesionEntidad.id,
+          usuarioId: sesionEntidad.usuarioId,
+          resultado: 'FALLO',
+          idCorrelacion: randomUUID(),
+          metadatos: { familiaId: sesionEntidad.identificadorFamilia },
+        });
+        await queryRunner.manager.save(EventoAuditoriaTypeormEntidad, auditEvent);
+        await queryRunner.commitTransaction();
+        throw new UnauthorizedException('SESION_INVALIDA');
+      }
+
+      // Check expiration
+      if (sesionEntidad.fechaExpiracion < new Date()) {
+        await queryRunner.manager.update(
+          SesionUsuarioTypeormEntidad,
+          { id: sesionEntidad.id },
+          {
+            fechaRevocacion: new Date(),
+            motivoRevocacion: 'EXPIRADA',
+          },
+        );
+
+        const auditEvent = queryRunner.manager.create(EventoAuditoriaTypeormEntidad, {
+          id: randomUUID(),
+          accion: 'REFRESH_EXPIRADO',
+          recurso: 'sesion',
+          recursoId: sesionEntidad.id,
+          usuarioId: sesionEntidad.usuarioId,
+          resultado: 'FALLO',
+          idCorrelacion: randomUUID(),
+        });
+        await queryRunner.manager.save(EventoAuditoriaTypeormEntidad, auditEvent);
+        await queryRunner.commitTransaction();
+        throw new UnauthorizedException('SESION_INVALIDA');
+      }
+
+      // Check user
+      const usuario = await queryRunner.manager.findOne(UsuarioTypeormEntidad, {
+        where: { id: sesionEntidad.usuarioId },
+      });
+
+      if (!usuario || usuario.estado !== 'ACTIVO') {
+        const auditEvent = queryRunner.manager.create(EventoAuditoriaTypeormEntidad, {
+          id: randomUUID(),
+          accion: 'REFRESH_USUARIO_INACTIVO',
+          recurso: 'sesion',
+          recursoId: sesionEntidad.id,
+          usuarioId: sesionEntidad.usuarioId,
+          resultado: 'FALLO',
+          idCorrelacion: randomUUID(),
+        });
+        await queryRunner.manager.save(EventoAuditoriaTypeormEntidad, auditEvent);
+        await queryRunner.commitTransaction();
+        throw new UnauthorizedException('USUARIO_INACTIVO');
+      }
+
+      const nuevoRefresh = this.tokenRefresh.generar();
+      const expiracion = new Date(
+        Date.now() + this.tokenRefreshTtlSegundos * 1000,
       );
-      throw new UnauthorizedException('SESION_INVALIDA');
-    }
+      const nuevaSesionId = randomUUID();
 
-    const usuario = await this.usuarios.buscarPorId(sesion.usuarioId);
-    if (!usuario || usuario.estado !== 'ACTIVO') {
-      await this.auditoria.registrar(
-        new EventoAuditoria(
-          randomUUID(),
-          'REFRESH_USUARIO_INACTIVO',
-          'sesion',
-          'FALLO',
-        ),
+      // Revoke the old rotated session
+      await queryRunner.manager.update(
+        SesionUsuarioTypeormEntidad,
+        { id: sesionEntidad.id },
+        {
+          fechaRevocacion: new Date(),
+          motivoRevocacion: 'ROTADA',
+        },
       );
-      throw new UnauthorizedException('USUARIO_INACTIVO');
+
+      // Create new session
+      const nuevaSesion = queryRunner.manager.create(SesionUsuarioTypeormEntidad, {
+        id: nuevaSesionId,
+        usuarioId: sesionEntidad.usuarioId,
+        sesionAnteriorId: sesionEntidad.id,
+        identificadorFamilia: sesionEntidad.identificadorFamilia,
+        tokenActualizacionHash: nuevoRefresh.hash,
+        fechaExpiracion: expiracion,
+      });
+      await queryRunner.manager.save(SesionUsuarioTypeormEntidad, nuevaSesion);
+
+      const correlationId = randomUUID();
+      const auditEvent = queryRunner.manager.create(EventoAuditoriaTypeormEntidad, {
+        id: randomUUID(),
+        accion: 'SESION_RENOVADA',
+        recurso: 'sesion',
+        recursoId: nuevaSesionId,
+        usuarioId: sesionEntidad.usuarioId,
+        resultado: 'EXITO',
+        idCorrelacion: correlationId,
+      });
+      await queryRunner.manager.save(EventoAuditoriaTypeormEntidad, auditEvent);
+
+      await queryRunner.commitTransaction();
+
+      const accessToken = this.tokenAcceso.firmar(
+        {
+          sub: sesionEntidad.usuarioId,
+          sid: nuevaSesionId,
+          versionSeguridad: usuario.versionSeguridad,
+          tipoToken: 'PRECONTEXTO',
+          ambito: null,
+          rolId: null,
+          institucionId: null,
+          sedeId: null,
+        } satisfies PayloadAcceso,
+        this.jwtAccesoTtlSegundos,
+      );
+
+      return { accessToken, refreshToken: nuevoRefresh.token };
+    } catch (error) {
+      if (queryRunner.isTransactionActive) {
+        await queryRunner.rollbackTransaction();
+      }
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
-
-    const nuevoRefresh = this.tokenRefresh.generar();
-    const expiracion = new Date(
-      Date.now() + this.tokenRefreshTtlSegundos * 1000,
-    );
-    const nuevaSesion = new SesionUsuario(
-      randomUUID(),
-      sesion.usuarioId,
-      sesion.familiaId,
-      nuevoRefresh.hash,
-      sesion.id,
-      expiracion,
-    );
-    await this.sesiones.crear(nuevaSesion);
-    await this.sesiones.revocar(sesion.id, 'ROTADA', new Date());
-
-    const accessToken = this.tokenAcceso.firmar(
-      {
-        sub: sesion.usuarioId,
-        sid: nuevaSesion.id,
-        versionSeguridad: usuario.versionSeguridad,
-        tipoToken: 'PRECONTEXTO',
-        ambito: null,
-        rolId: null,
-        institucionId: null,
-        sedeId: null,
-      } satisfies PayloadAcceso,
-      this.jwtAccesoTtlSegundos,
-    );
-
-    await this.auditoria.registrar(
-      new EventoAuditoria(randomUUID(), 'SESION_RENOVADA', 'sesion', 'EXITO'),
-    );
-
-    return { accessToken, refreshToken: nuevoRefresh.token };
   }
 }

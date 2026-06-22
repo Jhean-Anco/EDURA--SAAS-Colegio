@@ -1,10 +1,11 @@
-import { ForbiddenException } from '@nestjs/common';
+import { ForbiddenException, BadRequestException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { RepositorioAuditoria } from '../../dominio/puertos/repositorios';
 import { EventoAuditoria } from '../../dominio/auditoria/evento-auditoria';
 import { ServicioTokenAccesoJwt } from '../../infraestructura/tokens/servicio-token-acceso-jwt';
 import { ContextoAcceso } from '../../dominio/puertos/repositorios';
 import { PayloadAcceso } from '../../dominio/valores/payload-acceso';
+import { ConsultadorPermisosEfectivos } from '../../../../compartido/infraestructura/persistencia/consultador-permisos.typeorm';
 
 export interface SeleccionarContextoEntrada {
   usuarioId: string;
@@ -15,6 +16,8 @@ export interface SeleccionarContextoEntrada {
 
 export interface SeleccionarContextoSalida {
   accessToken: string;
+  contexto: ContextoAcceso;
+  permisos: string[];
 }
 
 export class SeleccionarContextoCasoUso {
@@ -25,18 +28,22 @@ export class SeleccionarContextoCasoUso {
     private readonly auditoria: RepositorioAuditoria,
     private readonly tokenAcceso: ServicioTokenAccesoJwt,
     private readonly jwtAccesoTtlSegundos: number,
+    private readonly consultadorPermisos: ConsultadorPermisosEfectivos,
   ) {}
 
   async ejecutar(
     entrada: SeleccionarContextoEntrada,
   ): Promise<SeleccionarContextoSalida> {
+    if (!entrada.contexto || !entrada.contexto.rolId) {
+      throw new BadRequestException('El rolId es obligatorio para seleccionar un contexto.');
+    }
     const disponibles = await this.contextos.listarPorUsuario(
       entrada.usuarioId,
     );
     const coincidencia = disponibles.find(
       (contexto) =>
         contexto.ambito === entrada.contexto.ambito &&
-        (!entrada.contexto.rolId || contexto.rolId === entrada.contexto.rolId) &&
+        contexto.rolId === entrada.contexto.rolId &&
         contexto.institucionId === entrada.contexto.institucionId &&
         contexto.sedeId === entrada.contexto.sedeId,
     );
@@ -56,6 +63,12 @@ export class SeleccionarContextoCasoUso {
       } satisfies PayloadAcceso,
       this.jwtAccesoTtlSegundos,
     );
+    const permisosEfectivos = await this.consultadorPermisos.listar({
+      usuarioId: entrada.usuarioId,
+      rolId: coincidencia.rolId,
+      institucionId: coincidencia.institucionId,
+      sedeId: coincidencia.sedeId,
+    });
     await this.auditoria.registrar(
       new EventoAuditoria(
         randomUUID(),
@@ -64,6 +77,10 @@ export class SeleccionarContextoCasoUso {
         'EXITO',
       ),
     );
-    return { accessToken };
+    return {
+      accessToken,
+      contexto: coincidencia,
+      permisos: permisosEfectivos,
+    };
   }
 }

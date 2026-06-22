@@ -21,11 +21,16 @@ export interface IniciarSesionEntrada {
 
 export interface IniciarSesionSalida {
   usuarioId: string;
+  nombreMostrado: string;
+  correo: string;
+  requiereCambioClave: boolean;
   accessToken: string;
   refreshToken: string;
 }
 
 export class IniciarSesionCasoUso {
+  private readonly DUMMY_HASH = '$argon2id$v=19$m=65536,t=3,p=4$dummyhashdummyhashdummyhash$L3pPzXGz/aGvS1x3K6sWb5dEwW1Z3E5W6Z8E9W0Z1E4';
+
   constructor(
     private readonly usuarios: RepositorioUsuarios,
     private readonly credenciales: RepositorioCredenciales,
@@ -40,29 +45,52 @@ export class IniciarSesionCasoUso {
 
   async ejecutar(entrada: IniciarSesionEntrada): Promise<IniciarSesionSalida> {
     const correo = CorreoElectronico.crear(entrada.correo);
-    const usuario = await this.usuarios.buscarPorCorreoNormalizado(
-      correo.valor,
-    );
-    const credencial = usuario
-      ? await this.credenciales.obtenerHashPorUsuario(usuario.id)
-      : null;
+    const usuario = await this.usuarios.buscarPorCorreoNormalizado(correo.valor);
+    const credencial = usuario ? await this.credenciales.obtenerPorUsuario(usuario.id) : null;
+
     if (!usuario || !credencial) {
+      await this.hashClave.verificar(this.DUMMY_HASH, entrada.clave);
       await this.auditoria.registrar(
         new EventoAuditoria(randomUUID(), 'LOGIN_FALLO', 'usuario', 'FALLO'),
       );
       throw new UnauthorizedException('CREDENCIALES_INVALIDAS');
     }
-    const valida = await this.hashClave.verificar(
-      credencial.valor,
-      entrada.clave,
-    );
+
+    if (usuario.estado !== 'ACTIVO') {
+      await this.hashClave.verificar(credencial.hashClave, entrada.clave);
+      await this.auditoria.registrar(
+        new EventoAuditoria(randomUUID(), 'LOGIN_FALLO', 'usuario', 'FALLO'),
+      );
+      throw new UnauthorizedException('CREDENCIALES_INVALIDAS');
+    }
+
+    if (credencial.bloqueadoHasta && credencial.bloqueadoHasta > new Date()) {
+      await this.hashClave.verificar(credencial.hashClave, entrada.clave);
+      await this.auditoria.registrar(
+        new EventoAuditoria(randomUUID(), 'LOGIN_FALLO', 'usuario', 'FALLO'),
+      );
+      throw new UnauthorizedException('CREDENCIALES_INVALIDAS');
+    }
+
+    const valida = await this.hashClave.verificar(credencial.hashClave, entrada.clave);
+
     if (!valida) {
-      await this.credenciales.actualizarIntentosFallidos(usuario.id, 1, null);
+      const nuevosIntentos = credencial.intentosFallidos + 1;
+      let bloqueadoHasta: Date | null = null;
+      if (nuevosIntentos >= 10) {
+        bloqueadoHasta = new Date(Date.now() + 60 * 60 * 1000);
+      } else if (nuevosIntentos >= 5) {
+        bloqueadoHasta = new Date(Date.now() + 15 * 60 * 1000);
+      }
+      await this.credenciales.actualizarIntentosFallidos(usuario.id, nuevosIntentos, bloqueadoHasta);
       await this.auditoria.registrar(
         new EventoAuditoria(randomUUID(), 'LOGIN_FALLO', 'usuario', 'FALLO'),
       );
       throw new UnauthorizedException('CREDENCIALES_INVALIDAS');
     }
+
+    await this.credenciales.actualizarIntentosFallidos(usuario.id, 0, null);
+
     const sesionId = randomUUID();
     const familiaId = randomUUID();
     const refresh = this.tokenRefresh.generar();
@@ -75,6 +103,7 @@ export class IniciarSesionCasoUso {
       new Date(Date.now() + this.tokenRefreshTtlSegundos * 1000),
     );
     await this.sesiones.crear(sesion);
+
     const payload: PayloadAcceso = {
       sub: usuario.id,
       sid: sesionId,
@@ -89,13 +118,17 @@ export class IniciarSesionCasoUso {
       payload,
       this.jwtAccesoTtlSegundos,
     );
+
     await this.usuarios.actualizarUltimoAcceso(usuario.id, new Date());
-    await this.credenciales.actualizarIntentosFallidos(usuario.id, 0, null);
     await this.auditoria.registrar(
       new EventoAuditoria(randomUUID(), 'LOGIN_EXITO', 'usuario', 'EXITO'),
     );
+
     return {
       usuarioId: usuario.id,
+      nombreMostrado: usuario.nombreMostrado,
+      correo: usuario.correo,
+      requiereCambioClave: credencial.requiereCambio,
       accessToken,
       refreshToken: refresh.token,
     };

@@ -12,6 +12,8 @@ export interface EntradaEventoAuditoria {
   datosNuevos?: Record<string, unknown> | null;
   metadatos?: Record<string, unknown> | null;
   idCorrelacion: string;
+  direccionIp?: string | null;
+  agenteUsuario?: string | null;
 }
 
 export interface ServicioAuditoria {
