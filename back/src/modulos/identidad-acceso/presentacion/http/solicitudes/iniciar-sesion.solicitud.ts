@@ -23,4 +23,12 @@ export class IniciarSesionSolicitud {
   @IsString()
   @IsOptional()
   password?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  acceso?: {
+    tipo: 'PLATAFORMA' | 'INSTITUCION';
+    identificador?: string;
+    tipoIdentificador?: string;
+  };
 }

@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { GraduationCap, ShieldCheck, Building2 } from 'lucide-react';
+import { GraduationCap, ShieldCheck, Building2, Landmark } from 'lucide-react';
 import { Logo } from '@/components/brand/logo';
 import { FormularioLogin } from '@/features/autenticacion/componentes/formulario-login';
 import { obtenerSesionServidor } from '@/lib/auth/sesion';
+import { obtenerExperienciaAccesoServidor } from '@/lib/auth/experiencia-servidor';
 
 export const metadata: Metadata = {
   title: 'Iniciar sesión',
@@ -18,11 +19,20 @@ export default async function PaginaLogin(): Promise<React.JSX.Element> {
     redirect('/seleccionar-contexto');
   }
 
+  const exp = await obtenerExperienciaAccesoServidor();
+  const esInstitucional = exp.tipoAcceso === 'INSTITUCION';
+  const tema = exp.identidadVisual;
+
   return (
-    <main className="relative flex min-h-screen overflow-hidden">
+    <main className="relative flex min-h-screen overflow-hidden bg-(--marca-fondo)">
       {/* ── Left Hero Panel ── */}
-      <div className="relative hidden w-[55%] lg:flex lg:flex-col lg:justify-between overflow-hidden"
-        style={{ background: 'var(--gradient-hero)' }}
+      <div 
+        className="relative hidden w-[55%] lg:flex lg:flex-col lg:justify-between overflow-hidden transition-all duration-500"
+        style={{ 
+          background: tema?.fondoLoginUrl 
+            ? `linear-gradient(rgba(18, 58, 109, 0.85), rgba(10, 25, 47, 0.95)), url(${tema.fondoLoginUrl}) center/cover no-repeat`
+            : 'var(--gradient-hero)' 
+        }}
       >
         {/* Decorative orbs */}
         <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-indigo-500/20 blur-3xl animate-pulse-soft" />
@@ -41,34 +51,47 @@ export default async function PaginaLogin(): Promise<React.JSX.Element> {
         {/* Content */}
         <div className="relative z-10 flex flex-1 flex-col justify-center px-12 xl:px-20">
           <div className="animate-slide-up">
-            <Logo variant="icono" className="h-14 w-14 mb-8 drop-shadow-lg" />
+            {tema?.logoPrincipalUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img 
+                src={tema.logoPrincipalUrl} 
+                alt={`Logo ${tema.nombreMarca}`} 
+                className="h-20 max-w-[200px] object-contain mb-8 drop-shadow-lg"
+              />
+            ) : (
+              <Logo variant="icono" className="h-14 w-14 mb-8 drop-shadow-lg" />
+            )}
+            
             <h1 className="text-4xl font-bold tracking-tight text-white xl:text-5xl">
-              Gestión educativa
-              <span className="block mt-1 bg-gradient-to-r from-indigo-300 via-violet-300 to-purple-300 bg-clip-text text-transparent">
-                inteligente
+              {tema?.nombreMarca || 'EDURA'}
+              <span className="block mt-2 bg-gradient-to-r from-indigo-300 via-violet-300 to-purple-300 bg-clip-text text-transparent text-2xl xl:text-3xl font-medium">
+                {tema?.lema || 'Plataforma de gestión educativa inteligente'}
               </span>
             </h1>
-            <p className="mt-4 max-w-lg text-base leading-relaxed text-indigo-200/80">
-              Administra instituciones, matrículas, calificaciones y más desde un solo lugar. Diseñado para educadores que buscan excelencia.
+            <p className="mt-6 max-w-lg text-base leading-relaxed text-indigo-200/80">
+              {esInstitucional 
+                ? 'Accede de manera segura a tu portal educativo. Administra tus asignaturas, matrículas, notas y mantente en comunicación constante.' 
+                : 'Portal administrativo central de EDURA. Administra múltiples colegios, configura infraestructura y visualiza analíticas globales.'
+              }
             </p>
           </div>
 
           {/* Feature cards */}
-          <div className="mt-12 grid grid-cols-1 gap-3 xl:grid-cols-3 animate-slide-up stagger-3">
+          <div className="mt-12 grid grid-cols-1 gap-4 xl:grid-cols-3 animate-slide-up stagger-3">
             <FeatureCard
-              icon={<Building2 className="h-5 w-5" />}
-              title="Multi-institución"
-              desc="Gestiona múltiples sedes desde un panel unificado."
+              icon={esInstitucional ? <Landmark className="h-5 w-5" /> : <Building2 className="h-5 w-5" />}
+              title={esInstitucional ? "Tu Colegio" : "SaaS Global"}
+              desc={esInstitucional ? "Identidad visual y accesos personalizados." : "Gestiona múltiples sedes desde un solo panel."}
             />
             <FeatureCard
               icon={<GraduationCap className="h-5 w-5" />}
               title="Matrícula digital"
-              desc="Flujos automatizados de inscripción y seguimiento."
+              desc="Inscripción automatizada y seguimiento de estudiantes."
             />
             <FeatureCard
               icon={<ShieldCheck className="h-5 w-5" />}
-              title="Seguridad"
-              desc="Aislamiento total de datos por institución."
+              title="Aislamiento"
+              desc="Seguridad y confidencialidad total de tus datos."
             />
           </div>
         </div>
@@ -76,38 +99,47 @@ export default async function PaginaLogin(): Promise<React.JSX.Element> {
         {/* Bottom branding */}
         <div className="relative z-10 px-12 pb-8 xl:px-20">
           <p className="text-xs text-indigo-300/50">
-            © {new Date().getFullYear()} EDURA · Sistema de gestión educativa SaaS
+            © {new Date().getFullYear()} {tema?.nombreMarca || 'EDURA'} · {tema?.textoPieLogin || 'Tecnología provista por EDURA'}
           </p>
         </div>
       </div>
 
       {/* ── Right Login Panel ── */}
-      <div className="flex flex-1 flex-col items-center justify-center bg-[--color-surface] p-6 sm:p-8 lg:p-12">
-        {/* Mobile logo (hidden on desktop since hero has it) */}
+      <div className="flex flex-1 flex-col items-center justify-center bg-(--marca-superficie) p-6 sm:p-8 lg:p-12">
+        {/* Mobile logo */}
         <div className="mb-8 lg:hidden animate-fade-in">
-          <Logo variant="completo" className="h-10" />
+          {tema?.logoPrincipalUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img 
+              src={tema.logoPrincipalUrl} 
+              alt={`Logo ${tema.nombreMarca}`} 
+              className="h-14 max-w-[150px] object-contain"
+            />
+          ) : (
+            <Logo variant="completo" className="h-10" />
+          )}
         </div>
 
         <div className="w-full max-w-sm animate-slide-up">
           <div className="mb-8">
-            <h2 className="text-2xl font-bold tracking-tight text-[--color-text-primary]">
-              Bienvenido de vuelta
+            <h2 className="text-2xl font-bold tracking-tight text-(--marca-texto-principal)">
+              {tema?.tituloLogin || 'Bienvenido de vuelta'}
             </h2>
-            <p className="mt-2 text-sm text-[--color-text-secondary]">
-              Ingresa tus credenciales para acceder al sistema.
+            <p className="mt-2 text-sm text-(--marca-texto-secundario)">
+              {tema?.mensajeLogin || 'Ingresa tus credenciales para acceder.'}
             </p>
           </div>
 
           <FormularioLogin />
 
           <div className="mt-8 flex items-center gap-3">
-            <div className="h-px flex-1 bg-[--color-border]" />
-            <span className="text-xs text-[--color-text-muted]">EDURA</span>
-            <div className="h-px flex-1 bg-[--color-border]" />
+            <div className="h-px flex-1 bg-[var(--color-border,rgba(0,0,0,0.1))]" />
+            <span className="text-xs text-(--marca-texto-secundario) font-medium">EDURA</span>
+            <div className="h-px flex-1 bg-[var(--color-border,rgba(0,0,0,0.1))]" />
           </div>
 
-          <p className="mt-4 text-center text-xs text-[--color-text-muted]">
-            Sistema de gestión educativa integral.
+          <p className="mt-4 text-center text-xs text-(--marca-texto-secundario)">
+            {tema?.textoPieLogin || 'Tecnología provista por EDURA'}
           </p>
         </div>
       </div>

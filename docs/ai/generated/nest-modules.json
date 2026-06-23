@@ -66,6 +66,17 @@
     ]
   },
   {
+    "nombre": "identidad-visual",
+    "ruta": "back/src/modulos/identidad-visual",
+    "moduleFile": "back/src/modulos/identidad-visual/identidad-visual.module.ts",
+    "subdirectorios": [
+      "aplicacion",
+      "dominio",
+      "infraestructura",
+      "presentacion"
+    ]
+  },
+  {
     "nombre": "infraestructura-fisica",
     "ruta": "back/src/modulos/infraestructura-fisica",
     "moduleFile": "back/src/modulos/infraestructura-fisica/infraestructura-fisica.module.ts",

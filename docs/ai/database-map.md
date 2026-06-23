@@ -17,6 +17,7 @@ Diccionario completo: `docs/DICCIONARIO-DATOS.md`
 | estudiantes             | Estudiante                                        |
 | matriculas              | Matricula, DetalleMatricula                      |
 | infraestructura-fisica  | Aula, RecursoFisico                              |
+| identidad-visual        | IdentidadVisualInstitucion, VersionIdentidadVisual, ActivoIdentidadVisual, PuntoAccesoInstitucion |
 
 ## Convención de columnas multitenencia
 

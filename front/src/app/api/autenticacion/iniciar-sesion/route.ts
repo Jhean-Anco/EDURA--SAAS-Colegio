@@ -7,6 +7,7 @@ import {
 } from "@/lib/auth/sesion";
 import { llamarBackend, errorResponse } from "@/lib/bff/proxy";
 import { validarOrigenYReferer } from "@/lib/bff/guards";
+import { resolverAccesoDesdeSolicitud } from "@/lib/auth/resolucion";
 
 interface RespuestaLogin {
   usuarioId: string;
@@ -35,9 +36,22 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
+  // Resolvemos el acceso desde la solicitud (subdominio o ruta slug)
+  const resAcceso = resolverAccesoDesdeSolicitud(req);
+  
+  const requestBody = (body || {}) as Record<string, unknown>;
+  const loginBody = {
+    ...requestBody,
+    acceso: requestBody.acceso || {
+      tipo: resAcceso.tipo,
+      identificador: resAcceso.identificador,
+      tipoIdentificador: resAcceso.tipoIdentificador || "RUTA_SLUG",
+    },
+  };
+
   const resultado = await llamarBackend<RespuestaLogin>(
     "/api/v1/autenticacion/iniciar-sesion",
-    { method: "POST", body },
+    { method: "POST", body: loginBody },
   );
 
   if (resultado.status !== 200 || !resultado.data) {

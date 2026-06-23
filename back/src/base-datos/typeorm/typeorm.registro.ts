@@ -72,6 +72,12 @@ import {
   PlanEstudioEntidad,
   DetallePlanEstudioEntidad,
 } from '../../modulos/curriculo/infraestructura/persistencia/typeorm/entidades/curriculo.typeorm-entidades';
+import {
+  IdentidadVisualInstitucionTypeormEntidad,
+  VersionIdentidadVisualTypeormEntidad,
+  ActivoIdentidadVisualTypeormEntidad,
+  PuntoAccesoInstitucionTypeormEntidad,
+} from '../../modulos/identidad-visual/infraestructura/persistencia/typeorm/entidades/identidad-visual.typeorm-entidades';
 
 export const entidadesTypeOrm = [
   InstitucionEducativaTypeormEntidad,
@@ -138,5 +144,9 @@ export const entidadesTypeOrm = [
   AsignaturaEntidad,
   PlanEstudioEntidad,
   DetallePlanEstudioEntidad,
+  IdentidadVisualInstitucionTypeormEntidad,
+  VersionIdentidadVisualTypeormEntidad,
+  ActivoIdentidadVisualTypeormEntidad,
+  PuntoAccesoInstitucionTypeormEntidad,
 ] as unknown as ConstructorEntidad[];
 type ConstructorEntidad = new (...argumentos: never[]) => unknown;

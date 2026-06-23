@@ -54,9 +54,12 @@ import {
   ConsultadorPermisosEfectivos,
 } from '../../compartido/infraestructura/persistencia/consultador-permisos.typeorm';
 
+import { IdentidadVisualModule } from '../identidad-visual/identidad-visual.module';
+
 @Module({
   imports: [
     ConfiguracionModule,
+    IdentidadVisualModule,
     TypeOrmModule.forFeature([
       UsuarioTypeormEntidad,
       CredencialUsuarioTypeormEntidad,
@@ -130,6 +133,8 @@ import {
         tokenAcceso: ServicioTokenAccesoJwt,
         tokenRefresh: ServicioTokenOpacoCriptografico,
         configuracion: ConfiguracionAplicacion,
+        resolvedorAcceso: any,
+        dataSource: DataSource,
       ) =>
         new IniciarSesionCasoUso(
           usuarios,
@@ -141,6 +146,8 @@ import {
           tokenRefresh,
           configuracion.jwtAccesoTtlSegundos,
           configuracion.tokenRefreshTtlSegundos,
+          resolvedorAcceso,
+          dataSource,
         ),
       inject: [
         REPOSITORIO_USUARIOS,
@@ -151,6 +158,8 @@ import {
         ServicioTokenAccesoJwt,
         ServicioTokenOpacoCriptografico,
         ConfiguracionAplicacion,
+        'RESOLVEDOR_PUNTO_ACCESO_INSTITUCION',
+        DataSource,
       ],
     },
     {

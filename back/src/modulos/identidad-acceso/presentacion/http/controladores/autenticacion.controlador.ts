@@ -70,6 +70,9 @@ export class AutenticacionControlador {
       rolId: usuario.rolId,
       institucionId: usuario.institucionId,
       sedeId: usuario.sedeId,
+      canalAcceso: usuario.canalAcceso,
+      institucionAccesoId: usuario.institucionAccesoId,
+      puntoAccesoId: usuario.puntoAccesoId,
     };
   }
 
@@ -85,7 +88,7 @@ export class AutenticacionControlador {
         'El correo y la contraseña son obligatorios.',
       );
     }
-    return this.iniciarSesion.ejecutar({ correo, clave });
+    return this.iniciarSesion.ejecutar({ correo, clave, acceso: solicitud.acceso });
   }
 
   @Publico()
@@ -114,8 +117,21 @@ export class AutenticacionControlador {
   }
 
   @Get('contextos')
-  contextos(@Req() request: Request) {
-    return this.listarContextos.ejecutar(this.obtenerUsuario(request).sub);
+  async contextos(@Req() request: Request) {
+    const usuario = this.obtenerUsuario(request);
+    const todosContextos = await this.listarContextos.ejecutar(usuario.sub);
+
+    if (usuario.canalAcceso === 'PLATAFORMA') {
+      return todosContextos.filter((c) => c.ambito === 'PLATAFORMA');
+    }
+
+    if (usuario.canalAcceso === 'INSTITUCION') {
+      return todosContextos.filter(
+        (c) => c.institucionId === usuario.institucionAccesoId,
+      );
+    }
+
+    return todosContextos;
   }
 
   @HttpCode(HttpStatus.OK)
@@ -138,6 +154,8 @@ export class AutenticacionControlador {
         sedeNombre: solicitud.sedeNombre ?? null,
       },
       versionSeguridad: usuario.versionSeguridad,
+      canalAcceso: usuario.canalAcceso,
+      institucionAccesoId: usuario.institucionAccesoId,
     });
   }
 
