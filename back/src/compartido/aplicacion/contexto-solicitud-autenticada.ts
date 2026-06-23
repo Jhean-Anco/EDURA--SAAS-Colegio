@@ -7,4 +7,7 @@ export interface ContextoSolicitudAutenticada {
   rolId: string | null;
   institucionId: string | null;
   sedeId: string | null;
+  canalAcceso?: 'PLATAFORMA' | 'INSTITUCION';
+  institucionAccesoId?: string | null;
+  puntoAccesoId?: string | null;
 }

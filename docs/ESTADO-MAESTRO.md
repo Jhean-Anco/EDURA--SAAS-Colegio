@@ -25,6 +25,7 @@ EDURA evoluciona como SaaS escolar multiinstitución, con la institución educat
 - `panel-institucional`
 - `estudiantes`
 - `integraciones-externas`
+- `identidad-visual`
 
 ## Módulos pendientes
 

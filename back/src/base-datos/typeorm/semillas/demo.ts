@@ -954,6 +954,79 @@ async function ejecutarDemo(): Promise<void> {
       );
     }
 
+    // Sembrar identidad visual demo
+    const [identidadExist] = await manager.query<{ id: string }[]>(
+      `SELECT id FROM identidades_visuales_institucion WHERE id_institucion_educativa = $1 LIMIT 1`,
+      [instId],
+    );
+    const identidadId = identidadExist ? identidadExist.id : 'd3b07384-d113-43cf-a52d-000000000301';
+    if (!identidadExist) {
+      await manager.query(
+        `INSERT INTO identidades_visuales_institucion (id, id_institucion_educativa, id_version_publicada, estado, fecha_creacion, fecha_modificacion)
+         VALUES ($1, $2, NULL, 'ACTIVA', now(), now())`,
+        [identidadId, instId],
+      );
+    }
+
+    const [versionExist] = await manager.query<{ id: string }[]>(
+      `SELECT id FROM versiones_identidad_visual WHERE id_identidad_visual = $1 AND numero_version = 1 LIMIT 1`,
+      [identidadId],
+    );
+    const versionId = versionExist ? versionExist.id : 'd3b07384-d113-43cf-a52d-000000000302';
+    if (!versionExist) {
+      await manager.query(
+        `INSERT INTO versiones_identidad_visual (
+          id, id_identidad_visual, numero_version, estado, nombre_marca, nombre_corto_visual, lema,
+          titulo_login, mensaje_login, texto_pie_login, color_primario, color_sobre_primario,
+          color_secundario, color_acento, color_fondo, color_superficie, color_texto_principal,
+          color_texto_secundario, variante_login, id_usuario_creador, id_usuario_publicador,
+          fecha_publicacion, fecha_creacion, fecha_modificacion
+        ) VALUES (
+          $1, $2, 1, 'PUBLICADA', 'Colegio San Martín', 'San Martín', 'Educamos para el futuro',
+          'Acceso Institucional', 'Ingresa a la plataforma educativa.', 'Tecnología provista por EDURA',
+          '#1E3A8A', '#FFFFFF', '#D8A72D', '#3B82F6', '#F8FAFC', '#FFFFFF', '#172033', '#536078',
+          'CENTRAL', $3, $3, now(), now(), now()
+        )`,
+        [versionId, identidadId, uAdmin],
+      );
+
+      await manager.query(
+        `UPDATE identidades_visuales_institucion SET id_version_publicada = $1 WHERE id = $2`,
+        [versionId, identidadId],
+      );
+    }
+
+    // Sembrar puntos de acceso demo
+    const [puntoSlugExist] = await manager.query<{ id: string }[]>(
+      `SELECT id FROM puntos_acceso_institucion WHERE id_institucion_educativa = $1 AND tipo = 'RUTA_SLUG' LIMIT 1`,
+      [instId],
+    );
+    if (!puntoSlugExist) {
+      await manager.query(
+        `INSERT INTO puntos_acceso_institucion (
+          id, id_institucion_educativa, tipo, valor, valor_normalizado, es_principal, estado, fecha_creacion, fecha_modificacion
+        ) VALUES (
+          gen_random_uuid(), $1, 'RUTA_SLUG', 'demo', 'demo', true, 'ACTIVO', now(), now()
+        )`,
+        [instId],
+      );
+    }
+
+    const [puntoSubExist] = await manager.query<{ id: string }[]>(
+      `SELECT id FROM puntos_acceso_institucion WHERE id_institucion_educativa = $1 AND tipo = 'SUBDOMINIO_EDURA' LIMIT 1`,
+      [instId],
+    );
+    if (!puntoSubExist) {
+      await manager.query(
+        `INSERT INTO puntos_acceso_institucion (
+          id, id_institucion_educativa, tipo, valor, valor_normalizado, es_principal, estado, fecha_creacion, fecha_modificacion
+        ) VALUES (
+          gen_random_uuid(), $1, 'SUBDOMINIO_EDURA', 'demo', 'demo', false, 'ACTIVO', now(), now()
+        )`,
+        [instId],
+      );
+    }
+
     console.log(
       'Semilla demo aplicada de manera determinista e idempotente sin duplicados.',
     );

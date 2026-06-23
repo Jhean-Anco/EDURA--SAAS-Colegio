@@ -22,6 +22,10 @@
 - `estudiantes`
 - `apoderados_estudiante`
 - `documentos_estudiante`
+- `identidades_visuales_institucion`
+- `versiones_identidad_visual`
+- `activos_identidad_visual`
+- `puntos_acceso_institucion`
 
 ## Entidades principales
 
@@ -39,6 +43,10 @@
 - EspacioFisico
 - AlertaInstitucional
 - ComunicadoInstitucional
+- IdentidadVisualInstitucion
+- VersionIdentidadVisual
+- ActivoIdentidadVisual
+- PuntoAccesoInstitucion
 
 ## Relaciones
 

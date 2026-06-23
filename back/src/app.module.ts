@@ -16,6 +16,7 @@ import { DocentesModule } from './modulos/docentes/docentes.module';
 import { EstructuraAcademicaModule } from './modulos/estructura-academica/estructura-academica.module';
 import { CurriculoModule } from './modulos/curriculo/curriculo.module';
 import { MatriculasModule } from './modulos/matriculas/matriculas.module';
+import { IdentidadVisualModule } from './modulos/identidad-visual/identidad-visual.module';
 import { GuardiaJwt } from './modulos/identidad-acceso/presentacion/http/guardias/guardia-jwt';
 import { GuardiaPermisos } from './compartido/presentacion/http/guardias/guardia-permisos';
 
@@ -36,6 +37,7 @@ import { GuardiaPermisos } from './compartido/presentacion/http/guardias/guardia
     EstructuraAcademicaModule,
     CurriculoModule,
     MatriculasModule,
+    IdentidadVisualModule,
     ThrottlerModule.forRoot([
       {
         name: 'defecto',

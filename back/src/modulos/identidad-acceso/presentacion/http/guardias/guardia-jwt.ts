@@ -91,6 +91,9 @@ export class GuardiaJwt implements CanActivate {
       rolId: payload.rolId,
       institucionId: payload.institucionId,
       sedeId: payload.sedeId,
+      canalAcceso: payload.canalAcceso,
+      institucionAccesoId: payload.institucionAccesoId,
+      puntoAccesoId: payload.puntoAccesoId,
     };
     request.usuario = payload;
 

@@ -12,6 +12,8 @@ export interface SeleccionarContextoEntrada {
   sesionId: string;
   contexto: ContextoAcceso;
   versionSeguridad: number;
+  canalAcceso?: 'PLATAFORMA' | 'INSTITUCION';
+  institucionAccesoId?: string | null;
 }
 
 export interface SeleccionarContextoSalida {
@@ -52,6 +54,15 @@ export class SeleccionarContextoCasoUso {
     if (!coincidencia) {
       throw new ForbiddenException('CONTEXTO_NO_AUTORIZADO');
     }
+
+    // Validar aislamiento de canal de acceso y tenant
+    if (entrada.canalAcceso === 'PLATAFORMA' && coincidencia.ambito !== 'PLATAFORMA') {
+      throw new ForbiddenException('CONTEXTO_NO_AUTORIZADO');
+    }
+    if (entrada.canalAcceso === 'INSTITUCION' && coincidencia.institucionId !== entrada.institucionAccesoId) {
+      throw new ForbiddenException('CONTEXTO_NO_AUTORIZADO');
+    }
+
     const accessToken = this.tokenAcceso.firmar(
       {
         sub: entrada.usuarioId,
@@ -62,6 +73,8 @@ export class SeleccionarContextoCasoUso {
         rolId: coincidencia.rolId,
         institucionId: coincidencia.institucionId,
         sedeId: coincidencia.sedeId,
+        canalAcceso: entrada.canalAcceso,
+        institucionAccesoId: entrada.institucionAccesoId,
       } satisfies PayloadAcceso,
       this.jwtAccesoTtlSegundos,
     );
