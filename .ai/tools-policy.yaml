@@ -1,0 +1,141 @@
+version: "1.0"
+descripcion: "Política de herramientas externas para la plataforma de agentes EDURA"
+
+orden_de_preferencia:
+  1: "herramienta ya instalada en el sistema"
+  2: "comando nativo del SO (git, node, npm)"
+  3: "script local en scripts/ai/"
+  4: "devDependency existente en back/ o front/"
+  5: "CLI externa con versión fijada en devDependencies"
+  6: "Skill de EDURA"
+  7: "servidor MCP"
+  8: "servicio externo"
+
+herramientas:
+
+  ripgrep:
+    herramienta: ripgrep
+    categoria: exploracion
+    estado: preferida
+    version: ">=13"
+    modo_instalacion: sistema
+    uso: "Búsqueda de patrones en código fuente"
+    riesgo: bajo
+    datos_enviados: ninguno
+    requiere_red: false
+    requiere_secretos: false
+    persistente: true
+    perfiles: [todos]
+    reemplaza_razonamiento: "Búsqueda manual de símbolos en contexto"
+
+  git:
+    herramienta: git
+    categoria: vcs
+    estado: requerida
+    version: ">=2.40"
+    modo_instalacion: sistema
+    uso: "Historial, diff, estado de cambios"
+    riesgo: bajo
+    datos_enviados: ninguno
+    requiere_red: false
+    requiere_secretos: false
+    persistente: true
+    perfiles: [todos]
+    reemplaza_razonamiento: "Reconstrucción manual de historial"
+
+  typescript-compiler:
+    herramienta: tsc
+    categoria: calidad
+    estado: requerida
+    version: ">=5"
+    modo_instalacion: devDependency
+    uso: "Verificación de tipos"
+    riesgo: bajo
+    datos_enviados: ninguno
+    requiere_red: false
+    requiere_secretos: false
+    persistente: true
+    perfiles: [backend, frontend-ui]
+    reemplaza_razonamiento: "Revisión manual de tipos"
+
+  eslint:
+    herramienta: eslint
+    categoria: calidad
+    estado: requerida
+    version: ">=9"
+    modo_instalacion: devDependency
+    uso: "Linting de código TypeScript"
+    riesgo: bajo
+    datos_enviados: ninguno
+    requiere_red: false
+    requiere_secretos: false
+    persistente: true
+    perfiles: [backend, frontend-ui]
+    reemplaza_razonamiento: "Revisión manual de estilo"
+
+  jest:
+    herramienta: jest
+    categoria: pruebas
+    estado: requerida
+    version: ">=29"
+    modo_instalacion: devDependency
+    uso: "Pruebas unitarias y E2E del backend"
+    riesgo: bajo
+    datos_enviados: ninguno
+    requiere_red: false
+    requiere_secretos: false
+    persistente: true
+    perfiles: [backend]
+    reemplaza_razonamiento: "Ejecución manual de casos de prueba"
+
+  vitest:
+    herramienta: vitest
+    categoria: pruebas
+    estado: requerida
+    version: ">=3"
+    modo_instalacion: devDependency
+    uso: "Pruebas del frontend Next.js"
+    riesgo: bajo
+    datos_enviados: ninguno
+    requiere_red: false
+    requiere_secretos: false
+    persistente: true
+    perfiles: [frontend-ui]
+    reemplaza_razonamiento: "Ejecución manual de pruebas de componentes"
+
+  npm-audit:
+    herramienta: npm audit
+    categoria: seguridad
+    estado: preferida
+    version: ">=10"
+    modo_instalacion: sistema
+    uso: "Auditoría de vulnerabilidades en dependencias"
+    riesgo: bajo
+    datos_enviados: "nombres y versiones de paquetes a registry.npmjs.org"
+    requiere_red: true
+    requiere_secretos: false
+    persistente: false
+    perfiles: [security-audit]
+    reemplaza_razonamiento: "Verificación manual de CVEs"
+
+  jq:
+    herramienta: jq
+    categoria: transformacion
+    estado: opcional
+    version: ">=1.6"
+    modo_instalacion: sistema
+    uso: "Procesar y filtrar JSON de índices generados"
+    riesgo: bajo
+    datos_enviados: ninguno
+    requiere_red: false
+    requiere_secretos: false
+    persistente: false
+    perfiles: [local-fast, backend]
+    reemplaza_razonamiento: "Parsing manual de JSON en contexto"
+
+regla_no_usar_mcp_para:
+  - "búsqueda de patrones (usar ripgrep)"
+  - "lectura de historial Git (usar git log)"
+  - "verificación de tipos (usar tsc)"
+  - "linting (usar eslint)"
+  - "ejecución de pruebas (usar jest/vitest)"

@@ -25,7 +25,9 @@ async function auditar(): Promise<void> {
 
   // 1. Migraciones
   try {
-    const migraciones = await fuenteDatos.query(`SELECT * FROM migraciones_aplicadas ORDER BY id ASC`);
+    const migraciones = await fuenteDatos.query(
+      `SELECT * FROM migraciones_aplicadas ORDER BY id ASC`,
+    );
     reporte.migraciones = {
       aplicadasCount: migraciones.length,
       detalle: migraciones.map((m: any) => ({ id: m.id, nombre: m.name })),
@@ -41,27 +43,58 @@ async function auditar(): Promise<void> {
 
   // 2. Tablas existentes y conteos
   const tablasFuncionales = [
-    'instituciones_educativas', 'sedes', 'predios', 'edificaciones', 'niveles',
-    'espacios_fisicos', 'espacios_exteriores', 'componentes_infraestructura',
-    'elementos_infraestructura', 'evaluaciones_conservacion_elemento',
-    'usuarios', 'credenciales_usuario', 'membresias_institucion',
-    'roles', 'permisos', 'roles_permisos', 'asignaciones_rol_usuario',
-    'invitaciones_acceso', 'sesiones_usuario', 'tokens_seguridad_usuario',
-    'eventos_auditoria', 'personas', 'documentos_identidad_persona',
-    'medios_contacto_persona', 'direcciones_persona', 'estudiantes',
-    'apoderados_estudiante', 'documentos_estudiante', 'docentes',
-    'asignaciones_docente_sede', 'especialidades_profesionales',
-    'docentes_especialidades_profesionales', 'anios_academicos',
-    'periodos_academicos', 'ofertas_grado_sede', 'secciones_academicas',
-    'areas_curriculares', 'asignaturas', 'planes_estudio',
-    'detalles_plan_estudio', 'matriculas', 'historial_estados_matricula',
-    'historial_cambios_seccion_matricula', 'comunicados_institucionales',
-    'alertas_institucionales'
+    'instituciones_educativas',
+    'sedes',
+    'predios',
+    'edificaciones',
+    'niveles',
+    'espacios_fisicos',
+    'espacios_exteriores',
+    'componentes_infraestructura',
+    'elementos_infraestructura',
+    'evaluaciones_conservacion_elemento',
+    'usuarios',
+    'credenciales_usuario',
+    'membresias_institucion',
+    'roles',
+    'permisos',
+    'roles_permisos',
+    'asignaciones_rol_usuario',
+    'invitaciones_acceso',
+    'sesiones_usuario',
+    'tokens_seguridad_usuario',
+    'eventos_auditoria',
+    'personas',
+    'documentos_identidad_persona',
+    'medios_contacto_persona',
+    'direcciones_persona',
+    'estudiantes',
+    'apoderados_estudiante',
+    'documentos_estudiante',
+    'docentes',
+    'asignaciones_docente_sede',
+    'especialidades_profesionales',
+    'docentes_especialidades_profesionales',
+    'anios_academicos',
+    'periodos_academicos',
+    'ofertas_grado_sede',
+    'secciones_academicas',
+    'areas_curriculares',
+    'asignaturas',
+    'planes_estudio',
+    'detalles_plan_estudio',
+    'matriculas',
+    'historial_estados_matricula',
+    'historial_cambios_seccion_matricula',
+    'comunicados_institucionales',
+    'alertas_institucionales',
   ];
 
   for (const tabla of tablasFuncionales) {
     try {
-      const [{ count }] = await fuenteDatos.query(`SELECT count(*)::int as count FROM ${tabla}`);
+      const [{ count }] = await fuenteDatos.query(
+        `SELECT count(*)::int as count FROM ${tabla}`,
+      );
       reporte.conteos[tabla] = count;
     } catch (e: any) {
       reporte.conteos[tabla] = -1;
@@ -80,13 +113,13 @@ async function auditar(): Promise<void> {
       tipo: 'USUARIO_SIN_CREDENCIAL',
       sql: `SELECT id, correo FROM usuarios WHERE id NOT IN (SELECT id_usuario FROM credenciales_usuario)`,
       descripcion: 'Usuarios sin credencial registrada',
-      critico: true
+      critico: true,
     },
     {
       tipo: 'CREDENCIAL_SIN_USUARIO',
       sql: `SELECT id_usuario FROM credenciales_usuario WHERE id_usuario NOT IN (SELECT id FROM usuarios)`,
       descripcion: 'Credenciales huérfanas sin usuario',
-      critico: true
+      critico: true,
     },
     {
       tipo: 'MEMBRESIA_SIN_PERSONA',
@@ -96,7 +129,7 @@ async function auditar(): Promise<void> {
             JOIN roles r ON a.id_rol = r.id 
             WHERE m.id_persona IS NULL AND r.codigo != 'PROPIETARIO_PLATAFORMA'`,
       descripcion: 'Membresías institucionales que no tienen persona asignada',
-      critico: false
+      critico: false,
     },
     {
       tipo: 'ASIGNACION_SIN_MEMBRESIA',
@@ -104,8 +137,9 @@ async function auditar(): Promise<void> {
             FROM asignaciones_rol_usuario a 
             JOIN roles r ON a.id_rol = r.id 
             WHERE a.id_membresia_institucion IS NULL AND r.codigo != 'PROPIETARIO_PLATAFORMA'`,
-      descripcion: 'Asignaciones de rol no vinculadas a membresía (excepto propietario)',
-      critico: true
+      descripcion:
+        'Asignaciones de rol no vinculadas a membresía (excepto propietario)',
+      critico: true,
     },
     {
       tipo: 'ROL_SEDE_SIN_SEDE',
@@ -114,7 +148,7 @@ async function auditar(): Promise<void> {
             JOIN roles r ON a.id_rol = r.id 
             WHERE r.ambito = 'SEDE' AND a.id_sede IS NULL`,
       descripcion: 'Asignaciones con ámbito SEDE que no especifican sedeId',
-      critico: true
+      critico: true,
     },
     {
       tipo: 'ROL_INSTITUCION_CON_SEDE',
@@ -122,8 +156,9 @@ async function auditar(): Promise<void> {
             FROM asignaciones_rol_usuario a 
             JOIN roles r ON a.id_rol = r.id 
             WHERE r.ambito = 'INSTITUCION' AND a.id_sede IS NOT NULL`,
-      descripcion: 'Asignaciones con ámbito INSTITUCION que tienen sedeId asignado',
-      critico: true
+      descripcion:
+        'Asignaciones con ámbito INSTITUCION que tienen sedeId asignado',
+      critico: true,
     },
     {
       tipo: 'DOCENTE_SIN_USUARIO',
@@ -133,7 +168,7 @@ async function auditar(): Promise<void> {
             LEFT JOIN membresias_institucion m ON m.id_persona = p.id 
             WHERE m.id_usuario IS NULL`,
       descripcion: 'Docentes que no tienen un usuario asociado a su persona',
-      critico: false
+      critico: false,
     },
     {
       tipo: 'USUARIO_DOCENTE_SIN_DOCENTE',
@@ -144,7 +179,7 @@ async function auditar(): Promise<void> {
             LEFT JOIN docentes d ON d.id_persona = m.id_persona 
             WHERE r.codigo = 'DOCENTE' AND d.id IS NULL`,
       descripcion: 'Usuarios con rol DOCENTE que no tienen registro docente',
-      critico: true
+      critico: true,
     },
     {
       tipo: 'ESTUDIANTE_SIN_USUARIO_PRUEBA',
@@ -154,7 +189,7 @@ async function auditar(): Promise<void> {
             LEFT JOIN membresias_institucion m ON m.id_persona = p.id 
             WHERE m.id_usuario IS NULL`,
       descripcion: 'Estudiantes de prueba que no tienen usuario asociado',
-      critico: false
+      critico: false,
     },
     {
       tipo: 'USUARIO_ESTUDIANTE_SIN_PROPIEDAD',
@@ -165,7 +200,7 @@ async function auditar(): Promise<void> {
             LEFT JOIN estudiantes e ON e.id_persona = m.id_persona 
             WHERE r.codigo = 'ESTUDIANTE' AND e.id IS NULL`,
       descripcion: 'Usuarios con rol ESTUDIANTE sin registro estudiante',
-      critico: true
+      critico: true,
     },
     {
       tipo: 'APODERADO_SIN_USUARIO',
@@ -175,7 +210,7 @@ async function auditar(): Promise<void> {
             LEFT JOIN membresias_institucion m ON m.id_persona = p.id 
             WHERE m.id_usuario IS NULL`,
       descripcion: 'Apoderados sin usuario asociado',
-      critico: false
+      critico: false,
     },
     {
       tipo: 'USUARIO_APODERADO_SIN_ESTUDIANTES',
@@ -185,8 +220,9 @@ async function auditar(): Promise<void> {
             JOIN membresias_institucion m ON a.id_membresia_institucion = m.id 
             LEFT JOIN apoderados_estudiante ae ON ae.id_persona = m.id_persona 
             WHERE r.codigo = 'APODERADO' AND ae.id IS NULL`,
-      descripcion: 'Usuarios con rol APODERADO que no están vinculados a ningún estudiante',
-      critico: true
+      descripcion:
+        'Usuarios con rol APODERADO que no están vinculados a ningún estudiante',
+      critico: true,
     },
     {
       tipo: 'PERSONAS_DUPLICADAS',
@@ -195,7 +231,7 @@ async function auditar(): Promise<void> {
             GROUP BY nombres, apellido_paterno, apellido_materno 
             HAVING count(*) > 1`,
       descripcion: 'Personas con nombres y apellidos idénticos',
-      critico: false
+      critico: false,
     },
     {
       tipo: 'CORREOS_DUPLICADOS',
@@ -204,7 +240,7 @@ async function auditar(): Promise<void> {
             GROUP BY correo_normalizado 
             HAVING count(*) > 1`,
       descripcion: 'Usuarios con correo electrónico duplicado',
-      critico: true
+      critico: true,
     },
     {
       tipo: 'CODIGOS_DUPLICADOS',
@@ -213,13 +249,13 @@ async function auditar(): Promise<void> {
             GROUP BY codigo 
             HAVING count(*) > 1`,
       descripcion: 'Estudiantes con código duplicado',
-      critico: true
+      critico: true,
     },
     {
       tipo: 'SESIONES_HUERFANAS',
       sql: `SELECT id FROM sesiones_usuario WHERE id_usuario NOT IN (SELECT id FROM usuarios)`,
       descripcion: 'Sesiones asignadas a usuarios inexistentes',
-      critico: true
+      critico: true,
     },
     {
       tipo: 'HISTORIAL_MATRICULA_DUPLICADO',
@@ -228,7 +264,7 @@ async function auditar(): Promise<void> {
             GROUP BY id_matricula, estado_nuevo, fecha 
             HAVING count(*) > 1`,
       descripcion: 'Cambios de estado de matrícula idénticos en la misma fecha',
-      critico: false
+      critico: false,
     },
     {
       // Aislamiento multi-institución
@@ -237,8 +273,9 @@ async function auditar(): Promise<void> {
             FROM estudiantes e 
             JOIN personas p ON e.id_persona = p.id 
             WHERE e.id_institucion_educativa != p.id_institucion_educativa`,
-      descripcion: 'Estudiantes con institución diferente a su persona vinculada',
-      critico: true
+      descripcion:
+        'Estudiantes con institución diferente a su persona vinculada',
+      critico: true,
     },
     {
       tipo: 'DOCENTE_TENANT_INCONSISTENTE',
@@ -247,7 +284,7 @@ async function auditar(): Promise<void> {
             JOIN personas p ON d.id_persona = p.id 
             WHERE d.id_institucion_educativa != p.id_institucion_educativa`,
       descripcion: 'Docentes con institución diferente a su persona vinculada',
-      critico: true
+      critico: true,
     },
     {
       tipo: 'MATRICULA_TENANT_INCONSISTENTE',
@@ -256,8 +293,8 @@ async function auditar(): Promise<void> {
             JOIN estudiantes e ON m.id_estudiante = e.id 
             WHERE m.id_institucion_educativa != e.id_institucion_educativa`,
       descripcion: 'Matrículas con institución diferente a la del estudiante',
-      critico: true
-    }
+      critico: true,
+    },
   ];
 
   for (const val of queryValidaciones) {
@@ -284,7 +321,10 @@ async function auditar(): Promise<void> {
   reporte.inconsistencias = inconsistencias;
 
   // Escribir reportes
-  const dirReportes = path.join(__dirname, '../../../../documentacion/auditorias');
+  const dirReportes = path.join(
+    __dirname,
+    '../../../../documentacion/auditorias',
+  );
   if (!fs.existsSync(dirReportes)) {
     fs.mkdirSync(dirReportes, { recursive: true });
   }
@@ -294,13 +334,13 @@ async function auditar(): Promise<void> {
 
   // Generar informe legible en Markdown
   const markdownPath = path.join(dirReportes, 'informe-auditoria.md');
-  const errorCritico = inconsistencias.some(inc => inc.critico);
+  const errorCritico = inconsistencias.some((inc) => inc.critico);
 
   let mdContent = `# Informe de Auditoría de Base de Datos Real - EDURA\n\n`;
   mdContent += `* **Fecha de Ejecución:** ${reporte.fecha}\n`;
   mdContent += `* **Migraciones Aplicadas:** ${reporte.migraciones?.aplicadasCount ?? 0}\n`;
   mdContent += `* **Inconsistencias Totales:** ${inconsistencias.length}\n`;
-  mdContent += `* **Inconsistencias Críticas:** ${inconsistencias.filter(i => i.critico).length}\n`;
+  mdContent += `* **Inconsistencias Críticas:** ${inconsistencias.filter((i) => i.critico).length}\n`;
   mdContent += `* **Estado General:** ${errorCritico ? '🔴 CRÍTICO / INCONSISTENTE' : '🟢 SALUDABLE / COMPATIBLE'}\n\n`;
 
   mdContent += `## Conteo de Registros por Tabla\n\n| Tabla | Registros |\n| --- | --- |\n`;

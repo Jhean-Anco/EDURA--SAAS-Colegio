@@ -1,0 +1,19 @@
+# Configuración Codex MCP generada por mcp-manager — 2026-06-23
+# La config activa está en ~/.codex/config.toml
+# Esta copia sirve como referencia versionada.
+
+[mcp_servers.edura-contexto]
+command = "node"
+args = ["d:/EDURA/sistema/tools/mcp-edura-contexto/server.mjs"]
+
+[mcp_servers.playwright]
+command = "npx"
+args = ["@playwright/mcp@0.0.76", "--headless"]
+
+# postgres: añadir cuando POSTGRES_MCP_URL esté configurada
+# [mcp_servers.postgres-local-readonly]
+# command = "npx"
+# args = ["-y", "@modelcontextprotocol/server-postgres", "<POSTGRES_MCP_URL>"]
+
+[plugins."github@openai-curated"]
+enabled = true

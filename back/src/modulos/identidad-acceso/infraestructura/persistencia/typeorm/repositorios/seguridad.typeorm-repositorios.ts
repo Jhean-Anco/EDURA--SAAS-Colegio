@@ -128,7 +128,9 @@ export class CredencialTypeormRepositorio implements RepositorioCredenciales {
     });
     return entidad ? HashClave.crear(entidad.hashClave) : null;
   }
-  async obtenerPorUsuario(usuarioId: string): Promise<CredencialCompleta | null> {
+  async obtenerPorUsuario(
+    usuarioId: string,
+  ): Promise<CredencialCompleta | null> {
     const entidad = await this.repositorio.findOne({
       where: { idUsuario: usuarioId },
     });

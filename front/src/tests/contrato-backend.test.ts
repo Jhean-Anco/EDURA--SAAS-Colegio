@@ -37,7 +37,7 @@ describe('Integración Contractual - Backend Real', () => {
 
     expect(res.status).toBe(200);
 
-    const data: any = await res.json();
+    const data = (await res.json()) as Record<string, unknown>;
     
     // Validar el contrato exacto de REL-SEC-001 / REL-FE-SEC-001
     expect(data).toHaveProperty('usuarioId');

@@ -35,7 +35,9 @@ export class SeleccionarContextoCasoUso {
     entrada: SeleccionarContextoEntrada,
   ): Promise<SeleccionarContextoSalida> {
     if (!entrada.contexto || !entrada.contexto.rolId) {
-      throw new BadRequestException('El rolId es obligatorio para seleccionar un contexto.');
+      throw new BadRequestException(
+        'El rolId es obligatorio para seleccionar un contexto.',
+      );
     }
     const disponibles = await this.contextos.listarPorUsuario(
       entrada.usuarioId,

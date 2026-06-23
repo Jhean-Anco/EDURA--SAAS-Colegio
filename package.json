@@ -2,9 +2,47 @@
   "name": "edura",
   "private": true,
   "version": "0.0.0",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "dev:back": "npm --prefix back run start:dev",
-    "dev:front": "npm --prefix front run dev"
+    "dev:front": "npm --prefix front run dev",
+
+    "ai:bootstrap": "node scripts/ai/bootstrap.mjs",
+    "ai:doctor": "node scripts/ai/doctor.mjs",
+    "ai:index": "node scripts/ai/generate-code-index.mjs",
+    "ai:context": "node scripts/ai/context.mjs",
+    "ai:search": "node scripts/ai/search.mjs",
+    "ai:read": "node scripts/ai/read.mjs",
+    "ai:diff": "node scripts/ai/diff.mjs",
+    "ai:impact": "node scripts/ai/impact.mjs",
+    "ai:errors": "node scripts/ai/errors.mjs",
+    "ai:budget": "node scripts/ai/budget.mjs",
+    "ai:check:changed": "node scripts/ai/impact.mjs --check-changed",
+    "ai:check:affected": "node scripts/ai/impact.mjs --check-affected",
+
+    "ai:skills:list": "node scripts/ai/skills-manager.mjs list",
+    "ai:skills:discover": "node scripts/ai/skills-manager.mjs discover",
+    "ai:skills:audit": "node scripts/ai/skills-manager.mjs audit",
+    "ai:skills:install": "node scripts/ai/skills-manager.mjs install",
+    "ai:skills:disable": "node scripts/ai/skills-manager.mjs disable",
+    "ai:skills:remove": "node scripts/ai/skills-manager.mjs remove",
+    "ai:skills:prune": "node scripts/ai/skills-manager.mjs prune",
+    "ai:skills:sync": "node scripts/ai/sync-skills.mjs",
+    "ai:skills:check": "node scripts/ai/sync-skills.mjs --check",
+
+    "ai:mcp:list": "node scripts/ai/mcp-manager.mjs list",
+    "ai:mcp:audit": "node scripts/ai/mcp-manager.mjs audit",
+    "ai:mcp:health": "node scripts/ai/mcp-manager.mjs health",
+    "ai:mcp:generate-configs": "node scripts/ai/mcp-manager.mjs generate-configs",
+
+    "ai:notebooklm:status": "node -e \"const {crearProveedor}=await import('./tools/notebooklm-adapter/fabrica.js'); const p=crearProveedor(); const s=await p.verificarDisponibilidad(); console.log(JSON.stringify(s,null,2));\"",
+    "ai:notebooklm:prepare": "node scripts/ai/prepare-notebooklm.mjs",
+
+    "ai:handoff": "node scripts/ai/handoff.mjs",
+    "ai:metrics:report": "node scripts/ai/metrics.mjs report",
+    "ai:manifest": "node scripts/ai/generate-module-manifest.mjs"
   }
 }

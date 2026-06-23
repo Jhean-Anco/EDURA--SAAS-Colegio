@@ -1,0 +1,32 @@
+# Cápsula de contexto — EDURA-001
+# Generado: 2026-06-22
+
+tarea: EDURA-001
+generado: 2026-06-22
+tipo: critico
+perfil: local-fast
+objetivo: Implementar la infraestructura completa de la plataforma multiagente compatible con Claude Code,
+modulos_afectados:
+
+rutas_permitidas:
+  - AGENTS.md
+  - docs/ai/
+  - tasks/active/EDURA-001.md
+rutas_prohibidas:
+  - node_modules/
+  - dist/
+  - .next/
+  - coverage/
+  - .env
+archivos_modificados_actuales:
+  - back/documentacion/auditorias/informe-auditoria.md
+  - back/documentacion/auditorias/reporte-auditoria.json
+  - package.json
+adr:
+
+skills_sugeridas:
+  - compilar-contexto-tarea
+  - ejecutar-pruebas-dirigidas
+  - cerrar-tarea-edura
+mcp_perfil: local-fast
+presupuesto: critico

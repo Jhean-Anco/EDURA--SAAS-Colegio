@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import type { EduraSession } from "@/types/auth";
+import type { EduraSession, ContextoDescriptor } from "@/types/auth";
 import type { IronSession } from "iron-session";
 import { esBackendError } from "@/types/api";
 import { obtenerSesionServidor } from "@/lib/auth/sesion";
@@ -177,7 +177,7 @@ export async function renovarSesion(
       if (sesion.contexto) {
         const reselect = await llamarBackend<{
           accessToken: string;
-          contexto: any;
+          contexto: Omit<ContextoDescriptor, "permisos">;
           permisos: string[];
         }>("/api/v1/autenticacion/seleccionar-contexto", {
           method: "POST",
@@ -198,7 +198,7 @@ export async function renovarSesion(
           sesion.contexto = {
             ...reselect.data.contexto,
             permisos: reselect.data.permisos,
-          };
+          } as ContextoDescriptor;
         } else {
           sesion.contexto = undefined;
         }

@@ -1,0 +1,28 @@
+version: "1.0"
+descripcion: "Modelos de IA recomendados por tipo de tarea en EDURA"
+
+predeterminado: "claude-sonnet-4-6"
+
+por_tarea:
+  mecanico:
+    modelo: "claude-haiku-4-5-20251001"
+    razon: "Tareas simples y bien definidas; menor costo"
+
+  normal:
+    modelo: "claude-sonnet-4-6"
+    razon: "Balance costo-capacidad para la mayoría de tareas"
+
+  critico:
+    modelo: "claude-sonnet-4-6"
+    razon: "Tareas complejas; escalar a opus si el contexto lo requiere"
+
+  investigacion:
+    modelo: "claude-sonnet-4-6"
+    razon: "Síntesis documental y análisis"
+
+  seguridad:
+    modelo: "claude-sonnet-4-6"
+    razon: "Revisión de seguridad requiere razonamiento cuidadoso"
+
+nota: "Modelos listados a 2026-06-21. Verificar disponibilidad antes de usar."
+referencia: "Ver /claude-api skill para IDs y precios actuales"

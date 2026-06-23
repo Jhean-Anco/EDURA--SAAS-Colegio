@@ -1,0 +1,12 @@
+{
+  "_comentario": "Copiar como settings.local.json y NO versionar. Para configuración personal del desarrollador.",
+  "permissions": {
+    "allow": [
+      "Bash(npm --prefix back run db:migration:run*)"
+    ]
+  },
+  "env": {
+    "AI_DEBUG": "false",
+    "AI_METRICS_ENABLED": "true"
+  }
+}

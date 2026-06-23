@@ -1,0 +1,119 @@
+version: "1.0"
+descripcion: "Umbrales de gobierno de eficiencia EDURA — revisar tras obtener primera línea base"
+creado: "2026-06-22"
+nota: "Valores iniciales propuestos. Ajustar con evidencia real tras primeros benchmarks."
+
+global:
+  calidad_minima: 85
+  cambios_fuera_alcance_maximos: 0
+  secretos_detectados_maximos: 0
+  regresiones_criticas_maximas: 0
+
+por_categoria:
+  mecanico:
+    archivos_leidos_maximos: 8
+    skills_cargadas_maximas: 2
+    mcp_externos_maximos: 0
+    reintentos_maximos: 1
+    tokens_maximos: 20000
+    duracion_maxima_segundos: 300
+
+  backend:
+    archivos_leidos_maximos: 20
+    skills_cargadas_maximas: 4
+    mcp_externos_maximos: 1
+    reintentos_maximos: 2
+    tokens_maximos: 60000
+    duracion_maxima_segundos: 600
+
+  frontend:
+    archivos_leidos_maximos: 20
+    skills_cargadas_maximas: 4
+    mcp_externos_maximos: 1
+    reintentos_maximos: 2
+    tokens_maximos: 60000
+    duracion_maxima_segundos: 600
+
+  database:
+    archivos_leidos_maximos: 15
+    skills_cargadas_maximas: 3
+    mcp_externos_maximos: 1
+    reintentos_maximos: 1
+    tokens_maximos: 30000
+    duracion_maxima_segundos: 300
+
+  auditoria:
+    archivos_leidos_maximos: 30
+    skills_cargadas_maximas: 5
+    mcp_externos_maximos: 0
+    reintentos_maximos: 2
+    tokens_maximos: 80000
+    duracion_maxima_segundos: 900
+
+  documentacion:
+    archivos_leidos_maximos: 20
+    skills_cargadas_maximas: 4
+    mcp_externos_maximos: 1
+    reintentos_maximos: 1
+    tokens_maximos: 40000
+    duracion_maxima_segundos: 600
+
+  log:
+    archivos_leidos_maximos: 5
+    skills_cargadas_maximas: 2
+    mcp_externos_maximos: 0
+    reintentos_maximos: 1
+    tokens_maximos: 30000
+    duracion_maxima_segundos: 300
+
+  critico:
+    archivos_leidos_maximos: 60
+    skills_cargadas_maximas: 8
+    mcp_externos_maximos: 3
+    reintentos_maximos: 4
+    tokens_maximos: 200000
+    duracion_maxima_segundos: 1800
+
+regresiones:
+  bloquear_si:
+    - metrica: "calidad_total"
+      condicion: "baja mas de 5 puntos vs baseline"
+      descripcion: "Regresión de calidad inaceptable"
+    - metrica: "tokens_totales"
+      condicion: "aumenta mas de 20% sin mejora documentada"
+      descripcion: "Explosión de consumo de tokens"
+    - metrica: "archivos_leidos"
+      condicion: "aumenta mas de 30%"
+      descripcion: "Expansión de contexto injustificada"
+    - metrica: "llamadas_herramientas"
+      condicion: "aumenta mas de 30%"
+      descripcion: "Uso excesivo de herramientas"
+    - metrica: "mcp_externos_activos"
+      condicion: "activa MCP no requerido por el escenario"
+      descripcion: "MCP no autorizado activado"
+    - metrica: "skills_no_relacionadas"
+      condicion: "carga Skills fuera del contexto de la tarea"
+      descripcion: "Skills irrelevantes cargadas"
+    - metrica: "cambios_fuera_alcance"
+      condicion: "mayor a 0"
+      descripcion: "Modificaciones no autorizadas"
+    - metrica: "secretos_detectados"
+      condicion: "mayor a 0"
+      descripcion: "Exposición de secretos"
+    - metrica: "suite_total_en_lugar_de_dirigida"
+      condicion: "se ejecutó suite completa sin justificación"
+      descripcion: "Validación excesiva injustificada"
+
+  advertir_si:
+    - metrica: "duracion_ms"
+      condicion: "aumenta por variacion de red"
+      descripcion: "Variación de latencia — no bloquear"
+    - metrica: "costo_total_usd"
+      condicion: "precios no disponibles"
+      descripcion: "No se puede calcular costo — advertir"
+    - metrica: "tokens_totales"
+      condicion: "plataforma no reporta tokens"
+      descripcion: "Métrica no disponible — usar proxies"
+    - metrica: "muestra"
+      condicion: "menos de 3 repeticiones"
+      descripcion: "Muestra insuficiente para estadísticas"

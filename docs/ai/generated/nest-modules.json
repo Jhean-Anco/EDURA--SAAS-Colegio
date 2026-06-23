@@ -1,0 +1,123 @@
+[
+  {
+    "nombre": "curriculo",
+    "ruta": "back/src/modulos/curriculo",
+    "moduleFile": "back/src/modulos/curriculo/curriculo.module.ts",
+    "subdirectorios": [
+      "aplicacion",
+      "dominio",
+      "infraestructura",
+      "presentacion"
+    ]
+  },
+  {
+    "nombre": "docentes",
+    "ruta": "back/src/modulos/docentes",
+    "moduleFile": "back/src/modulos/docentes/docentes.module.ts",
+    "subdirectorios": [
+      "aplicacion",
+      "dominio",
+      "infraestructura",
+      "presentacion"
+    ]
+  },
+  {
+    "nombre": "estructura-academica",
+    "ruta": "back/src/modulos/estructura-academica",
+    "moduleFile": "back/src/modulos/estructura-academica/estructura-academica.module.ts",
+    "subdirectorios": [
+      "aplicacion",
+      "dominio",
+      "infraestructura",
+      "presentacion"
+    ]
+  },
+  {
+    "nombre": "estructura-institucional",
+    "ruta": "back/src/modulos/estructura-institucional",
+    "moduleFile": "back/src/modulos/estructura-institucional/estructura-institucional.module.ts",
+    "subdirectorios": [
+      "aplicacion",
+      "dominio",
+      "infraestructura",
+      "presentacion"
+    ]
+  },
+  {
+    "nombre": "estudiantes",
+    "ruta": "back/src/modulos/estudiantes",
+    "moduleFile": "back/src/modulos/estudiantes/estudiantes.module.ts",
+    "subdirectorios": [
+      "aplicacion",
+      "dominio",
+      "infraestructura",
+      "presentacion"
+    ]
+  },
+  {
+    "nombre": "identidad-acceso",
+    "ruta": "back/src/modulos/identidad-acceso",
+    "moduleFile": "back/src/modulos/identidad-acceso/identidad-acceso.module.ts",
+    "subdirectorios": [
+      "aplicacion",
+      "dominio",
+      "infraestructura",
+      "presentacion"
+    ]
+  },
+  {
+    "nombre": "infraestructura-fisica",
+    "ruta": "back/src/modulos/infraestructura-fisica",
+    "moduleFile": "back/src/modulos/infraestructura-fisica/infraestructura-fisica.module.ts",
+    "subdirectorios": [
+      "aplicacion",
+      "dominio",
+      "infraestructura",
+      "presentacion"
+    ]
+  },
+  {
+    "nombre": "integraciones-externas",
+    "ruta": "back/src/modulos/integraciones-externas",
+    "moduleFile": "back/src/modulos/integraciones-externas/integraciones-externas.module.ts",
+    "subdirectorios": [
+      "aplicacion",
+      "dominio",
+      "infraestructura",
+      "presentacion"
+    ]
+  },
+  {
+    "nombre": "matriculas",
+    "ruta": "back/src/modulos/matriculas",
+    "moduleFile": "back/src/modulos/matriculas/matriculas.module.ts",
+    "subdirectorios": [
+      "aplicacion",
+      "dominio",
+      "infraestructura",
+      "presentacion"
+    ]
+  },
+  {
+    "nombre": "panel-institucional",
+    "ruta": "back/src/modulos/panel-institucional",
+    "moduleFile": "back/src/modulos/panel-institucional/panel-institucional.module.ts",
+    "subdirectorios": [
+      "aplicacion",
+      "dominio",
+      "infraestructura",
+      "presentacion"
+    ]
+  },
+  {
+    "nombre": "personas",
+    "ruta": "back/src/modulos/personas",
+    "moduleFile": "back/src/modulos/personas/personas.module.ts",
+    "subdirectorios": [
+      "aplicacion",
+      "dominio",
+      "infraestructura",
+      "presentacion"
+    ]
+  }
+]

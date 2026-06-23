@@ -1,0 +1,63 @@
+id: BEN-MCP-EDURA-001
+nombre: Comparación herramientas locales vs edura-contexto MCP
+categoria: mcp-externo
+riesgo: bajo
+
+estado_inicial:
+  fixture: .ai/benchmarks/fixtures/BEN-MCP-EDURA-001
+  descripcion: >
+    Tarea de localización: encontrar el servicio que gestiona
+    matrículas, identificar su entidad TypeORM y retornar
+    el nombre de la tabla y las 3 columnas principales.
+
+objetivo: >
+  Localizar información estructural del módulo 'matriculas'
+  sin modificar ningún archivo.
+
+criterios_aceptacion:
+  - "Identifica el archivo de servicio correcto"
+  - "Nombra la entidad TypeORM y su tabla"
+  - "Lista al menos 3 columnas de la entidad"
+  - "No lee más de lo necesario"
+  - "No modifica ningún archivo"
+
+variantes:
+  - id: MCP-EDURA-001-A
+    descripcion: "Sin edura-contexto — herramientas locales generales (Read, Glob, Grep)"
+    mcp: []
+    modo: baseline
+  - id: MCP-EDURA-001-B
+    descripcion: "Con edura-contexto — herramientas especializadas"
+    mcp: ["edura-contexto"]
+    modo: mcp-edura
+
+metricas_clave:
+  - archivos_abiertos
+  - lineas_leidas
+  - llamadas_herramientas
+  - bytes_salida_herramientas
+  - tiempo_hasta_localizar_ms
+  - calidad_total
+
+modos:
+  - baseline
+  - mcp-edura
+
+repeticiones:
+  calentamiento: 1
+  medidas: 3
+
+presupuesto:
+  tokens_maximos: 25000
+  costo_maximo_usd: 0.60
+  tiempo_maximo_segundos: 300
+
+datos_sensibles:
+  permitidos: false
+
+tags:
+  - mcp
+  - edura-contexto
+  - localizacion
+  - comparacion
+  - sin-modificacion

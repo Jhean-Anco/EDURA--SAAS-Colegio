@@ -1,9 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { obtenerSesionServidor, generarCsrfToken, CSRF_COOKIE } from '@/lib/auth/sesion';
+import { generarCsrfToken, CSRF_COOKIE } from '@/lib/auth/sesion';
 import { llamarBackend, errorResponse } from '@/lib/bff/proxy';
 import { verificarSesionYCsrf } from '@/lib/bff/guards';
-import type { ContextoDescriptor } from '@/types/auth';
 
 interface CuerpoSeleccion {
   ambito: 'PLATAFORMA' | 'INSTITUCION' | 'SEDE';

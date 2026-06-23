@@ -1,0 +1,53 @@
+id: BEN-MEC-001
+nombre: Corregir import TypeScript inválido
+categoria: mecanico
+riesgo: bajo
+
+estado_inicial:
+  fixture: .ai/benchmarks/fixtures/BEN-MEC-001
+  descripcion: >
+    Archivo back/src/compartido/aplicacion/dtos/paginacion.dto.ts con
+    un import inválido de una ruta inexistente (../../../inexistente).
+
+objetivo: >
+  Corregir un import inválido en un DTO de compartido sin modificar
+  otros archivos ni instalar dependencias.
+
+criterios_aceptacion:
+  - "El archivo corregido compila sin error (node --check o tsc --noEmit)"
+  - "Solo se modifica el archivo afectado"
+  - "No se instalan dependencias nuevas"
+  - "No se modifican archivos de configuración"
+  - "El import resuelve a una ruta válida existente en el repositorio"
+
+archivos_esperados:
+  maximos_modificados: 1
+  archivos_permitidos:
+    - "back/src/compartido/aplicacion/dtos/paginacion.dto.ts"
+
+validaciones:
+  - "node --check back/src/compartido/aplicacion/dtos/paginacion.dto.ts"
+
+modos:
+  - baseline
+  - contexto-dirigido
+  - mcp-edura
+  - plataforma-completa
+
+repeticiones:
+  calentamiento: 1
+  medidas: 3
+
+presupuesto:
+  tokens_maximos: 20000
+  costo_maximo_usd: 0.50
+  tiempo_maximo_segundos: 180
+
+datos_sensibles:
+  permitidos: false
+
+tags:
+  - typescript
+  - import
+  - mecanico
+  - sin-mcp

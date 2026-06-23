@@ -1,0 +1,138 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "benchmark-run",
+  "title": "EDURA Benchmark Run",
+  "type": "object",
+  "required": ["run_id", "scenario_id", "plataforma", "modo", "inicio", "estado"],
+  "additionalProperties": false,
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "pattern": "^BEN-RUN-[0-9]{4}-[0-9]{2}-[0-9]{2}-[A-Z0-9]{4}$"
+    },
+    "scenario_id": { "type": "string" },
+    "plataforma": { "type": "string", "enum": ["claude-code", "codex", "antigravity", "local-sim"] },
+    "modo": { "type": "string", "enum": ["baseline", "contexto-dirigido", "mcp-edura", "plataforma-completa"] },
+    "repeticion": { "type": "integer", "minimum": 0 },
+    "inicio": { "type": "string", "format": "date-time" },
+    "fin": { "type": ["string", "null"], "format": "date-time" },
+    "duracion_ms": { "type": ["integer", "null"] },
+    "estado": { "type": "string", "enum": ["ejecutando", "completado", "fallido", "cancelado", "simulado", "pendiente_plataforma"] },
+    "entorno": {
+      "type": "object",
+      "properties": {
+        "commit_inicial": { "type": "string" },
+        "commit_final": { "type": ["string", "null"] },
+        "node_version": { "type": "string" },
+        "os": { "type": "string" },
+        "agente_version": { "type": ["string", "null"] },
+        "modelo": { "type": "string" },
+        "nivel_esfuerzo": { "type": "string", "enum": ["low", "medium", "high", "auto"] },
+        "cache_estado": { "type": "string", "enum": ["calido", "frio", "desconocido"] },
+        "skills_activas": { "type": "array", "items": { "type": "string" } },
+        "mcp_activos": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "metricas": { "$ref": "#/definitions/metricas_run" },
+    "resultado": { "$ref": "#/definitions/resultado_run" },
+    "diff_path": { "type": ["string", "null"] },
+    "log_path": { "type": ["string", "null"] },
+    "errores": { "type": "array", "items": { "type": "string" } }
+  },
+  "definitions": {
+    "metricas_run": {
+      "type": "object",
+      "properties": {
+        "tokens": {
+          "type": "object",
+          "properties": {
+            "entrada": { "type": ["integer", "string"] },
+            "entrada_cacheada": { "type": ["integer", "string"] },
+            "entrada_no_cacheada": { "type": ["integer", "string"] },
+            "salida": { "type": ["integer", "string"] },
+            "total": { "type": ["integer", "string"] },
+            "disponible": { "type": "boolean" },
+            "fuente": { "type": "string" }
+          }
+        },
+        "costo": {
+          "type": "object",
+          "properties": {
+            "entrada_usd": { "type": ["number", "string"] },
+            "cache_usd": { "type": ["number", "string"] },
+            "salida_usd": { "type": ["number", "string"] },
+            "total_usd": { "type": ["number", "string"] },
+            "moneda": { "type": "string" },
+            "calculado": { "type": "boolean" }
+          }
+        },
+        "contexto": {
+          "type": "object",
+          "properties": {
+            "archivos_abiertos": { "type": "integer" },
+            "archivos_unicos": { "type": "integer" },
+            "archivos_repetidos": { "type": "integer" },
+            "lineas_leidas": { "type": "integer" },
+            "bytes_leidos": { "type": "integer" },
+            "documentos_cargados": { "type": "integer" }
+          }
+        },
+        "herramientas": {
+          "type": "object",
+          "properties": {
+            "expuestas": { "type": "integer" },
+            "llamadas_total": { "type": "integer" },
+            "llamadas_utiles": { "type": "integer" },
+            "llamadas_sin_resultado": { "type": "integer" },
+            "reintentos": { "type": "integer" },
+            "mcp_llamadas": { "type": "integer" },
+            "mcp_errores": { "type": "integer" },
+            "tiempo_herramientas_ms": { "type": "integer" }
+          }
+        },
+        "skills": {
+          "type": "object",
+          "properties": {
+            "disponibles": { "type": "integer" },
+            "cargadas": { "type": "integer" },
+            "utilizadas": { "type": "integer" },
+            "activadas_incorrectamente": { "type": "integer" }
+          }
+        },
+        "ejecucion": {
+          "type": "object",
+          "properties": {
+            "duracion_total_ms": { "type": "integer" },
+            "duracion_exploracion_ms": { "type": "integer" },
+            "duracion_implementacion_ms": { "type": "integer" },
+            "duracion_validacion_ms": { "type": "integer" },
+            "intentos": { "type": "integer" },
+            "correcciones": { "type": "integer" },
+            "comandos_ejecutados": { "type": "integer" },
+            "pruebas_ejecutadas": { "type": "integer" },
+            "pruebas_fallidas": { "type": "integer" },
+            "archivos_modificados": { "type": "integer" },
+            "lineas_agregadas": { "type": "integer" },
+            "lineas_eliminadas": { "type": "integer" }
+          }
+        }
+      }
+    },
+    "resultado_run": {
+      "type": "object",
+      "properties": {
+        "exito_tecnico": { "type": "boolean" },
+        "criterios_cumplidos": { "type": "integer" },
+        "criterios_totales": { "type": "integer" },
+        "lint": { "type": "string", "enum": ["pasado", "fallido", "no_ejecutado"] },
+        "typecheck": { "type": "string", "enum": ["pasado", "fallido", "no_ejecutado"] },
+        "pruebas": { "type": "string", "enum": ["pasado", "fallido", "no_ejecutado"] },
+        "cambios_fuera_alcance": { "type": "integer" },
+        "secretos_detectados": { "type": "integer" },
+        "regresiones": { "type": "integer" },
+        "calidad_total": { "type": ["number", "null"] },
+        "aceptada": { "type": "boolean" }
+      }
+    }
+  }
+}

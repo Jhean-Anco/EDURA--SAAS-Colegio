@@ -1,0 +1,88 @@
+version: "1.0"
+descripcion: "Definición de plataformas agente para benchmarks EDURA"
+creado: "2026-06-22"
+
+plataformas:
+  claude-code:
+    nombre: "Claude Code"
+    version_detectada: null
+    detectado: false
+    nota_deteccion: "claude --version no disponible en PATH durante benchmark. Plataforma activa en entorno de usuario."
+    modelo_default: "claude-sonnet-4-6"
+    expone_tokens: true
+    expone_costo: false
+    metricas_disponibles:
+      - archivos_abiertos
+      - herramientas_llamadas
+      - duracion_ms
+      - resultado
+    metricas_no_disponibles:
+      - tokens_en_tiempo_real
+    adaptador: "scripts/ai/benchmark-capture.mjs#capturarClaude"
+    config_mcp: ".mcp.json"
+    config_instrucciones: "CLAUDE.md + AGENTS.md"
+
+  codex:
+    nombre: "OpenAI Codex CLI"
+    version_detectada: "0.141.0"
+    detectado: true
+    modelo_default: "gpt-5.4-mini"
+    expone_tokens: false
+    expone_costo: false
+    metricas_disponibles:
+      - archivos_abiertos
+      - herramientas_llamadas
+      - duracion_ms
+      - resultado
+      - mcp_llamadas
+    metricas_no_disponibles:
+      - tokens_entrada
+      - tokens_salida
+      - costo_usd
+    metricas_proxy:
+      - bytes_entrada_estimados
+      - bytes_salida_estimados
+      - lineas_leidas
+    adaptador: "scripts/ai/benchmark-capture.mjs#capturarCodex"
+    config_mcp: "~/.codex/config.toml"
+    config_instrucciones: "AGENTS.md"
+    nota: "Tokens no disponibles via CLI. Usar bytes/líneas como proxy. No mezclar con tokens reales."
+
+  antigravity:
+    nombre: "Google Antigravity"
+    version_detectada: null
+    detectado: false
+    estado: "no_detectado"
+    modelo_default: "desconocido"
+    expone_tokens: false
+    expone_costo: false
+    metricas_disponibles: []
+    metricas_no_disponibles:
+      - tokens
+      - costo
+      - herramientas
+    adaptador: "scripts/ai/benchmark-capture.mjs#capturarAntigravity"
+    config_instrucciones: "AGENTS.md"
+    pendiente: "Instalar Antigravity CLI. Ver config/agents/antigravity/manual-steps.md"
+    benchmarks_estado: "pendiente_plataforma"
+
+  local-sim:
+    nombre: "Simulación local (sin LLM)"
+    version_detectada: "1.0.0"
+    detectado: true
+    modelo_default: "local-sim"
+    expone_tokens: false
+    expone_costo: false
+    metricas_disponibles:
+      - archivos_abiertos
+      - lineas_leidas
+      - bytes_leidos
+      - duracion_ms
+      - llamadas_herramientas
+      - resultado_deterministico
+    metricas_no_disponibles:
+      - tokens
+      - costo
+      - calidad_funcional_real
+    nota: "Simula llamadas al repositorio sin invocar LLM. Útil para CI y validación de infraestructura."
+    uso: "benchmark --dry-run o --mode local"

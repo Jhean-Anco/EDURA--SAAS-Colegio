@@ -1,0 +1,13 @@
+{
+  "_instrucciones": "Copiar como ~/.claude/claude_desktop_config.json para Claude Desktop. Para Claude Code CLI, los MCP builtin están disponibles sin configuración.",
+  "_documentacion": "Ver .ai/mcp.registry.yaml para el registro completo de servidores",
+  "mcpServers": {
+    "_comentario": "Agregar servidores MCP aquí siguiendo el formato de cada proveedor",
+    "_playwright_ejemplo": {
+      "_activar_cuando": "perfil frontend-ui y tarea requiere verificación visual",
+      "_comando": "npx",
+      "_args": ["@playwright/mcp@latest"],
+      "_nota": "Auditar antes de activar — ver .ai/security-policy.yaml > mcp"
+    }
+  }
+}

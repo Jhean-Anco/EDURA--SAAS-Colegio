@@ -1,0 +1,244 @@
+version: "1.0"
+generado: "2026-06-21"
+descripcion: "Lockfile de Skills instaladas en EDURA"
+
+instaladas:
+  compilar-contexto-tarea:
+    origen: "local:agent-assets/skills/compilar-contexto-tarea.md"
+    version: "1.0.0"
+    checksum: "local"
+    fecha_instalacion: "2026-06-21"
+    archivos_instalados:
+      - "agent-assets/skills/compilar-contexto-tarea.md"
+      - ".claude/skills/compilar-contexto-tarea.md"
+      - ".agents/skills/compilar-contexto-tarea.md"
+    plataformas: [claude-code, codex, antigravity]
+    auditoria: "local - sin código externo"
+
+  explorar-repositorio-dirigido:
+    origen: "local:agent-assets/skills/explorar-repositorio-dirigido.md"
+    version: "1.0.0"
+    checksum: "local"
+    fecha_instalacion: "2026-06-21"
+    archivos_instalados:
+      - "agent-assets/skills/explorar-repositorio-dirigido.md"
+      - ".claude/skills/explorar-repositorio-dirigido.md"
+      - ".agents/skills/explorar-repositorio-dirigido.md"
+    plataformas: [claude-code, codex, antigravity]
+    auditoria: "local - sin código externo"
+
+  crear-recurso-nestjs:
+    origen: "local:agent-assets/skills/crear-recurso-nestjs.md"
+    version: "1.0.0"
+    checksum: "local"
+    fecha_instalacion: "2026-06-21"
+    archivos_instalados:
+      - "agent-assets/skills/crear-recurso-nestjs.md"
+      - ".claude/skills/crear-recurso-nestjs.md"
+      - ".agents/skills/crear-recurso-nestjs.md"
+    plataformas: [claude-code, codex, antigravity]
+    auditoria: "local - sin código externo"
+
+  crear-migracion-typeorm:
+    origen: "local:agent-assets/skills/crear-migracion-typeorm.md"
+    version: "1.0.0"
+    checksum: "local"
+    fecha_instalacion: "2026-06-21"
+    archivos_instalados:
+      - "agent-assets/skills/crear-migracion-typeorm.md"
+      - ".claude/skills/crear-migracion-typeorm.md"
+      - ".agents/skills/crear-migracion-typeorm.md"
+    plataformas: [claude-code, codex, antigravity]
+    auditoria: "local - sin código externo"
+
+  crear-funcionalidad-nextjs:
+    origen: "local:agent-assets/skills/crear-funcionalidad-nextjs.md"
+    version: "1.0.0"
+    checksum: "local"
+    fecha_instalacion: "2026-06-21"
+    archivos_instalados:
+      - "agent-assets/skills/crear-funcionalidad-nextjs.md"
+      - ".claude/skills/crear-funcionalidad-nextjs.md"
+      - ".agents/skills/crear-funcionalidad-nextjs.md"
+    plataformas: [claude-code, codex, antigravity]
+    auditoria: "local - sin código externo"
+
+  revisar-multitenencia:
+    origen: "local:agent-assets/skills/revisar-multitenencia.md"
+    version: "1.0.0"
+    checksum: "local"
+    fecha_instalacion: "2026-06-21"
+    archivos_instalados:
+      - "agent-assets/skills/revisar-multitenencia.md"
+      - ".claude/skills/revisar-multitenencia.md"
+      - ".agents/skills/revisar-multitenencia.md"
+    plataformas: [claude-code, codex, antigravity]
+    auditoria: "local - sin código externo"
+
+  revisar-autorizacion:
+    origen: "local:agent-assets/skills/revisar-autorizacion.md"
+    version: "1.0.0"
+    checksum: "local"
+    fecha_instalacion: "2026-06-21"
+    archivos_instalados:
+      - "agent-assets/skills/revisar-autorizacion.md"
+      - ".claude/skills/revisar-autorizacion.md"
+      - ".agents/skills/revisar-autorizacion.md"
+    plataformas: [claude-code, codex, antigravity]
+    auditoria: "local - sin código externo"
+
+  generar-contrato-openapi:
+    origen: "local:agent-assets/skills/generar-contrato-openapi.md"
+    version: "1.0.0"
+    checksum: "local"
+    fecha_instalacion: "2026-06-21"
+    archivos_instalados:
+      - "agent-assets/skills/generar-contrato-openapi.md"
+      - ".claude/skills/generar-contrato-openapi.md"
+      - ".agents/skills/generar-contrato-openapi.md"
+    plataformas: [claude-code, codex, antigravity]
+    auditoria: "local - sin código externo"
+
+  ejecutar-pruebas-dirigidas:
+    origen: "local:agent-assets/skills/ejecutar-pruebas-dirigidas.md"
+    version: "1.0.0"
+    checksum: "local"
+    fecha_instalacion: "2026-06-21"
+    archivos_instalados:
+      - "agent-assets/skills/ejecutar-pruebas-dirigidas.md"
+      - ".claude/skills/ejecutar-pruebas-dirigidas.md"
+      - ".agents/skills/ejecutar-pruebas-dirigidas.md"
+    plataformas: [claude-code, codex, antigravity]
+    auditoria: "local - sin código externo"
+
+  comprimir-errores:
+    origen: "local:agent-assets/skills/comprimir-errores.md"
+    version: "1.0.0"
+    checksum: "local"
+    fecha_instalacion: "2026-06-21"
+    archivos_instalados:
+      - "agent-assets/skills/comprimir-errores.md"
+      - ".claude/skills/comprimir-errores.md"
+      - ".agents/skills/comprimir-errores.md"
+    plataformas: [claude-code, codex, antigravity]
+    auditoria: "local - sin código externo"
+
+  revisar-diff:
+    origen: "local:agent-assets/skills/revisar-diff.md"
+    version: "1.0.0"
+    checksum: "local"
+    fecha_instalacion: "2026-06-21"
+    archivos_instalados:
+      - "agent-assets/skills/revisar-diff.md"
+      - ".claude/skills/revisar-diff.md"
+      - ".agents/skills/revisar-diff.md"
+    plataformas: [claude-code, codex, antigravity]
+    auditoria: "local - sin código externo"
+
+  auditar-seguridad:
+    origen: "local:agent-assets/skills/auditar-seguridad.md"
+    version: "1.0.0"
+    checksum: "local"
+    fecha_instalacion: "2026-06-21"
+    archivos_instalados:
+      - "agent-assets/skills/auditar-seguridad.md"
+      - ".claude/skills/auditar-seguridad.md"
+      - ".agents/skills/auditar-seguridad.md"
+    plataformas: [claude-code, codex, antigravity]
+    auditoria: "local - sin código externo"
+
+  actualizar-adr:
+    origen: "local:agent-assets/skills/actualizar-adr.md"
+    version: "1.0.0"
+    checksum: "local"
+    fecha_instalacion: "2026-06-21"
+    archivos_instalados:
+      - "agent-assets/skills/actualizar-adr.md"
+      - ".claude/skills/actualizar-adr.md"
+      - ".agents/skills/actualizar-adr.md"
+    plataformas: [claude-code, codex, antigravity]
+    auditoria: "local - sin código externo"
+
+  generar-documentacion:
+    origen: "local:agent-assets/skills/generar-documentacion.md"
+    version: "1.0.0"
+    checksum: "local"
+    fecha_instalacion: "2026-06-21"
+    archivos_instalados:
+      - "agent-assets/skills/generar-documentacion.md"
+      - ".claude/skills/generar-documentacion.md"
+      - ".agents/skills/generar-documentacion.md"
+    plataformas: [claude-code, codex, antigravity]
+    auditoria: "local - sin código externo"
+
+  investigar-notebooklm:
+    origen: "local:agent-assets/skills/investigar-notebooklm.md"
+    version: "1.0.0"
+    checksum: "local"
+    fecha_instalacion: "2026-06-21"
+    archivos_instalados:
+      - "agent-assets/skills/investigar-notebooklm.md"
+      - ".claude/skills/investigar-notebooklm.md"
+      - ".agents/skills/investigar-notebooklm.md"
+    plataformas: [claude-code]
+    auditoria: "local - sin código externo"
+
+  preparar-handoff:
+    origen: "local:agent-assets/skills/preparar-handoff.md"
+    version: "1.0.0"
+    checksum: "local"
+    fecha_instalacion: "2026-06-21"
+    archivos_instalados:
+      - "agent-assets/skills/preparar-handoff.md"
+      - ".claude/skills/preparar-handoff.md"
+      - ".agents/skills/preparar-handoff.md"
+    plataformas: [claude-code, codex, antigravity]
+    auditoria: "local - sin código externo"
+
+  auditar-accesibilidad:
+    origen: "local:agent-assets/skills/auditar-accesibilidad.md"
+    version: "1.0.0"
+    checksum: "local"
+    fecha_instalacion: "2026-06-21"
+    archivos_instalados:
+      - "agent-assets/skills/auditar-accesibilidad.md"
+      - ".claude/skills/auditar-accesibilidad.md"
+      - ".agents/skills/auditar-accesibilidad.md"
+    plataformas: [claude-code, codex]
+    auditoria: "local - sin código externo"
+
+  revisar-dependencias:
+    origen: "local:agent-assets/skills/revisar-dependencias.md"
+    version: "1.0.0"
+    checksum: "local"
+    fecha_instalacion: "2026-06-21"
+    archivos_instalados:
+      - "agent-assets/skills/revisar-dependencias.md"
+      - ".claude/skills/revisar-dependencias.md"
+      - ".agents/skills/revisar-dependencias.md"
+    plataformas: [claude-code, codex, antigravity]
+    auditoria: "local - sin código externo"
+
+  validar-esquema-base-datos:
+    origen: "local:agent-assets/skills/validar-esquema-base-datos.md"
+    version: "1.0.0"
+    checksum: "local"
+    fecha_instalacion: "2026-06-21"
+    archivos_instalados:
+      - "agent-assets/skills/validar-esquema-base-datos.md"
+      - ".claude/skills/validar-esquema-base-datos.md"
+      - ".agents/skills/validar-esquema-base-datos.md"
+    plataformas: [claude-code, codex, antigravity]
+    auditoria: "local - sin código externo"
+
+  cerrar-tarea-edura:
+    origen: "local:agent-assets/skills/cerrar-tarea-edura.md"
+    version: "1.0.0"
+    checksum: "local"
+    fecha_instalacion: "2026-06-21"
+    archivos_instalados:
+      - "agent-assets/skills/cerrar-tarea-edura.md"
+      - ".claude/skills/cerrar-tarea-edura.md"
+      - ".agents/skills/cerrar-tarea-edura.md"
+    plataformas: [claude-code, codex, antigravity]
+    auditoria: "local - sin código externo"

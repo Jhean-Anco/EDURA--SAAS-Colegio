@@ -1,0 +1,340 @@
+version: "1.1"
+descripcion: "Registro central de servidores MCP para EDURA"
+actualizado: "2026-06-22"
+
+servidores:
+
+  edura-contexto:
+    id: edura-contexto
+    nombre: "MCP EDURA Contexto"
+    proveedor: "EDURA (local)"
+    finalidad: "Acceso estructurado al repositorio EDURA — contexto de tareas, búsqueda de símbolos, manifiesto de módulos, diff, handoff, métricas"
+    estado: instalado
+    origen: "local:tools/mcp-edura-contexto/server.mjs"
+    version: "1.0.0"
+    commit: ~
+    checksum: local
+    licencia: interna
+    transporte: stdio
+    comando: "node tools/mcp-edura-contexto/server.mjs"
+    url: ~
+    autenticacion: ninguna
+    variables_entorno: []
+    herramientas_permitidas:
+      - obtener_estado_proyecto
+      - obtener_tarea
+      - compilar_contexto
+      - buscar_simbolo
+      - leer_rango
+      - obtener_manifiesto_modulo
+      - obtener_adr
+      - calcular_impacto
+      - obtener_diff
+      - ejecutar_validacion_dirigida
+      - comprimir_errores
+      - generar_handoff
+      - obtener_metricas
+      - validar_tarea
+    herramientas_bloqueadas: []
+    acceso_red: false
+    acceso_archivos: "solo dentro de ROOT (d:/EDURA/sistema). Rechaza path traversal y rutas de secretos."
+    acceso_escritura: false
+    timeout: 15
+    limite_salida: 80000
+    riesgo: bajo
+    perfiles: [local-fast, backend, frontend-ui, docs-research, security-audit, database-review, pr-review]
+    tokens_contexto_estimados_evitar: 2000
+    llamadas_promedio: 5
+    salida_maxima: 80000
+    reemplaza: "lectura manual de archivos, búsqueda con rg, compilación manual de contexto"
+    frecuencia_uso: alta
+    fecha_revision: "2026-06-22"
+
+  playwright:
+    id: playwright
+    nombre: "Playwright MCP"
+    proveedor: "Microsoft"
+    finalidad: "Automatización de browser para verificación de UI y pruebas E2E locales"
+    estado: instalado
+    origen: "npm:@playwright/mcp@0.0.76"
+    version: "0.0.76"
+    commit: ~
+    checksum: "npm registry"
+    licencia: "Apache-2.0"
+    transporte: stdio
+    comando: "npx @playwright/mcp@0.0.76 --headless"
+    url: ~
+    autenticacion: ninguna
+    variables_entorno: []
+    herramientas_permitidas:
+      - browser_navigate
+      - browser_screenshot
+      - browser_click
+      - browser_type
+      - browser_get_text
+      - browser_evaluate
+      - browser_console_logs
+      - browser_network_requests
+      - browser_accessibility_snapshot
+    herramientas_bloqueadas:
+      - browser_file_upload
+      - browser_pdf_save
+    acceso_red: true
+    acceso_archivos: "screenshots temporales solo"
+    acceso_escritura: false
+    timeout: 60
+    limite_salida: 100000
+    riesgo: medio
+    perfiles: [frontend-ui]
+    tokens_contexto_estimados_evitar: 500
+    llamadas_promedio: 3
+    reemplaza: "verificación manual de UI"
+    frecuencia_uso: ocasional
+    restricciones:
+      - "Solo URLs locales (localhost/127.0.0.1) por defecto"
+      - "No navegar a producción sin autorización explícita"
+      - "No ingresar credenciales reales"
+      - "No guardar sesiones personales"
+    fecha_revision: "2026-06-22"
+
+  postgres-local-readonly:
+    id: postgres-local-readonly
+    nombre: "PostgreSQL MCP (local, solo lectura)"
+    proveedor: "@modelcontextprotocol/server-postgres v0.6.2"
+    finalidad: "Inspección de esquema, tablas, columnas e índices en entorno local de desarrollo"
+    estado: configurado
+    origen: "npm:@modelcontextprotocol/server-postgres@0.6.2"
+    version: "0.6.2"
+    commit: ~
+    checksum: "npm registry"
+    licencia: "MIT"
+    transporte: stdio
+    comando: "npx -y @modelcontextprotocol/server-postgres ${POSTGRES_MCP_URL}"
+    url: ~
+    autenticacion: "conexión PostgreSQL"
+    variables_entorno:
+      - nombre: POSTGRES_MCP_URL
+        descripcion: "URL de conexión postgresql://usuario_readonly:clave@host:puerto/bd"
+        requerida: true
+        presente: false
+        nota: "Usar cuenta de solo lectura dedicada, no BD_USUARIO del .env"
+    herramientas_permitidas:
+      - query
+      - list_tables
+      - describe_table
+    herramientas_bloqueadas:
+      - "Cualquier INSERT/UPDATE/DELETE/TRUNCATE/DROP/ALTER (el driver rechaza por ser readonly)"
+    acceso_red: false
+    acceso_archivos: false
+    acceso_escritura: false
+    acceso_produccion: false
+    timeout: 30
+    limite_salida: 50000
+    riesgo: bajo
+    perfiles: [database-review]
+    tokens_contexto_estimados_evitar: 1500
+    llamadas_promedio: 3
+    reemplaza: "inspección manual de esquema"
+    frecuencia_uso: ocasional
+    pendiente: "Configurar POSTGRES_MCP_URL en variables de entorno. Ver config/agents/mcp.env.example"
+    fecha_revision: "2026-06-22"
+
+  github-plugin-codex:
+    id: github-plugin-codex
+    nombre: "GitHub Plugin (Codex nativo)"
+    proveedor: "OpenAI (curated)"
+    finalidad: "Issues, PRs, ramas remotas, revisiones de código — solo para perfil pr-review"
+    estado: instalado
+    origen: "plugin:github@openai-curated"
+    version: "openai-curated"
+    commit: ~
+    checksum: "openai-curated"
+    licencia: "openai-curated"
+    transporte: nativo_codex
+    autenticacion: "GITHUB_TOKEN (requerido para uso real)"
+    variables_entorno:
+      - nombre: GITHUB_TOKEN
+        descripcion: "Token de acceso fino a repositorio EDURA. Alcance mínimo: repo:read."
+        requerida: true
+        presente: false
+        nota: "Ver config/agents/mcp.env.example"
+    herramientas_permitidas:
+      - list_repos
+      - get_repo
+      - list_issues
+      - get_issue
+      - list_pull_requests
+      - get_pull_request
+      - get_file_contents
+      - list_branches
+      - get_commit
+      - search_code
+      - list_workflow_runs
+    herramientas_aprobacion_requerida:
+      - create_pull_request
+      - merge_pull_request
+      - mark_pull_request_ready_for_review
+      - push_files
+      - create_or_update_file
+      - delete_file
+      - create_branch
+      - add_pull_request_review_comment
+      - create_issue
+      - update_issue
+    acceso_red: true
+    acceso_archivos: false
+    acceso_escritura: true
+    timeout: 30
+    limite_salida: 50000
+    riesgo: medio
+    perfiles: [pr-review]
+    tokens_contexto_estimados_evitar: 1000
+    llamadas_promedio: 4
+    reemplaza: "git log --remote, gh pr list"
+    frecuencia_uso: ocasional
+    pendiente: "Configurar GITHUB_TOKEN en entorno"
+    fecha_revision: "2026-06-22"
+
+  notebooklm-enterprise:
+    id: notebooklm-enterprise
+    nombre: "NotebookLM Enterprise"
+    proveedor: "Google"
+    finalidad: "Investigación documental avanzada con fuentes oficiales del proyecto"
+    estado: propuesto
+    origen: "api:Google NotebookLM Enterprise"
+    autenticacion: "Application Default Credentials o Service Account de Google Cloud"
+    variables_entorno:
+      - nombre: GOOGLE_CLOUD_PROJECT
+        requerida: true
+        presente: false
+      - nombre: GOOGLE_APPLICATION_CREDENTIALS
+        requerida: false
+        nota: "Opcional si se usa gcloud auth application-default login"
+    riesgo: bajo
+    perfiles: [docs-research]
+    pendiente: "Requiere licencia NotebookLM Enterprise + proyecto Google Cloud + gcloud instalado"
+    fecha_revision: "2026-06-22"
+
+  notebooklm-mcp-comunidad:
+    id: notebooklm-mcp-comunidad
+    nombre: "NotebookLM MCP (comunitario)"
+    proveedor: "comunidad"
+    finalidad: "Alternativa experimental cuando no existe Enterprise"
+    estado: instalado
+    origen: "npm:notebooklm-mcp@2.0.0"
+    version: "2.0.0"
+    commit: ~
+    checksum: "npm registry"
+    licencia: "MIT"
+    transporte: stdio
+    comando: "npx -y notebooklm-mcp@2.0.0"
+    url: ~
+    autenticacion: "Google OAuth — manual"
+    variables_entorno: []
+    herramientas_permitidas:
+      - notebook_list
+      - notebook_get
+      - note
+    herramientas_bloqueadas: []
+    acceso_red: true
+    acceso_archivos: false
+    acceso_escritura: false
+    timeout: 60
+    limite_salida: 80000
+    riesgo: medio
+    perfiles: [docs-research]
+    tokens_contexto_estimados_evitar: 2000
+    llamadas_promedio: 3
+    reemplaza: "búsqueda manual en UI de NotebookLM"
+    frecuencia_uso: frecuente
+    pendiente: "Autorizado por el usuario"
+    fecha_revision: "2026-06-22"
+
+  stitch:
+    id: stitch
+    nombre: "Stitch MCP"
+    proveedor: "Google/Stitch"
+    finalidad: "Consulta de prototipos y diseños UX autorizados"
+    estado: configurado
+    autenticacion: "API key (STITCH_API_KEY)"
+    variables_entorno:
+      - nombre: STITCH_API_KEY
+        requerida: true
+        presente: true
+    riesgo: bajo
+    perfiles: [frontend-ui]
+    pendiente: ninguna
+    fecha_revision: "2026-06-22"
+
+perfiles:
+  local-fast:
+    descripcion: "Perfil mínimo — solo MCP EDURA Contexto"
+    servidores_activos: [edura-contexto]
+    max_servidores: 1
+    max_herramientas: 14
+    max_chars_descripciones: 3000
+    max_resultado_bytes: 80000
+    max_tiempo_segundos: 30
+    max_llamadas_por_tarea: 15
+    acceso_escritura: false
+    acceso_red: false
+
+  backend:
+    descripcion: "NestJS, TypeORM, migraciones, pruebas de backend"
+    servidores_activos: [edura-contexto]
+    servidores_bajo_demanda: [postgres-local-readonly]
+    max_servidores: 2
+    max_herramientas: 20
+    max_resultado_bytes: 100000
+    max_tiempo_segundos: 60
+    max_llamadas_por_tarea: 40
+
+  frontend-ui:
+    descripcion: "Next.js, React, pruebas de UI, verificación visual"
+    servidores_activos: [edura-contexto]
+    servidores_bajo_demanda: [playwright, stitch]
+    max_servidores: 3
+    max_herramientas: 25
+    max_resultado_bytes: 100000
+    max_tiempo_segundos: 90
+    max_llamadas_por_tarea: 40
+
+  docs-research:
+    descripcion: "Investigación documental, análisis de requerimientos"
+    servidores_activos: [edura-contexto]
+    servidores_bajo_demanda: [notebooklm-enterprise, notebooklm-mcp-comunidad]
+    max_servidores: 2
+    max_herramientas: 18
+    max_resultado_bytes: 80000
+    max_tiempo_segundos: 120
+    max_llamadas_por_tarea: 25
+
+  pr-review:
+    descripcion: "Revisión de PRs, issues, CI"
+    servidores_activos: [edura-contexto, github-plugin-codex]
+    max_servidores: 2
+    max_herramientas: 20
+    max_resultado_bytes: 80000
+    max_tiempo_segundos: 60
+    max_llamadas_por_tarea: 30
+
+  security-audit:
+    descripcion: "Revisión de seguridad — solo lectura"
+    servidores_activos: [edura-contexto]
+    max_servidores: 1
+    max_herramientas: 14
+    max_resultado_bytes: 80000
+    max_tiempo_segundos: 120
+    max_llamadas_por_tarea: 50
+    acceso_escritura: false
+
+  database-review:
+    descripcion: "Revisión de esquema — nunca producción"
+    servidores_activos: [edura-contexto]
+    servidores_bajo_demanda: [postgres-local-readonly]
+    max_servidores: 2
+    max_herramientas: 17
+    max_resultado_bytes: 50000
+    max_tiempo_segundos: 60
+    max_llamadas_por_tarea: 20
+    nota: "Nunca base de datos de producción. Solo entorno local o contenedor."

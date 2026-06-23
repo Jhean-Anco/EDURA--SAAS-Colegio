@@ -1,0 +1,54 @@
+id: BEN-AUD-001
+nombre: Detectar endpoint sin verificación de institucion_id
+categoria: auditoria
+riesgo: bajo
+
+estado_inicial:
+  fixture: .ai/benchmarks/fixtures/BEN-AUD-001
+  descripcion: >
+    Controlador ficticio back/src/modulos/personas/presentacion/personas.controller.ts
+    con un endpoint GET /personas que consulta sin filtrar por institucion_id.
+
+objetivo: >
+  Revisar el controlador y detectar que la consulta no filtra por
+  institucion_id. Proponer la corrección sin implementarla (solo diff sugerido).
+
+criterios_aceptacion:
+  - "Identifica el endpoint sin filtro de multitenencia"
+  - "Especifica exactamente qué línea/método carece del filtro"
+  - "Propone cómo agregar el filtro (código diff)"
+  - "No modifica archivos de producción — solo genera reporte"
+  - "No expone datos reales de la base de datos"
+  - "El reporte es reproducible y trazable"
+
+archivos_esperados:
+  maximos_modificados: 0
+  archivos_permitidos: []
+
+validaciones:
+  - "El reporte existe en la salida del agente"
+
+modos:
+  - baseline
+  - contexto-dirigido
+  - mcp-edura
+  - plataforma-completa
+
+repeticiones:
+  calentamiento: 0
+  medidas: 3
+
+presupuesto:
+  tokens_maximos: 25000
+  costo_maximo_usd: 0.60
+  tiempo_maximo_segundos: 240
+
+datos_sensibles:
+  permitidos: false
+
+tags:
+  - seguridad
+  - multitenencia
+  - auditoria
+  - institucion-id
+  - readonly

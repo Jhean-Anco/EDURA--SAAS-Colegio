@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "quality-evaluation",
+  "title": "EDURA Quality Evaluation",
+  "type": "object",
+  "required": ["run_id", "evaluador", "fecha", "dimensiones", "calidad_total", "aceptada"],
+  "properties": {
+    "run_id": { "type": "string" },
+    "evaluador": { "type": "string", "enum": ["automatico", "manual", "mixto"] },
+    "fecha": { "type": "string", "format": "date-time" },
+    "dimensiones": {
+      "type": "object",
+      "required": ["correccion_funcional", "alcance", "arquitectura", "seguridad", "calidad_interna", "entrega"],
+      "properties": {
+        "correccion_funcional": { "$ref": "#/definitions/dimension", "description": "Peso: 40" },
+        "alcance":              { "$ref": "#/definitions/dimension", "description": "Peso: 15" },
+        "arquitectura":        { "$ref": "#/definitions/dimension", "description": "Peso: 15" },
+        "seguridad":           { "$ref": "#/definitions/dimension", "description": "Peso: 15" },
+        "calidad_interna":     { "$ref": "#/definitions/dimension", "description": "Peso: 10" },
+        "entrega":             { "$ref": "#/definitions/dimension", "description": "Peso: 5"  }
+      }
+    },
+    "calidad_total": { "type": "number", "minimum": 0, "maximum": 100 },
+    "aceptada": { "type": "boolean" },
+    "motivo_rechazo": { "type": ["string", "null"] },
+    "bloqueos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "tipo": { "type": "string", "enum": ["secreto_detectado", "cambio_fuera_alcance_critico", "regresion_critica", "prueba_obligatoria_fallida"] },
+          "descripcion": { "type": "string" }
+        }
+      }
+    },
+    "notas": { "type": "string" }
+  },
+  "definitions": {
+    "dimension": {
+      "type": "object",
+      "required": ["puntos_maximos", "puntos_obtenidos"],
+      "properties": {
+        "puntos_maximos": { "type": "integer" },
+        "puntos_obtenidos": { "type": "number" },
+        "criterios": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "criterio": { "type": "string" },
+              "resultado": { "type": "string", "enum": ["cumple", "no_cumple", "parcial", "no_aplica"] },
+              "nota": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

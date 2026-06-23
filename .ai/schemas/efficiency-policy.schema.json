@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "efficiency-policy",
+  "title": "EDURA Efficiency Policy",
+  "type": "object",
+  "required": ["version", "global", "por_categoria"],
+  "properties": {
+    "version": { "type": "string" },
+    "descripcion": { "type": "string" },
+    "global": {
+      "type": "object",
+      "required": ["calidad_minima", "cambios_fuera_alcance_maximos", "secretos_detectados_maximos"],
+      "properties": {
+        "calidad_minima": { "type": "number", "minimum": 0, "maximum": 100 },
+        "cambios_fuera_alcance_maximos": { "type": "integer", "minimum": 0 },
+        "secretos_detectados_maximos": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "por_categoria": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "archivos_leidos_maximos": { "type": "integer" },
+          "skills_cargadas_maximas": { "type": "integer" },
+          "mcp_externos_maximos": { "type": "integer" },
+          "reintentos_maximos": { "type": "integer" },
+          "tokens_maximos": { "type": ["integer", "string"] }
+        }
+      }
+    },
+    "regresiones": {
+      "type": "object",
+      "properties": {
+        "bloquear_si": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "metrica": { "type": "string" },
+              "condicion": { "type": "string" },
+              "descripcion": { "type": "string" }
+            }
+          }
+        },
+        "advertir_si": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "metrica": { "type": "string" },
+              "condicion": { "type": "string" },
+              "descripcion": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

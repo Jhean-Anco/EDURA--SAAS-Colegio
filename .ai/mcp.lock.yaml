@@ -1,0 +1,249 @@
+version: "1.1"
+descripcion: "Estado operativo verificado de servidores MCP — generado por pruebas de salud"
+generado: "2026-06-22T00:00:00Z"
+plataforma_principal: "Claude Code v2.1.185"
+nota: "Este archivo registra el estado REAL post-prueba. No modificar manualmente sin ejecutar test."
+
+servidores:
+
+  edura-contexto:
+    id: edura-contexto
+    estado_global: conectado
+    plataformas:
+      claude-code:
+        estado: conectado
+        archivo_config: ".mcp.json"
+        comando_verificado: "node tools/mcp-edura-contexto/server.mjs"
+        pruebas:
+          nivel_1_proceso: pasado
+          nivel_2_protocolo: pasado
+          nivel_3_herramientas: pasado
+          nivel_4_funcional: pasado
+          nivel_5_integracion: pendiente
+        herramientas_descubiertas: 14
+        initialize_ok: true
+        tools_list_ok: true
+        tool_call_ok: true
+        tool_call_probada: "calcular_impacto"
+        latencia_ms_aprox: 250
+        ultima_prueba: "2026-06-22"
+        nota: "4/4 pruebas JSON-RPC pasadas en sesión anterior"
+      codex:
+        estado: instalado
+        archivo_config: "~/.codex/config.toml"
+        seccion: "[mcp_servers.edura-contexto]"
+        pruebas:
+          nivel_1_proceso: pendiente
+          nivel_2_protocolo: pendiente
+          nivel_3_herramientas: pendiente
+          nivel_4_funcional: pendiente
+          nivel_5_integracion: pendiente
+        nota: "Entrada registrada por 'codex mcp add'. Prueba funcional pendiente en sesión Codex."
+      antigravity:
+        estado: no_detectado
+        nota: "Antigravity no encontrado en PATH. Ver docs pendientes: config/agents/antigravity/manual-steps.md"
+    variables_entorno_faltantes: []
+    proxima_revision: "2026-07-22"
+
+  playwright:
+    id: playwright
+    estado_global: instalado
+    plataformas:
+      claude-code:
+        estado: instalado
+        archivo_config: ".mcp.json"
+        version_configurada: "latest"
+        pruebas:
+          nivel_1_proceso: pendiente
+          nivel_2_protocolo: pendiente
+          nivel_3_herramientas: pendiente
+          nivel_4_funcional: pendiente
+          nivel_5_integracion: pendiente
+        nota: "Requiere aprobación vía /mcp en Claude Code antes de usar."
+        paso_manual: "Ejecutar '/mcp' en Claude Code → aprobar 'playwright' → verificar herramientas"
+        restricciones_activas:
+          - "Solo localhost/127.0.0.1 por defecto"
+          - "No ingresar credenciales reales en browser automatizado"
+      codex:
+        estado: instalado
+        archivo_config: "~/.codex/config.toml"
+        seccion: "[mcp_servers.playwright]"
+        version_configurada: "0.0.76"
+        auth_type: "Unsupported (correcto para STDIO)"
+        pruebas:
+          nivel_1_proceso: pendiente
+          nivel_2_protocolo: pendiente
+          nivel_3_herramientas: pendiente
+          nivel_4_funcional: pendiente
+          nivel_5_integracion: pendiente
+        nota: "Auth=Unsupported es correcto para STDIO. Prueba pendiente en sesión Codex."
+      antigravity:
+        estado: no_detectado
+    variables_entorno_faltantes: []
+    proxima_revision: "2026-07-22"
+
+  postgres-local-readonly:
+    id: postgres-local-readonly
+    estado_global: configurado
+    plataformas:
+      claude-code:
+        estado: configurado
+        archivo_config: ".mcp.json"
+        pruebas:
+          nivel_1_proceso: bloqueado
+          nivel_2_protocolo: bloqueado
+          nivel_3_herramientas: bloqueado
+          nivel_4_funcional: bloqueado
+          nivel_5_integracion: bloqueado
+        motivo_bloqueo: "POSTGRES_MCP_URL no configurada en entorno del sistema"
+        paso_manual: |
+          1. Crear usuario de solo lectura en PostgreSQL:
+             CREATE USER edura_readonly WITH PASSWORD '<clave>';
+             GRANT CONNECT ON DATABASE edura_dev TO edura_readonly;
+             GRANT USAGE ON SCHEMA public TO edura_readonly;
+             GRANT SELECT ON ALL TABLES IN SCHEMA public TO edura_readonly;
+          2. Configurar variable (PowerShell sesión actual):
+             $env:POSTGRES_MCP_URL = "postgresql://edura_readonly:<clave>@localhost:5432/edura_dev"
+          3. O permanente (sin mostrar clave en terminal):
+             [System.Environment]::SetEnvironmentVariable("POSTGRES_MCP_URL", "postgresql://...", "User")
+          4. Reiniciar Claude Code para que tome la variable
+          5. Ejecutar: node scripts/ai/mcp-manager.mjs test postgres-local-readonly
+      codex:
+        estado: no_configurado
+        nota: "Pendiente añadir a ~/.codex/config.toml. Requiere POSTGRES_MCP_URL primero."
+      antigravity:
+        estado: no_detectado
+    variables_entorno_faltantes:
+      - POSTGRES_MCP_URL
+    proxima_revision: "cuando se configure POSTGRES_MCP_URL"
+
+  github-plugin-codex:
+    id: github-plugin-codex
+    estado_global: instalado
+    plataformas:
+      claude-code:
+        estado: no_aplica
+        nota: "Plugin nativo Codex. No disponible como MCP externo en Claude Code."
+      codex:
+        estado: instalado
+        archivo_config: "~/.codex/config.toml"
+        seccion: '[plugins."github@openai-curated"]'
+        enabled: true
+        politicas_aprobacion_configuradas: 10
+        herramientas_auto_aprobadas:
+          - github.list_repos
+          - github.get_repo
+          - github.list_issues
+          - github.get_issue
+          - github.list_pull_requests
+          - github.get_pull_request
+          - github.get_file_contents
+          - github.list_branches
+          - github.get_commit
+          - github.search_code
+          - github.list_workflow_runs
+        herramientas_aprobacion_requerida:
+          - github.create_pull_request
+          - github.mark_pull_request_ready_for_review
+          - github.merge_pull_request
+          - github.push_files
+          - github.create_or_update_file
+          - github.delete_file
+          - github.create_branch
+          - github.add_pull_request_review_comment
+          - github.create_issue
+          - github.update_issue
+        pruebas:
+          nivel_1_proceso: no_aplica
+          nivel_2_protocolo: no_aplica
+          nivel_3_herramientas: pendiente
+          nivel_4_funcional: bloqueado
+          nivel_5_integracion: bloqueado
+        motivo_bloqueo: "GITHUB_TOKEN no configurado. Lectura puede funcionar con auth Codex; escritura requiere token."
+        paso_manual: |
+          1. https://github.com/settings/tokens/new → Token fino al repo EDURA
+             Alcance: Contents (read), Pull Requests (r/w), Issues (r/w)
+          2. $env:GITHUB_TOKEN = "ghp_..."
+          3. O: [System.Environment]::SetEnvironmentVariable("GITHUB_TOKEN","ghp_...","User")
+          4. Reiniciar Codex. Verificar: codex mcp list
+      antigravity:
+        estado: no_detectado
+    variables_entorno_faltantes:
+      - GITHUB_TOKEN
+    proxima_revision: "cuando se configure GITHUB_TOKEN"
+
+  notebooklm-enterprise:
+    id: notebooklm-enterprise
+    estado_global: propuesto
+    plataformas:
+      claude-code:
+        estado: propuesto
+        nota: "Interfaz TypeScript implementada en tools/notebooklm-adapter/. Stub activo hasta configurar credenciales."
+      codex:
+        estado: propuesto
+      antigravity:
+        estado: no_detectado
+    variables_entorno_faltantes:
+      - GOOGLE_CLOUD_PROJECT
+    proxima_revision: "cuando se evalúe licencia NotebookLM Enterprise"
+
+  notebooklm-mcp-comunidad:
+    id: notebooklm-mcp-comunidad
+    estado_global: propuesto
+    plataformas:
+      claude-code:
+        estado: propuesto
+      codex:
+        estado: propuesto
+    proxima_revision: "cuando se complete auditoría del repositorio comunitario"
+
+  stitch:
+    id: stitch
+    estado_global: configurado
+    plataformas:
+      claude-code:
+        estado: configurado
+      codex:
+        estado: configurado
+      antigravity:
+        estado: conectado
+        archivo_config: "mcp_config.json"
+        pruebas:
+          nivel_1_proceso: pasado
+          nivel_2_protocolo: pasado
+          nivel_3_herramientas: pasado
+          nivel_4_funcional: pasado
+          nivel_5_integracion: pasado
+        nota: "Configurado con la API key de Stitch y conectado exitosamente en la configuración de Antigravity."
+    variables_entorno_faltantes: []
+    proxima_revision: "2026-07-22"
+
+resumen_estado:
+  total_servidores_definidos: 7
+  por_estado_global:
+    conectado: 1
+    instalado: 3
+    configurado: 2
+    propuesto: 2
+    no_detectado: 0
+  operativos_sin_accion:
+    - "edura-contexto/claude-code"
+  pendientes_autenticacion:
+    - "postgres-local-readonly (POSTGRES_MCP_URL)"
+    - "github-plugin-codex/codex (GITHUB_TOKEN)"
+  pendientes_aprobacion_ui:
+    - "playwright/claude-code (requiere /mcp → aprobar)"
+  no_detectados:
+    - "antigravity"
+
+matriz_pruebas_salud:
+  # N1=proceso lanza | N2=protocolo JSON-RPC | N3=herramientas descubiertas | N4=llamada funcional | N5=integración E2E
+  # Valores: pasado | fallido | pendiente | bloqueado | no_aplica
+  "edura-contexto/claude-code":     [pasado, pasado, pasado, pasado, pendiente]  # verificado 2026-06-22
+  "edura-contexto/codex":           [pendiente, pendiente, pendiente, pendiente, pendiente]
+  "playwright/claude-code":         [pendiente, pendiente, pendiente, pendiente, pendiente]
+  "playwright/codex":               [pendiente, pendiente, pendiente, pendiente, pendiente]
+  "postgres-local-readonly/cc":     [bloqueado, bloqueado, bloqueado, bloqueado, bloqueado]
+  "github-plugin-codex/codex":     [no_aplica, no_aplica, pendiente, bloqueado, bloqueado]
+  "notebooklm-enterprise/cc":      [no_aplica, no_aplica, no_aplica, no_aplica, no_aplica]
+  "stitch/cc":                      [no_aplica, no_aplica, no_aplica, no_aplica, no_aplica]

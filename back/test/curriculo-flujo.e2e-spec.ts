@@ -422,8 +422,12 @@ describeE2E('Flujo currículo y planes de estudio E2E (requiere BD)', () => {
       expect(plan.id).toBe(planId);
       expect(plan.estado).toBe('BORRADOR');
       expect(plan.detalles.length).toBe(1);
-      expect(plan.detalles[0].idAsignatura).toBe(asignaturaId);
-      expect(plan.detalles[0].horasSemanales).toBe(4);
+      const primerDetalle = plan.detalles[0] as {
+        idAsignatura: string;
+        horasSemanales: number;
+      };
+      expect(primerDetalle.idAsignatura).toBe(asignaturaId);
+      expect(primerDetalle.horasSemanales).toBe(4);
     });
 
     it('Flujo completo de estado BORRADOR -> APROBADO -> VIGENTE', async () => {
@@ -444,7 +448,7 @@ describeE2E('Flujo currículo y planes de estudio E2E (requiere BD)', () => {
         .get(`/api/v1/curriculo/planes/${planId}`)
         .set('Authorization', `Bearer ${tokenAdmin}`)
         .expect(200);
-      expect(res.body.estado).toBe('APROBADO');
+      expect((res.body as PlanResponse).estado).toBe('APROBADO');
 
       // 2. APROBADO -> VIGENTE
       await request(app.getHttpServer())
@@ -457,7 +461,7 @@ describeE2E('Flujo currículo y planes de estudio E2E (requiere BD)', () => {
         .get(`/api/v1/curriculo/planes/${planId}`)
         .set('Authorization', `Bearer ${tokenAdmin}`)
         .expect(200);
-      expect(res.body.estado).toBe('VIGENTE');
+      expect((res.body as PlanResponse).estado).toBe('VIGENTE');
     });
 
     it('GET /curriculo/planes/resolver resuelve plan vigente correctamente', async () => {
@@ -468,8 +472,9 @@ describeE2E('Flujo currículo y planes de estudio E2E (requiere BD)', () => {
         .set('Authorization', `Bearer ${tokenAdmin}`)
         .expect(200);
 
-      expect(res.body.id).toBe(planId);
-      expect(res.body.estado).toBe('VIGENTE');
+      const resolved = res.body as PlanResponse;
+      expect(resolved.id).toBe(planId);
+      expect(resolved.estado).toBe('VIGENTE');
     });
   });
 });

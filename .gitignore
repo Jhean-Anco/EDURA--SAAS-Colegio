@@ -29,3 +29,8 @@ ChatGPT Image *.webp
 *.bak
 *.dump
 *.sql
+
+# Browser automation / MCP sessions
+.patchright/
+.notebooklm-session/
+notebooklm-mcp-session/

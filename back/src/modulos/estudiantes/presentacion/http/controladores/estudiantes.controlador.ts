@@ -65,7 +65,11 @@ export class EstudiantesControlador {
       JOIN membresias_institucion m ON a.id_membresia_institucion = m.id
       WHERE a.id_usuario = $1 AND m.id_institucion_educativa = $2 AND a.id_rol = $3
     `;
-    const res = await this.dataSource.query(query, [c.usuarioId, c.institucionId, c.rolId]);
+    const res = await this.dataSource.query(query, [
+      c.usuarioId,
+      c.institucionId,
+      c.rolId,
+    ]);
     if (!res || res.length === 0) {
       throw new ForbiddenException('CONTEXTO_NO_AUTORIZADO');
     }
@@ -74,15 +78,19 @@ export class EstudiantesControlador {
     if (rolCodigo === 'ESTUDIANTE') {
       const studentRes = await this.dataSource.query(
         `SELECT id FROM estudiantes WHERE id_persona = $1 AND id_institucion_educativa = $2`,
-        [personaId, c.institucionId]
+        [personaId, c.institucionId],
       );
-      if (!studentRes || studentRes.length === 0 || studentRes[0].id !== estudianteId) {
+      if (
+        !studentRes ||
+        studentRes.length === 0 ||
+        studentRes[0].id !== estudianteId
+      ) {
         throw new ForbiddenException('ACCESO_DENEGADO');
       }
     } else if (rolCodigo === 'APODERADO') {
       const parentRes = await this.dataSource.query(
         `SELECT id FROM apoderados_estudiante WHERE id_persona = $1 AND id_estudiante = $2 AND id_institucion_educativa = $3`,
-        [personaId, estudianteId, c.institucionId]
+        [personaId, estudianteId, c.institucionId],
       );
       if (!parentRes || parentRes.length === 0) {
         throw new ForbiddenException('ACCESO_DENEGADO');
@@ -90,7 +98,11 @@ export class EstudiantesControlador {
     }
   }
 
-  @Permisos('ESTUDIANTES.LEER', 'ESTUDIANTES.MI_PERFIL.LEER', 'APODERADOS.MIS_ESTUDIANTES.LEER')
+  @Permisos(
+    'ESTUDIANTES.LEER',
+    'ESTUDIANTES.MI_PERFIL.LEER',
+    'APODERADOS.MIS_ESTUDIANTES.LEER',
+  )
   @Get()
   async listar(
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
@@ -105,7 +117,11 @@ export class EstudiantesControlador {
       JOIN membresias_institucion m ON a.id_membresia_institucion = m.id
       WHERE a.id_usuario = $1 AND m.id_institucion_educativa = $2 AND a.id_rol = $3
     `;
-    const res = await this.dataSource.query(query, [c.usuarioId, c.institucionId, c.rolId]);
+    const res = await this.dataSource.query(query, [
+      c.usuarioId,
+      c.institucionId,
+      c.rolId,
+    ]);
     if (!res || res.length === 0) {
       throw new ForbiddenException('CONTEXTO_NO_AUTORIZADO');
     }
@@ -114,7 +130,7 @@ export class EstudiantesControlador {
     if (rolCodigo === 'ESTUDIANTE') {
       const studentRes = await this.dataSource.query(
         `SELECT id FROM estudiantes WHERE id_persona = $1 AND id_institucion_educativa = $2`,
-        [personaId, c.institucionId]
+        [personaId, c.institucionId],
       );
       if (!studentRes || studentRes.length === 0) {
         return { total: 0, paginas: 0, pagina: 1, limite: 20, data: [] };
@@ -130,10 +146,10 @@ export class EstudiantesControlador {
     } else if (rolCodigo === 'APODERADO') {
       const parentRes = await this.dataSource.query(
         `SELECT id_estudiante as "id" FROM apoderados_estudiante WHERE id_persona = $1 AND id_institucion_educativa = $2`,
-        [personaId, c.institucionId]
+        [personaId, c.institucionId],
       );
       if (!parentRes || parentRes.length === 0) {
-        return { total: 0, paginas: 0, pagina: 1, limite: 20, data: [] };
+        return { total: 0, paginas: 0, pagina: 1, limite: 20, datos: [] };
       }
       const studentIds = parentRes.map((r: any) => r.id);
       const result = await this.listarEstudiantes.ejecutar({
@@ -144,8 +160,10 @@ export class EstudiantesControlador {
         pagina: 1,
         limite: 100,
       });
-      result.data = result.data.filter((est: any) => studentIds.includes(est.id));
-      result.total = result.data.length;
+      result.datos = result.datos.filter((est: any) =>
+        studentIds.includes(est.id),
+      );
+      result.total = result.datos.length;
       return result;
     }
 
@@ -159,7 +177,11 @@ export class EstudiantesControlador {
     });
   }
 
-  @Permisos('ESTUDIANTES.LEER', 'ESTUDIANTES.MI_PERFIL.LEER', 'APODERADOS.MIS_ESTUDIANTES.LEER')
+  @Permisos(
+    'ESTUDIANTES.LEER',
+    'ESTUDIANTES.MI_PERFIL.LEER',
+    'APODERADOS.MIS_ESTUDIANTES.LEER',
+  )
   @Get(':id')
   async obtener(
     @Param('id', ParseUUIDPipe) id: string,

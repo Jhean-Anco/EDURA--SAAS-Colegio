@@ -1,0 +1,90 @@
+[
+  {
+    "archivo": "back/src/base-datos/typeorm/migraciones/1718810000000-CrearEstructuraInstitucionalEInfraestructuraFisica.ts",
+    "nombre": "1718810000000-CrearEstructuraInstitucionalEInfraestructuraFisica"
+  },
+  {
+    "archivo": "back/src/base-datos/typeorm/migraciones/1718820000000-ConsolidarBaseInstitucionalInfraestructuraV02.ts",
+    "nombre": "1718820000000-ConsolidarBaseInstitucionalInfraestructuraV02"
+  },
+  {
+    "archivo": "back/src/base-datos/typeorm/migraciones/1718830000000-AgregarIdentidadYPresenciaDigitalSedeV03.ts",
+    "nombre": "1718830000000-AgregarIdentidadYPresenciaDigitalSedeV03"
+  },
+  {
+    "archivo": "back/src/base-datos/typeorm/migraciones/1718840000000-AgregarEvaluacionesConservacionElementoV04.ts",
+    "nombre": "1718840000000-AgregarEvaluacionesConservacionElementoV04"
+  },
+  {
+    "archivo": "back/src/base-datos/typeorm/migraciones/1718850000000-AgregarSeguridadUsuariosMembresiasConfiguracionV05.ts",
+    "nombre": "1718850000000-AgregarSeguridadUsuariosMembresiasConfiguracionV05"
+  },
+  {
+    "archivo": "back/src/base-datos/typeorm/migraciones/1718860000000-AgregarRolesPermisosAsignacionesV06.ts",
+    "nombre": "1718860000000-AgregarRolesPermisosAsignacionesV06"
+  },
+  {
+    "archivo": "back/src/base-datos/typeorm/migraciones/1718870000000-AgregarInvitacionesSesionesTokensV07.ts",
+    "nombre": "1718870000000-AgregarInvitacionesSesionesTokensV07"
+  },
+  {
+    "archivo": "back/src/base-datos/typeorm/migraciones/1718880000000-AgregarAuditoriaAppendOnlyV08.ts",
+    "nombre": "1718880000000-AgregarAuditoriaAppendOnlyV08"
+  },
+  {
+    "archivo": "back/src/base-datos/typeorm/migraciones/1718890000000-CorregirSeguridadYContextoV09.ts",
+    "nombre": "1718890000000-CorregirSeguridadYContextoV09"
+  },
+  {
+    "archivo": "back/src/base-datos/typeorm/migraciones/1718900000000-CrearPersonasV10.ts",
+    "nombre": "1718900000000-CrearPersonasV10"
+  },
+  {
+    "archivo": "back/src/base-datos/typeorm/migraciones/1718910000000-IntegridadPersonasV11.ts",
+    "nombre": "1718910000000-IntegridadPersonasV11"
+  },
+  {
+    "archivo": "back/src/base-datos/typeorm/migraciones/1718920000000-AgregarPanelInstitucionalV12.ts",
+    "nombre": "1718920000000-AgregarPanelInstitucionalV12"
+  },
+  {
+    "archivo": "back/src/base-datos/typeorm/migraciones/1718930000000-AgregarEstudiantesApoderadosDocumentosV13.ts",
+    "nombre": "1718930000000-AgregarEstudiantesApoderadosDocumentosV13"
+  },
+  {
+    "archivo": "back/src/base-datos/typeorm/migraciones/1718940000000-EndurecerIntegridadEstudiantesV14.ts",
+    "nombre": "1718940000000-EndurecerIntegridadEstudiantesV14"
+  },
+  {
+    "archivo": "back/src/base-datos/typeorm/migraciones/1718945000000-PrepararIntegridadSedesParaDocentesV14_5.ts",
+    "nombre": "1718945000000-PrepararIntegridadSedesParaDocentesV14_5"
+  },
+  {
+    "archivo": "back/src/base-datos/typeorm/migraciones/1718950000000-AgregarDocentesV15.ts",
+    "nombre": "1718950000000-AgregarDocentesV15"
+  },
+  {
+    "archivo": "back/src/base-datos/typeorm/migraciones/1718960000000-AgregarEstructuraAcademicaV16.ts",
+    "nombre": "1718960000000-AgregarEstructuraAcademicaV16"
+  },
+  {
+    "archivo": "back/src/base-datos/typeorm/migraciones/1718970000000-EndurecerEstructuraAcademicaV17.ts",
+    "nombre": "1718970000000-EndurecerEstructuraAcademicaV17"
+  },
+  {
+    "archivo": "back/src/base-datos/typeorm/migraciones/1718980000000-AlinearContratosEstructuraAcademicaV18.ts",
+    "nombre": "1718980000000-AlinearContratosEstructuraAcademicaV18"
+  },
+  {
+    "archivo": "back/src/base-datos/typeorm/migraciones/1718990000000-AgregarCurriculoPlanesEstudioV19.ts",
+    "nombre": "1718990000000-AgregarCurriculoPlanesEstudioV19"
+  },
+  {
+    "archivo": "back/src/base-datos/typeorm/migraciones/1719000000000-EndurecerCurriculoPlanesEstudioV20.ts",
+    "nombre": "1719000000000-EndurecerCurriculoPlanesEstudioV20"
+  },
+  {
+    "archivo": "back/src/base-datos/typeorm/migraciones/1719010000000-AgregarMatriculasV21.ts",
+    "nombre": "1719010000000-AgregarMatriculasV21"
+  }
+]

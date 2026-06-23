@@ -1,0 +1,65 @@
+version: "1.0"
+descripcion: "Modelos de costo de inferencia por plataforma y modelo"
+creado: "2026-06-22"
+nota: "Precios susceptibles de cambiar. Verificar con fuente oficial antes de usar en gobierno."
+fuentes_verificacion:
+  anthropic: "https://www.anthropic.com/pricing"
+  openai: "https://openai.com/pricing"
+  google: "https://cloud.google.com/vertex-ai/pricing"
+
+modelos:
+  claude-sonnet-4-6:
+    plataforma: anthropic
+    nombre_display: "Claude Sonnet 4.6"
+    moneda: USD
+    precio_entrada_por_mtoken: 3.00
+    precio_entrada_cacheada_por_mtoken: 0.30
+    precio_salida_por_mtoken: 15.00
+    vigencia_desde: "2026-01-01"
+    vigencia_hasta: null
+    verificado: false
+    nota: "Precios de referencia — verificar en anthropic.com/pricing antes de usar"
+
+  claude-haiku-4-5-20251001:
+    plataforma: anthropic
+    nombre_display: "Claude Haiku 4.5"
+    moneda: USD
+    precio_entrada_por_mtoken: 0.80
+    precio_entrada_cacheada_por_mtoken: 0.08
+    precio_salida_por_mtoken: 4.00
+    vigencia_desde: "2026-01-01"
+    vigencia_hasta: null
+    verificado: false
+    nota: "Precios de referencia — verificar en anthropic.com/pricing"
+
+  gpt-5.4-mini:
+    plataforma: openai
+    nombre_display: "GPT-5.4 Mini (Codex default)"
+    moneda: USD
+    precio_entrada_por_mtoken: no_verificado
+    precio_entrada_cacheada_por_mtoken: no_verificado
+    precio_salida_por_mtoken: no_verificado
+    vigencia_desde: "2026-01-01"
+    vigencia_hasta: null
+    verificado: false
+    nota: "Codex usa modelo propio. Ver documentación oficial OpenAI Codex CLI."
+
+  local-sim:
+    plataforma: local
+    nombre_display: "Simulación local (sin costo de inferencia)"
+    moneda: USD
+    precio_entrada_por_mtoken: 0
+    precio_entrada_cacheada_por_mtoken: 0
+    precio_salida_por_mtoken: 0
+    verificado: true
+    nota: "Benchmarks locales deterministas. Sin costo de API."
+
+calculo:
+  formula: |
+    costo_entrada = (tokens_entrada_no_cacheados / 1_000_000) * precio_entrada_por_mtoken
+    costo_cache   = (tokens_entrada_cacheados   / 1_000_000) * precio_entrada_cacheada_por_mtoken
+    costo_salida  = (tokens_salida              / 1_000_000) * precio_salida_por_mtoken
+    costo_total   = costo_entrada + costo_cache + costo_salida
+  cuando_no_disponible: "no_calculado"
+  cuando_no_verificado: "estimado_no_oficial"
+  no_mezclar_estimaciones_con_mediciones: true

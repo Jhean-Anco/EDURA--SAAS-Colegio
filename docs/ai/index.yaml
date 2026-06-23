@@ -1,0 +1,88 @@
+plataforma: EDURA Sistema de Agentes
+version: "1.0.0"
+fecha: "2026-06-21"
+
+descripcion: |
+  Plataforma multiagente de contexto mínimo para EDURA.
+  Compatible con Claude Code, OpenAI Codex, Google Antigravity y agentes MCP.
+
+estructura:
+  instrucciones_compartidas:
+    - AGENTS.md                    # Reglas comunes, mapa, flujos
+    - CLAUDE.md                    # Reglas específicas Claude Code
+    - back/AGENTS.md               # Restricciones NestJS / TypeORM
+    - front/AGENTS.md              # Restricciones Next.js / React
+
+  contexto_agentes:
+    - docs/ai/architecture.md      # Arquitectura del sistema
+    - docs/ai/database-map.md      # Mapa de base de datos
+    - docs/ai/api-map.md           # Contratos HTTP
+    - docs/ai/frontend-map.md      # Estructura frontend
+    - docs/ai/conventions.md       # Convenciones de código
+    - docs/ai/context/             # Contexto de módulos específicos
+
+  indices_generados:
+    ruta: docs/ai/generated/
+    regenerar: pnpm ai:index
+    archivos:
+      - symbols.json
+      - dependencies.json
+      - nest-modules.json
+      - controllers.json
+      - entities.json
+      - routes.json
+      - tests.json
+      - components.json
+
+  decisiones:
+    ruta: docs/ai/decisions/
+    formato: ADR-NNNN-titulo.md
+
+  investigacion:
+    ruta: docs/ai/research/
+    fuente: NotebookLM (ver docs/notebooklm/)
+
+  skills:
+    catalogo: .ai/skills.catalog.yaml
+    lockfile: .ai/skills.lock.yaml
+    fuente_canonica: agent-assets/skills/
+    sincronizadas:
+      claude: .claude/skills/
+      agentes: .agents/skills/
+
+  mcp:
+    registro: .ai/mcp.registry.yaml
+    lockfile: .ai/mcp.lock.yaml
+    perfil_defecto: local-fast
+
+  politicas:
+    presupuestos: .ai/budgets.yaml
+    contexto: .ai/context-policy.yaml
+    herramientas: .ai/tools-policy.yaml
+    seguridad: .ai/security-policy.yaml
+    modelos: .ai/models.yaml
+    roles: .ai/roles.yaml
+
+  tareas:
+    activas: tasks/active/
+    contexto: tasks/context/
+    handoffs: tasks/handoffs/
+    completadas: tasks/completed/
+    plantilla: tasks/templates/TASK.template.md
+
+  scripts:
+    ruta: scripts/ai/
+    entrypoint: pnpm ai:bootstrap
+
+guias:
+  instalacion: docs/ai/guias/instalacion.md
+  claude: docs/ai/guias/uso-claude.md
+  codex: docs/ai/guias/uso-codex.md
+  antigravity: docs/ai/guias/uso-antigravity.md
+  tareas: docs/ai/guias/crear-tareas.md
+  skills: docs/ai/guias/gestion-skills.md
+  mcp: docs/ai/guias/gestion-mcp.md
+  notebooklm: docs/ai/guias/notebooklm.md
+  seguridad: docs/ai/guias/seguridad.md
+  metricas: docs/ai/guias/metricas.md
+  troubleshooting: docs/ai/guias/troubleshooting.md

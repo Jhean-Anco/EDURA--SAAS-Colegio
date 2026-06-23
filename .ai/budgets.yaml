@@ -1,0 +1,60 @@
+version: "1.0"
+descripcion: "Presupuestos de contexto por perfil de tarea EDURA"
+
+perfiles:
+  mecanico:
+    descripcion: "Cambio simple, bien delimitado, sin impacto transversal"
+    archivos_maximos: 8
+    lineas_maximas: 800
+    documentos_maximos: 2
+    skills_maximas: 2
+    mcp_maximos: 0
+    llamadas_herramientas_maximas: 12
+    salida_final_palabras: 250
+    ejemplos:
+      - "Renombrar un campo en un DTO"
+      - "Agregar una validación de formato"
+      - "Corregir un typo en un mensaje de error"
+
+  normal:
+    descripcion: "Funcionalidad nueva en un módulo, sin cambios de arquitectura"
+    archivos_maximos: 20
+    lineas_maximas: 2500
+    documentos_maximos: 5
+    skills_maximas: 4
+    mcp_maximos: 1
+    llamadas_herramientas_maximas: 30
+    salida_final_palabras: 500
+    ejemplos:
+      - "Agregar endpoint de listado con paginación"
+      - "Crear componente de formulario de matrícula"
+      - "Agregar migración para nueva columna"
+
+  critico:
+    descripcion: "Cambio transversal, arquitectónico, de seguridad o de datos"
+    archivos_maximos: 60
+    lineas_maximas: 8000
+    documentos_maximos: 12
+    skills_maximas: 8
+    mcp_maximos: 3
+    llamadas_herramientas_maximas: 80
+    salida_final_palabras: 1200
+    ejemplos:
+      - "Cambio en sistema de autorización"
+      - "Migración de esquema multitenencia"
+      - "Refactorización de módulo compartido"
+      - "Revisión de seguridad completa"
+
+excepciones:
+  descripcion: "Razones válidas para exceder el presupuesto"
+  causas:
+    - contradiccion_en_especificacion
+    - riesgo_de_seguridad_confirmado
+    - migracion_destructiva
+    - impacto_transversal_no_anticipado
+    - fallo_no_reproducible
+    - dependencia_no_documentada
+    - autorizacion_critica
+    - aislamiento_multiinstitucion_comprometido
+    - incidente_de_datos
+  accion_requerida: "Registrar exceso en .ai/metrics/<tarea>.yaml con justificación"

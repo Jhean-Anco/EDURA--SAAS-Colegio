@@ -128,7 +128,15 @@ export class AutenticacionControlador {
     return this.seleccionarContexto.ejecutar({
       usuarioId: usuario.sub,
       sesionId: usuario.sid,
-      contexto: solicitud,
+      contexto: {
+        ambito: solicitud.ambito,
+        rolId: solicitud.rolId,
+        rolCodigo: solicitud.rolCodigo ?? '',
+        institucionId: solicitud.institucionId,
+        institucionNombre: solicitud.institucionNombre ?? null,
+        sedeId: solicitud.sedeId,
+        sedeNombre: solicitud.sedeNombre ?? null,
+      },
       versionSeguridad: usuario.versionSeguridad,
     });
   }
@@ -140,7 +148,9 @@ export class AutenticacionControlador {
     if (!usuario) {
       throw new UnauthorizedException('USUARIO_NO_ENCONTRADO');
     }
-    const credencial = await this.credencialesRepo.obtenerHashPorUsuario(usuario.id);
+    const credencial = await this.credencialesRepo.obtenerPorUsuario(
+      usuario.id,
+    );
     const requiereCambioClave = credencial ? credencial.requiereCambio : false;
 
     let permisosEfectivos: string[] = [];
@@ -159,12 +169,14 @@ export class AutenticacionControlador {
         nombreMostrado: usuario.nombreMostrado,
         correo: usuario.correo,
       },
-      contexto: usuarioPayload.ambito ? {
-        ambito: usuarioPayload.ambito,
-        rolId: usuarioPayload.rolId,
-        institucionId: usuarioPayload.institucionId,
-        sedeId: usuarioPayload.sedeId,
-      } : null,
+      contexto: usuarioPayload.ambito
+        ? {
+            ambito: usuarioPayload.ambito,
+            rolId: usuarioPayload.rolId,
+            institucionId: usuarioPayload.institucionId,
+            sedeId: usuarioPayload.sedeId,
+          }
+        : null,
       permisos: permisosEfectivos,
       versionSeguridad: usuario.versionSeguridad,
       requiereCambioClave,

@@ -1,0 +1,60 @@
+id: BEN-SKL-001
+nombre: Impacto de Skills en tarea backend normal
+categoria: skills
+riesgo: bajo
+
+estado_inicial:
+  fixture: .ai/benchmarks/fixtures/BEN-BCK-001
+  descripcion: "Reutiliza el fixture de BEN-BCK-001 (validación de DTO)"
+
+objetivo: >
+  Medir el impacto de diferentes configuraciones de Skills
+  en la misma tarea de backend.
+
+criterios_aceptacion:
+  - "Mismos criterios que BEN-BCK-001"
+  - "Las métricas de Skills son registradas correctamente"
+
+variantes:
+  - id: SKL-001-A
+    descripcion: "Sin Skills"
+    skills: []
+  - id: SKL-001-B
+    descripcion: "Con Skill correcta (nestjs-resource)"
+    skills: ["nestjs-resource"]
+  - id: SKL-001-C
+    descripcion: "Con catálogo completo de 20 Skills disponibles"
+    skills: "todas"
+  - id: SKL-001-D
+    descripcion: "Con Skill incorrecta activada (playwright-ui activada para tarea backend)"
+    skills: ["playwright-ui"]
+
+metricas_clave:
+  - skills_disponibles
+  - skills_cargadas
+  - skills_utilizadas
+  - skills_activadas_incorrectamente
+  - tokens_contexto_skills
+  - calidad_total
+  - duracion_ms
+
+modos:
+  - plataforma-completa
+
+repeticiones:
+  calentamiento: 0
+  medidas: 3
+
+presupuesto:
+  tokens_maximos: 60000
+  costo_maximo_usd: 1.50
+  tiempo_maximo_segundos: 480
+
+datos_sensibles:
+  permitidos: false
+
+tags:
+  - skills
+  - contexto
+  - comparacion
+  - overhead

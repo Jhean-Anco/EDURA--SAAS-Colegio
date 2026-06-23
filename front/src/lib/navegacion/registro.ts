@@ -1,4 +1,15 @@
-import { LayoutDashboard, BookOpen, GraduationCap } from 'lucide-react';
+import {
+  LayoutDashboard,
+  BookOpen,
+  GraduationCap,
+  Building2,
+  Warehouse,
+  Users,
+  UserCheck,
+  Briefcase,
+  Calendar,
+  ClipboardCheck
+} from 'lucide-react';
 import type { NavGroup, NavItem } from '@/types/navegacion';
 import type { ContextoDescriptor } from '@/types/auth';
 
@@ -41,23 +52,102 @@ export const GRUPOS_NAVEGACION: NavGroup[] = [
     ],
   },
   {
-    etiqueta: 'Currículo',
+    etiqueta: 'Institución',
     items: [
+      {
+        codigo: 'institucion-detalle',
+        etiqueta: 'Mi Institución',
+        ruta: '/panel/institucion',
+        icono: Building2,
+        permisos: ['INSTITUCIONES.LEER'],
+        ambitos: ['INSTITUCION'],
+      },
+      {
+        codigo: 'sedes-listado',
+        etiqueta: 'Sedes',
+        ruta: '/panel/sedes',
+        icono: Building2,
+        permisos: ['SEDES.LEER'],
+        ambitos: ['INSTITUCION', 'SEDE'],
+      },
+      {
+        codigo: 'infraestructura-espacios',
+        etiqueta: 'Infraestructura',
+        ruta: '/panel/infraestructura',
+        icono: Warehouse,
+        permisos: ['INFRAESTRUCTURA.LEER'],
+        ambitos: ['SEDE'],
+      },
+    ],
+  },
+  {
+    etiqueta: 'Comunidad',
+    items: [
+      {
+        codigo: 'personas-listado',
+        etiqueta: 'Personas',
+        ruta: '/panel/personas',
+        icono: Users,
+        permisos: ['PERSONAS.LEER'],
+        ambitos: ['INSTITUCION', 'SEDE'],
+      },
+      {
+        codigo: 'estudiantes-listado',
+        etiqueta: 'Estudiantes',
+        ruta: '/panel/estudiantes',
+        icono: UserCheck,
+        permisos: ['ESTUDIANTES.LEER'],
+        ambitos: ['SEDE'],
+      },
+      {
+        codigo: 'docentes-listado',
+        etiqueta: 'Docentes',
+        ruta: '/panel/docentes',
+        icono: Briefcase,
+        permisos: ['DOCENTES.LEER'],
+        ambitos: ['SEDE'],
+      },
+    ],
+  },
+  {
+    etiqueta: 'Planificación',
+    items: [
+      {
+        codigo: 'estructura-calendario',
+        etiqueta: 'Calendario Escolar',
+        ruta: '/panel/estructura-academica/calendario',
+        icono: Calendar,
+        permisos: ['ESTRUCTURA_ACADEMICA.LEER'],
+        ambitos: ['INSTITUCION'],
+      },
+      {
+        codigo: 'estructura-secciones',
+        etiqueta: 'Secciones y Oferta',
+        ruta: '/panel/estructura-academica/secciones',
+        icono: GraduationCap,
+        permisos: ['ESTRUCTURA_ACADEMICA.LEER'],
+        ambitos: ['SEDE'],
+      },
       {
         codigo: 'curriculo-planes',
         etiqueta: 'Planes de estudio',
         ruta: '/panel/curriculo/planes-estudio',
         icono: BookOpen,
-        permisos: ['CURRICULO.LEER', 'CURRICULO.PLANES.GESTIONAR'],
-        ambitos: ['INSTITUCION'],
-      },
-      {
-        codigo: 'curriculo-areas',
-        etiqueta: 'Áreas curriculares',
-        ruta: '/panel/curriculo/areas',
-        icono: GraduationCap,
         permisos: ['CURRICULO.LEER'],
         ambitos: ['INSTITUCION'],
+      },
+    ],
+  },
+  {
+    etiqueta: 'Operación',
+    items: [
+      {
+        codigo: 'matriculas-gestion',
+        etiqueta: 'Matrículas',
+        ruta: '/panel/matriculas',
+        icono: ClipboardCheck,
+        permisos: ['MATRICULAS.LEER'],
+        ambitos: ['SEDE'],
       },
     ],
   },

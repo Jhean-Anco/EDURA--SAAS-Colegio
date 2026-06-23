@@ -1,0 +1,7 @@
+[mcp_servers.edura-contexto]
+command = "node"
+args = ["tools/mcp-edura-contexto/server.mjs"]
+cwd = "D:/EDURA/sistema"
+enabled = true
+startup_timeout_sec = 20
+tool_timeout_sec = 120

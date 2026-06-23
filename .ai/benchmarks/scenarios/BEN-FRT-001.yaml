@@ -1,0 +1,58 @@
+id: BEN-FRT-001
+nombre: Agregar estado vacío a componente de listado
+categoria: frontend
+riesgo: bajo
+
+estado_inicial:
+  fixture: .ai/benchmarks/fixtures/BEN-FRT-001
+  descripcion: >
+    Componente front/src/features/estudiantes/components/ListaEstudiantes.tsx
+    no muestra estado vacío cuando el array de estudiantes está vacío.
+    Actualmente renderiza nada.
+
+objetivo: >
+  Agregar un estado vacío accesible (mensaje + icono opcional) cuando
+  la lista de estudiantes está vacía. Sin modificar lógica de fetch.
+
+criterios_aceptacion:
+  - "Cuando estudiantes.length === 0 se renderiza un mensaje descriptivo"
+  - "El mensaje tiene aria-label o role='status' adecuado"
+  - "No se modifica la lógica de fetch ni TanStack Query"
+  - "Test de componente verifica el estado vacío"
+  - "TypeCheck pasa"
+  - "No se instalan librerías UI adicionales"
+
+archivos_esperados:
+  maximos_modificados: 2
+  archivos_permitidos:
+    - "front/src/features/estudiantes/components/ListaEstudiantes.tsx"
+    - "front/src/features/estudiantes/components/ListaEstudiantes.test.tsx"
+
+validaciones:
+  - "npm --prefix front run typecheck"
+  - "npm --prefix front run test -- ListaEstudiantes"
+
+modos:
+  - baseline
+  - contexto-dirigido
+  - mcp-edura
+  - plataforma-completa
+
+repeticiones:
+  calentamiento: 1
+  medidas: 3
+
+presupuesto:
+  tokens_maximos: 40000
+  costo_maximo_usd: 1.00
+  tiempo_maximo_segundos: 360
+
+datos_sensibles:
+  permitidos: false
+
+tags:
+  - nextjs
+  - react
+  - accesibilidad
+  - estado-vacio
+  - frontend

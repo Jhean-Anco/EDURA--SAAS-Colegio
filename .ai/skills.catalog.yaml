@@ -1,0 +1,387 @@
+version: "1.0"
+descripcion: "Catálogo de Skills de EDURA"
+fuente_canonica: "agent-assets/skills/"
+sincronizadas_en: [".agents/skills/", ".claude/skills/"]
+
+skills:
+
+  compilar-contexto-tarea:
+    id: compilar-contexto-tarea
+    nombre: "Compilar contexto de tarea"
+    descripcion: "Genera la cápsula de contexto mínima para una tarea EDURA-XXX"
+    categoria: plataforma
+    estado: instalada
+    origen: local
+    repositorio: ~
+    version: "1.0.0"
+    commit: ~
+    checksum: ~
+    licencia: interna
+    plataformas: [claude-code, codex, antigravity]
+    alcance: tasks/
+    activadores: ["tarea nueva", "cambio de contexto"]
+    permisos: [lectura_repositorio]
+    acceso_red: false
+    acceso_archivos: "tasks/, docs/ai/, back/src/modulos/, front/src/features/"
+    comandos: ["pnpm ai:context -- EDURA-XXX"]
+    dependencias: []
+    riesgo: bajo
+    presupuesto_contexto: normal
+    temporal: false
+    fecha_revision: "2026-06-21"
+
+  explorar-repositorio-dirigido:
+    id: explorar-repositorio-dirigido
+    nombre: "Explorar repositorio dirigido"
+    descripcion: "Búsqueda y lectura limitada de símbolos, archivos y dependencias"
+    categoria: plataforma
+    estado: instalada
+    origen: local
+    version: "1.0.0"
+    licencia: interna
+    plataformas: [claude-code, codex, antigravity]
+    activadores: ["localizar símbolo", "encontrar archivo", "buscar patrón"]
+    permisos: [lectura_repositorio]
+    acceso_red: false
+    comandos: ["pnpm ai:search", "pnpm ai:read", "pnpm ai:index"]
+    riesgo: bajo
+    presupuesto_contexto: mecanico
+    temporal: false
+    fecha_revision: "2026-06-21"
+
+  crear-recurso-nestjs:
+    id: crear-recurso-nestjs
+    nombre: "Crear recurso NestJS"
+    descripcion: "Genera módulo, servicio, controlador, DTOs y entidad siguiendo las convenciones EDURA"
+    categoria: backend
+    estado: instalada
+    origen: local
+    version: "1.0.0"
+    licencia: interna
+    plataformas: [claude-code, codex, antigravity]
+    activadores: ["nuevo módulo", "nuevo endpoint", "nueva entidad NestJS"]
+    permisos: [lectura_repositorio, escritura_modulos_back]
+    acceso_red: false
+    acceso_archivos: "back/src/modulos/<nombre>/"
+    riesgo: bajo
+    presupuesto_contexto: normal
+    temporal: false
+    fecha_revision: "2026-06-21"
+
+  crear-migracion-typeorm:
+    id: crear-migracion-typeorm
+    nombre: "Crear migración TypeORM"
+    descripcion: "Genera migración de base de datos y valida que no sea destructiva sin confirmación"
+    categoria: base-datos
+    estado: instalada
+    origen: local
+    version: "1.0.0"
+    licencia: interna
+    plataformas: [claude-code, codex, antigravity]
+    activadores: ["nueva columna", "nueva tabla", "cambio de esquema", "FK nueva"]
+    permisos: [lectura_repositorio, escritura_migraciones]
+    acceso_red: false
+    acceso_archivos: "back/src/base-datos/typeorm/migraciones/"
+    riesgo: medio
+    presupuesto_contexto: normal
+    temporal: false
+    fecha_revision: "2026-06-21"
+
+  crear-funcionalidad-nextjs:
+    id: crear-funcionalidad-nextjs
+    nombre: "Crear funcionalidad Next.js"
+    descripcion: "Genera feature, componentes, route handler BFF y tests para Next.js"
+    categoria: frontend
+    estado: instalada
+    origen: local
+    version: "1.0.0"
+    licencia: interna
+    plataformas: [claude-code, codex, antigravity]
+    activadores: ["nueva página", "nuevo feature", "nueva ruta frontend"]
+    permisos: [lectura_repositorio, escritura_modulos_front]
+    acceso_red: false
+    acceso_archivos: "front/src/"
+    riesgo: bajo
+    presupuesto_contexto: normal
+    temporal: false
+    fecha_revision: "2026-06-21"
+
+  revisar-multitenencia:
+    id: revisar-multitenencia
+    nombre: "Revisar multitenencia"
+    descripcion: "Verifica que cambios en entidades incluyan institucion_id y filtros de row isolation"
+    categoria: seguridad
+    estado: instalada
+    origen: local
+    version: "1.0.0"
+    licencia: interna
+    plataformas: [claude-code, codex, antigravity]
+    activadores: ["nueva entidad", "cambio en repositorio TypeORM", "nuevo endpoint de datos"]
+    permisos: [lectura_repositorio]
+    acceso_red: false
+    riesgo: bajo
+    presupuesto_contexto: normal
+    temporal: false
+    fecha_revision: "2026-06-21"
+
+  revisar-autorizacion:
+    id: revisar-autorizacion
+    nombre: "Revisar autorización"
+    descripcion: "Verifica guards, roles y permisos en endpoints y componentes"
+    categoria: seguridad
+    estado: instalada
+    origen: local
+    version: "1.0.0"
+    licencia: interna
+    plataformas: [claude-code, codex, antigravity]
+    activadores: ["nuevo endpoint", "cambio en guard", "nuevo rol", "cambio en permisos"]
+    permisos: [lectura_repositorio]
+    acceso_red: false
+    riesgo: bajo
+    presupuesto_contexto: normal
+    temporal: false
+    fecha_revision: "2026-06-21"
+
+  generar-contrato-openapi:
+    id: generar-contrato-openapi
+    nombre: "Generar contrato OpenAPI"
+    descripcion: "Genera o actualiza la especificación OpenAPI del backend"
+    categoria: api
+    estado: instalada
+    origen: local
+    version: "1.0.0"
+    licencia: interna
+    plataformas: [claude-code, codex, antigravity]
+    activadores: ["nuevo endpoint", "cambio de DTO", "nueva versión de API"]
+    permisos: [lectura_repositorio, escritura_docs]
+    acceso_red: false
+    riesgo: bajo
+    presupuesto_contexto: normal
+    temporal: false
+    fecha_revision: "2026-06-21"
+
+  ejecutar-pruebas-dirigidas:
+    id: ejecutar-pruebas-dirigidas
+    nombre: "Ejecutar pruebas dirigidas"
+    descripcion: "Ejecuta solo pruebas afectadas por los cambios actuales"
+    categoria: calidad
+    estado: instalada
+    origen: local
+    version: "1.0.0"
+    licencia: interna
+    plataformas: [claude-code, codex, antigravity]
+    activadores: ["verificar cambio", "antes de handoff", "ci local"]
+    permisos: [lectura_repositorio, ejecucion_pruebas]
+    acceso_red: false
+    comandos: ["pnpm ai:check:affected"]
+    riesgo: bajo
+    presupuesto_contexto: normal
+    temporal: false
+    fecha_revision: "2026-06-21"
+
+  comprimir-errores:
+    id: comprimir-errores
+    nombre: "Comprimir errores"
+    descripcion: "Extrae solo errores accionables de logs o salida de comandos"
+    categoria: plataforma
+    estado: instalada
+    origen: local
+    version: "1.0.0"
+    licencia: interna
+    plataformas: [claude-code, codex, antigravity]
+    activadores: ["log extenso", "error de compilación", "fallo de test"]
+    permisos: [lectura_logs]
+    acceso_red: false
+    comandos: ["pnpm ai:errors -- <log>"]
+    riesgo: bajo
+    presupuesto_contexto: mecanico
+    temporal: false
+    fecha_revision: "2026-06-21"
+
+  revisar-diff:
+    id: revisar-diff
+    nombre: "Revisar diff"
+    descripcion: "Analiza los cambios actuales para detectar riesgos antes de commit"
+    categoria: calidad
+    estado: instalada
+    origen: local
+    version: "1.0.0"
+    licencia: interna
+    plataformas: [claude-code, codex, antigravity]
+    activadores: ["antes de commit", "antes de PR", "revisión de cambios"]
+    permisos: [lectura_repositorio]
+    acceso_red: false
+    comandos: ["pnpm ai:diff"]
+    riesgo: bajo
+    presupuesto_contexto: mecanico
+    temporal: false
+    fecha_revision: "2026-06-21"
+
+  auditar-seguridad:
+    id: auditar-seguridad
+    nombre: "Auditar seguridad"
+    descripcion: "Revisa cambios en busca de vulnerabilidades OWASP, secretos expuestos y problemas de autenticación"
+    categoria: seguridad
+    estado: instalada
+    origen: local
+    version: "1.0.0"
+    licencia: interna
+    plataformas: [claude-code, codex, antigravity]
+    activadores: ["cambio en auth", "nuevo endpoint", "cambio de dependencia", "revisión periódica"]
+    permisos: [lectura_repositorio]
+    acceso_red: false
+    riesgo: bajo
+    presupuesto_contexto: critico
+    temporal: false
+    fecha_revision: "2026-06-21"
+
+  actualizar-adr:
+    id: actualizar-adr
+    nombre: "Actualizar ADR"
+    descripcion: "Crea o actualiza un Architecture Decision Record cuando se toma una decisión arquitectónica"
+    categoria: documentacion
+    estado: instalada
+    origen: local
+    version: "1.0.0"
+    licencia: interna
+    plataformas: [claude-code, codex, antigravity]
+    activadores: ["decisión de arquitectura", "cambio de patrón", "nueva tecnología"]
+    permisos: [lectura_repositorio, escritura_docs]
+    acceso_red: false
+    acceso_archivos: "docs/ai/decisions/"
+    riesgo: bajo
+    presupuesto_contexto: normal
+    temporal: false
+    fecha_revision: "2026-06-21"
+
+  generar-documentacion:
+    id: generar-documentacion
+    nombre: "Generar documentación"
+    descripcion: "Genera o actualiza documentación técnica del módulo o funcionalidad implementada"
+    categoria: documentacion
+    estado: instalada
+    origen: local
+    version: "1.0.0"
+    licencia: interna
+    plataformas: [claude-code, codex, antigravity]
+    activadores: ["nuevo módulo completo", "nueva funcionalidad pública", "cambio de API"]
+    permisos: [lectura_repositorio, escritura_docs]
+    acceso_red: false
+    riesgo: bajo
+    presupuesto_contexto: normal
+    temporal: false
+    fecha_revision: "2026-06-21"
+
+  investigar-notebooklm:
+    id: investigar-notebooklm
+    nombre: "Investigar con NotebookLM"
+    descripcion: "Prepara fuentes y lanza consulta al cuaderno NotebookLM correspondiente"
+    categoria: investigacion
+    estado: instalada
+    origen: local
+    version: "1.0.0"
+    licencia: interna
+    plataformas: [claude-code]
+    activadores: ["analizar requerimiento", "cruzar documentación", "sintetizar proceso"]
+    permisos: [lectura_docs, escritura_staging_notebooklm]
+    acceso_red: true
+    comandos: ["pnpm ai:notebooklm:prepare", "pnpm ai:notebooklm:ask"]
+    riesgo: medio
+    presupuesto_contexto: normal
+    temporal: false
+    fecha_revision: "2026-06-21"
+
+  preparar-handoff:
+    id: preparar-handoff
+    nombre: "Preparar handoff"
+    descripcion: "Genera el paquete compacto de transferencia al cerrar una tarea"
+    categoria: plataforma
+    estado: instalada
+    origen: local
+    version: "1.0.0"
+    licencia: interna
+    plataformas: [claude-code, codex, antigravity]
+    activadores: ["tarea completada", "cambio de agente", "entrega de tarea"]
+    permisos: [lectura_repositorio, escritura_tasks]
+    acceso_red: false
+    comandos: ["pnpm ai:handoff -- EDURA-XXX"]
+    riesgo: bajo
+    presupuesto_contexto: mecanico
+    temporal: false
+    fecha_revision: "2026-06-21"
+
+  auditar-accesibilidad:
+    id: auditar-accesibilidad
+    nombre: "Auditar accesibilidad"
+    descripcion: "Revisa componentes de UI contra criterios WCAG 2.1 AA"
+    categoria: calidad
+    estado: instalada
+    origen: local
+    version: "1.0.0"
+    licencia: interna
+    plataformas: [claude-code, codex]
+    activadores: ["nuevo componente UI", "cambio de formulario", "nueva página"]
+    permisos: [lectura_repositorio]
+    acceso_red: false
+    acceso_archivos: "front/src/"
+    riesgo: bajo
+    presupuesto_contexto: normal
+    temporal: false
+    fecha_revision: "2026-06-21"
+
+  revisar-dependencias:
+    id: revisar-dependencias
+    nombre: "Revisar dependencias"
+    descripcion: "Audita dependencias en busca de vulnerabilidades conocidas y licencias incompatibles"
+    categoria: seguridad
+    estado: instalada
+    origen: local
+    version: "1.0.0"
+    licencia: interna
+    plataformas: [claude-code, codex, antigravity]
+    activadores: ["nueva dependencia", "actualización de dependencia", "revisión periódica"]
+    permisos: [lectura_repositorio, ejecucion_npm_audit]
+    acceso_red: true
+    comandos: ["npm audit --prefix back", "npm audit --prefix front"]
+    riesgo: bajo
+    presupuesto_contexto: normal
+    temporal: false
+    fecha_revision: "2026-06-21"
+
+  validar-esquema-base-datos:
+    id: validar-esquema-base-datos
+    nombre: "Validar esquema de base de datos"
+    descripcion: "Verifica que las entidades TypeORM y las migraciones estén en sincronía"
+    categoria: base-datos
+    estado: instalada
+    origen: local
+    version: "1.0.0"
+    licencia: interna
+    plataformas: [claude-code, codex, antigravity]
+    activadores: ["nueva entidad", "nueva migración", "cambio de columna"]
+    permisos: [lectura_repositorio]
+    acceso_red: false
+    acceso_archivos: "back/src/base-datos/typeorm/"
+    riesgo: bajo
+    presupuesto_contexto: normal
+    temporal: false
+    fecha_revision: "2026-06-21"
+
+  cerrar-tarea-edura:
+    id: cerrar-tarea-edura
+    nombre: "Cerrar tarea EDURA"
+    descripcion: "Verifica criterios de terminado, genera handoff y mueve la tarea a completed/"
+    categoria: plataforma
+    estado: instalada
+    origen: local
+    version: "1.0.0"
+    licencia: interna
+    plataformas: [claude-code, codex, antigravity]
+    activadores: ["tarea lista para entregar", "cierre de tarea"]
+    permisos: [lectura_repositorio, escritura_tasks, ejecucion_checks]
+    acceso_red: false
+    comandos: ["pnpm ai:check:affected", "pnpm ai:handoff -- EDURA-XXX"]
+    riesgo: bajo
+    presupuesto_contexto: mecanico
+    temporal: false
+    fecha_revision: "2026-06-21"

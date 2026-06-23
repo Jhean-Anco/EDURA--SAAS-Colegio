@@ -1,0 +1,32 @@
+{
+  "mcpServers": {
+    "edura-contexto": {
+      "command": "node",
+      "args": ["tools/mcp-edura-contexto/server.mjs"],
+      "description": "Servidor MCP local EDURA — acceso estructurado al contexto del repositorio. Sin secretos, solo dentro de la raíz del proyecto.",
+      "env": {}
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest", "--headless"],
+      "description": "Automatización de browser para tareas frontend-ui. Solo URLs locales por defecto.",
+      "env": {},
+      "_perfil": "frontend-ui",
+      "_estado": "instalado_pendiente_aprobacion"
+    },
+    "postgres-local-readonly": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "${POSTGRES_MCP_URL}"
+      ],
+      "description": "PostgreSQL local de solo lectura para tareas database-review. Requiere POSTGRES_MCP_URL.",
+      "env": {
+        "POSTGRES_MCP_URL": "${POSTGRES_MCP_URL}"
+      },
+      "_perfil": "database-review",
+      "_estado": "configurado_pendiente_autenticacion"
+    }
+  }
+}

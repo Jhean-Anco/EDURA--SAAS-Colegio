@@ -46,20 +46,29 @@ export class RenovarSesionCasoUso {
 
     try {
       // Find the session with FOR UPDATE to prevent race conditions & concurrent renewals
-      const sesionEntidad = await queryRunner.manager.findOne(SesionUsuarioTypeormEntidad, {
-        where: { tokenActualizacionHash: hash },
-        lock: { mode: 'pessimistic_write' },
-      });
+      const sesionEntidad = await queryRunner.manager.findOne(
+        SesionUsuarioTypeormEntidad,
+        {
+          where: { tokenActualizacionHash: hash },
+          lock: { mode: 'pessimistic_write' },
+        },
+      );
 
       if (!sesionEntidad) {
-        const auditEvent = queryRunner.manager.create(EventoAuditoriaTypeormEntidad, {
-          id: randomUUID(),
-          accion: 'REFRESH_INVALIDO',
-          recurso: 'sesion',
-          resultado: 'FALLO',
-          idCorrelacion: randomUUID(),
-        });
-        await queryRunner.manager.save(EventoAuditoriaTypeormEntidad, auditEvent);
+        const auditEvent = queryRunner.manager.create(
+          EventoAuditoriaTypeormEntidad,
+          {
+            id: randomUUID(),
+            accion: 'REFRESH_INVALIDO',
+            recurso: 'sesion',
+            resultado: 'FALLO',
+            idCorrelacion: randomUUID(),
+          },
+        );
+        await queryRunner.manager.save(
+          EventoAuditoriaTypeormEntidad,
+          auditEvent,
+        );
         await queryRunner.commitTransaction();
         throw new UnauthorizedException('SESION_INVALIDA');
       }
@@ -75,17 +84,23 @@ export class RenovarSesionCasoUso {
           },
         );
 
-        const auditEvent = queryRunner.manager.create(EventoAuditoriaTypeormEntidad, {
-          id: randomUUID(),
-          accion: 'REFRESH_REINTEGRO_DETECTOR_REUSO',
-          recurso: 'sesion',
-          recursoId: sesionEntidad.id,
-          usuarioId: sesionEntidad.usuarioId,
-          resultado: 'FALLO',
-          idCorrelacion: randomUUID(),
-          metadatos: { familiaId: sesionEntidad.identificadorFamilia },
-        });
-        await queryRunner.manager.save(EventoAuditoriaTypeormEntidad, auditEvent);
+        const auditEvent = queryRunner.manager.create(
+          EventoAuditoriaTypeormEntidad,
+          {
+            id: randomUUID(),
+            accion: 'REFRESH_REINTEGRO_DETECTOR_REUSO',
+            recurso: 'sesion',
+            recursoId: sesionEntidad.id,
+            usuarioId: sesionEntidad.usuarioId,
+            resultado: 'FALLO',
+            idCorrelacion: randomUUID(),
+            metadatos: { familiaId: sesionEntidad.identificadorFamilia },
+          },
+        );
+        await queryRunner.manager.save(
+          EventoAuditoriaTypeormEntidad,
+          auditEvent,
+        );
         await queryRunner.commitTransaction();
         throw new UnauthorizedException('SESION_INVALIDA');
       }
@@ -101,16 +116,22 @@ export class RenovarSesionCasoUso {
           },
         );
 
-        const auditEvent = queryRunner.manager.create(EventoAuditoriaTypeormEntidad, {
-          id: randomUUID(),
-          accion: 'REFRESH_EXPIRADO',
-          recurso: 'sesion',
-          recursoId: sesionEntidad.id,
-          usuarioId: sesionEntidad.usuarioId,
-          resultado: 'FALLO',
-          idCorrelacion: randomUUID(),
-        });
-        await queryRunner.manager.save(EventoAuditoriaTypeormEntidad, auditEvent);
+        const auditEvent = queryRunner.manager.create(
+          EventoAuditoriaTypeormEntidad,
+          {
+            id: randomUUID(),
+            accion: 'REFRESH_EXPIRADO',
+            recurso: 'sesion',
+            recursoId: sesionEntidad.id,
+            usuarioId: sesionEntidad.usuarioId,
+            resultado: 'FALLO',
+            idCorrelacion: randomUUID(),
+          },
+        );
+        await queryRunner.manager.save(
+          EventoAuditoriaTypeormEntidad,
+          auditEvent,
+        );
         await queryRunner.commitTransaction();
         throw new UnauthorizedException('SESION_INVALIDA');
       }
@@ -121,16 +142,22 @@ export class RenovarSesionCasoUso {
       });
 
       if (!usuario || usuario.estado !== 'ACTIVO') {
-        const auditEvent = queryRunner.manager.create(EventoAuditoriaTypeormEntidad, {
-          id: randomUUID(),
-          accion: 'REFRESH_USUARIO_INACTIVO',
-          recurso: 'sesion',
-          recursoId: sesionEntidad.id,
-          usuarioId: sesionEntidad.usuarioId,
-          resultado: 'FALLO',
-          idCorrelacion: randomUUID(),
-        });
-        await queryRunner.manager.save(EventoAuditoriaTypeormEntidad, auditEvent);
+        const auditEvent = queryRunner.manager.create(
+          EventoAuditoriaTypeormEntidad,
+          {
+            id: randomUUID(),
+            accion: 'REFRESH_USUARIO_INACTIVO',
+            recurso: 'sesion',
+            recursoId: sesionEntidad.id,
+            usuarioId: sesionEntidad.usuarioId,
+            resultado: 'FALLO',
+            idCorrelacion: randomUUID(),
+          },
+        );
+        await queryRunner.manager.save(
+          EventoAuditoriaTypeormEntidad,
+          auditEvent,
+        );
         await queryRunner.commitTransaction();
         throw new UnauthorizedException('USUARIO_INACTIVO');
       }
@@ -152,26 +179,32 @@ export class RenovarSesionCasoUso {
       );
 
       // Create new session
-      const nuevaSesion = queryRunner.manager.create(SesionUsuarioTypeormEntidad, {
-        id: nuevaSesionId,
-        usuarioId: sesionEntidad.usuarioId,
-        sesionAnteriorId: sesionEntidad.id,
-        identificadorFamilia: sesionEntidad.identificadorFamilia,
-        tokenActualizacionHash: nuevoRefresh.hash,
-        fechaExpiracion: expiracion,
-      });
+      const nuevaSesion = queryRunner.manager.create(
+        SesionUsuarioTypeormEntidad,
+        {
+          id: nuevaSesionId,
+          usuarioId: sesionEntidad.usuarioId,
+          sesionAnteriorId: sesionEntidad.id,
+          identificadorFamilia: sesionEntidad.identificadorFamilia,
+          tokenActualizacionHash: nuevoRefresh.hash,
+          fechaExpiracion: expiracion,
+        },
+      );
       await queryRunner.manager.save(SesionUsuarioTypeormEntidad, nuevaSesion);
 
       const correlationId = randomUUID();
-      const auditEvent = queryRunner.manager.create(EventoAuditoriaTypeormEntidad, {
-        id: randomUUID(),
-        accion: 'SESION_RENOVADA',
-        recurso: 'sesion',
-        recursoId: nuevaSesionId,
-        usuarioId: sesionEntidad.usuarioId,
-        resultado: 'EXITO',
-        idCorrelacion: correlationId,
-      });
+      const auditEvent = queryRunner.manager.create(
+        EventoAuditoriaTypeormEntidad,
+        {
+          id: randomUUID(),
+          accion: 'SESION_RENOVADA',
+          recurso: 'sesion',
+          recursoId: nuevaSesionId,
+          usuarioId: sesionEntidad.usuarioId,
+          resultado: 'EXITO',
+          idCorrelacion: correlationId,
+        },
+      );
       await queryRunner.manager.save(EventoAuditoriaTypeormEntidad, auditEvent);
 
       await queryRunner.commitTransaction();

@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "benchmark-scenario",
+  "title": "EDURA Benchmark Scenario",
+  "type": "object",
+  "required": ["id", "nombre", "categoria", "riesgo", "objetivo", "criterios_aceptacion", "modos", "presupuesto"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^BEN-[A-Z]+-[0-9]{3}$",
+      "description": "Identificador único del escenario"
+    },
+    "nombre": { "type": "string", "minLength": 5 },
+    "categoria": {
+      "type": "string",
+      "enum": ["mecanico", "backend", "frontend", "database", "auditoria", "documentacion", "log", "mcp-externo", "skills", "subagentes"]
+    },
+    "riesgo": { "type": "string", "enum": ["bajo", "medio", "alto"] },
+    "estado_inicial": {
+      "type": "object",
+      "properties": {
+        "fixture": { "type": "string" },
+        "commit": { "type": "string" },
+        "descripcion": { "type": "string" }
+      }
+    },
+    "objetivo": { "type": "string", "minLength": 10 },
+    "criterios_aceptacion": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "archivos_esperados": {
+      "type": "object",
+      "properties": {
+        "maximos_modificados": { "type": "integer", "minimum": 0 },
+        "archivos_permitidos": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "validaciones": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "modos": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["baseline", "contexto-dirigido", "mcp-edura", "plataforma-completa"]
+      },
+      "minItems": 1
+    },
+    "repeticiones": {
+      "type": "object",
+      "properties": {
+        "calentamiento": { "type": "integer", "minimum": 0 },
+        "medidas": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "presupuesto": {
+      "type": "object",
+      "required": ["tokens_maximos", "costo_maximo_usd", "tiempo_maximo_segundos"],
+      "properties": {
+        "tokens_maximos": { "type": "integer", "minimum": 1000 },
+        "costo_maximo_usd": { "type": "number", "minimum": 0 },
+        "tiempo_maximo_segundos": { "type": "integer", "minimum": 10 }
+      }
+    },
+    "datos_sensibles": {
+      "type": "object",
+      "properties": {
+        "permitidos": { "type": "boolean" },
+        "nota": { "type": "string" }
+      }
+    },
+    "requiere_plataforma": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["claude-code", "codex", "antigravity"] }
+    },
+    "requiere_mcp": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "tags": { "type": "array", "items": { "type": "string" } }
+  }
+}

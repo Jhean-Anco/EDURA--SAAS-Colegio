@@ -127,7 +127,7 @@ describeE2E('Aislamiento multi-institucion E2E (requiere BD)', () => {
     }).compile();
 
     app = modulo.createNestApplication();
-    configurarAplicacion(app, true);
+    configurarAplicacion(app, { swaggerHabilitado: false } as any);
     await app.init();
     ds = modulo.get(DataSource);
 

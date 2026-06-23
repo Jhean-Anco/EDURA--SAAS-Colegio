@@ -71,10 +71,15 @@ const ID_PLAN_DETALLE = 'd3b07384-d113-43cf-a52d-000000000214';
 
 type Manager = { query: <T>(sql: string, params?: unknown[]) => Promise<T> };
 
-async function obtenerOInsertarInstitucion(manager: Manager, id: string, codigo: string, nombre: string): Promise<string> {
+async function obtenerOInsertarInstitucion(
+  manager: Manager,
+  id: string,
+  codigo: string,
+  nombre: string,
+): Promise<string> {
   const [existente] = await manager.query<{ id: string }[]>(
     `SELECT id FROM instituciones_educativas WHERE codigo = $1 LIMIT 1`,
-    [codigo]
+    [codigo],
   );
   if (existente) {
     return existente.id;
@@ -83,15 +88,22 @@ async function obtenerOInsertarInstitucion(manager: Manager, id: string, codigo:
     `INSERT INTO instituciones_educativas
        (id, codigo, nombre_legal, nombre_corto, estado, fecha_creacion, fecha_modificacion)
      VALUES ($1, $2, $3, $2, 'ACTIVA', now(), now())`,
-    [id, codigo, nombre]
+    [id, codigo, nombre],
   );
   return id;
 }
 
-async function obtenerOInsertarSede(manager: Manager, id: string, instId: string, codigo: string, nombre: string, esPrincipal: boolean): Promise<string> {
+async function obtenerOInsertarSede(
+  manager: Manager,
+  id: string,
+  instId: string,
+  codigo: string,
+  nombre: string,
+  esPrincipal: boolean,
+): Promise<string> {
   const [existente] = await manager.query<{ id: string }[]>(
     `SELECT id FROM sedes WHERE id_institucion_educativa = $1 AND codigo = $2 LIMIT 1`,
-    [instId, codigo]
+    [instId, codigo],
   );
   if (existente) {
     return existente.id;
@@ -100,15 +112,22 @@ async function obtenerOInsertarSede(manager: Manager, id: string, instId: string
     `INSERT INTO sedes
        (id, id_institucion_educativa, codigo, nombre, es_principal, estado, fecha_creacion, fecha_modificacion)
      VALUES ($1, $2, $3, $4, $5, 'ACTIVA', now(), now())`,
-    [id, instId, codigo, nombre, esPrincipal]
+    [id, instId, codigo, nombre, esPrincipal],
   );
   return id;
 }
 
-async function obtenerOInsertarPersona(manager: Manager, id: string, instId: string, nombres: string, ap: string, am: string): Promise<string> {
+async function obtenerOInsertarPersona(
+  manager: Manager,
+  id: string,
+  instId: string,
+  nombres: string,
+  ap: string,
+  am: string,
+): Promise<string> {
   const [existente] = await manager.query<{ id: string }[]>(
     `SELECT id FROM personas WHERE id_institucion_educativa = $1 AND nombres = $2 AND apellido_paterno = $3 LIMIT 1`,
-    [instId, nombres, ap]
+    [instId, nombres, ap],
   );
   if (existente) {
     return existente.id;
@@ -117,16 +136,22 @@ async function obtenerOInsertarPersona(manager: Manager, id: string, instId: str
     `INSERT INTO personas
        (id, id_institucion_educativa, nombres, apellido_paterno, apellido_materno, fecha_nacimiento, sexo_registral, estado, fecha_creacion, fecha_modificacion)
      VALUES ($1, $2, $3, $4, $5, '1980-01-01', 'NO_ESPECIFICADO', 'ACTIVA', now(), now())`,
-    [id, instId, nombres, ap, am]
+    [id, instId, nombres, ap, am],
   );
   return id;
 }
 
-async function obtenerOInsertarUsuario(manager: Manager, id: string, correo: string, nombre: string, hashClave: string): Promise<string> {
+async function obtenerOInsertarUsuario(
+  manager: Manager,
+  id: string,
+  correo: string,
+  nombre: string,
+  hashClave: string,
+): Promise<string> {
   const correoNorm = normalizarCorreo(correo);
   const [existente] = await manager.query<{ id: string }[]>(
     `SELECT id FROM usuarios WHERE correo_normalizado = $1 LIMIT 1`,
-    [correoNorm]
+    [correoNorm],
   );
   if (existente) {
     return existente.id;
@@ -135,27 +160,33 @@ async function obtenerOInsertarUsuario(manager: Manager, id: string, correo: str
     `INSERT INTO usuarios
        (id, correo, correo_normalizado, nombre_mostrado, estado, correo_verificado, version_seguridad, fecha_creacion, fecha_modificacion)
      VALUES ($1, $2, $3, $4, 'ACTIVO', true, 1, now(), now())`,
-    [id, correo, correoNorm, nombre]
+    [id, correo, correoNorm, nombre],
   );
   await manager.query(
     `INSERT INTO credenciales_usuario
        (id_usuario, hash_clave, algoritmo, requiere_cambio, intentos_fallidos, fecha_cambio_clave, fecha_modificacion)
      VALUES ($1, $2, 'ARGON2ID', false, 0, now(), now())
      ON CONFLICT (id_usuario) DO UPDATE SET hash_clave = EXCLUDED.hash_clave`,
-    [id, hashClave]
+    [id, hashClave],
   );
   return id;
 }
 
-async function obtenerOInsertarMembresia(manager: Manager, id: string, userId: string, instId: string, personaId: string): Promise<string> {
+async function obtenerOInsertarMembresia(
+  manager: Manager,
+  id: string,
+  userId: string,
+  instId: string,
+  personaId: string,
+): Promise<string> {
   const [existente] = await manager.query<{ id: string }[]>(
     `SELECT id FROM membresias_institucion WHERE id_usuario = $1 AND id_institucion_educativa = $2 LIMIT 1`,
-    [userId, instId]
+    [userId, instId],
   );
   if (existente) {
     await manager.query(
       `UPDATE membresias_institucion SET id_persona = $1 WHERE id = $2 AND id_persona IS NULL`,
-      [personaId, existente.id]
+      [personaId, existente.id],
     );
     return existente.id;
   }
@@ -163,7 +194,7 @@ async function obtenerOInsertarMembresia(manager: Manager, id: string, userId: s
     `INSERT INTO membresias_institucion
        (id, id_usuario, id_institucion_educativa, id_persona, estado, fecha_inicio, fecha_creacion, fecha_modificacion)
      VALUES ($1, $2, $3, $4, 'ACTIVA', CURRENT_DATE, now(), now())`,
-    [id, userId, instId, personaId]
+    [id, userId, instId, personaId],
   );
   return id;
 }
@@ -176,7 +207,7 @@ async function sembrarEstructuraAcademica(
   // Nivel
   const [nivelExistente] = await manager.query<{ id: string }[]>(
     `SELECT id FROM niveles_educativos WHERE id_institucion_educativa = $1 AND codigo_normalizado = 'PRIMARIA' LIMIT 1`,
-    [institucionId]
+    [institucionId],
   );
   const nivelId = nivelExistente ? nivelExistente.id : ID_NIVEL;
   if (!nivelExistente) {
@@ -185,14 +216,14 @@ async function sembrarEstructuraAcademica(
          (id, id_institucion_educativa, codigo, codigo_normalizado, nombre, orden, estado,
           fecha_creacion, fecha_modificacion)
        VALUES ($1, $2, 'PRIMARIA', 'PRIMARIA', 'Educación Primaria', 1, 'ACTIVO', now(), now())`,
-      [ID_NIVEL, institucionId]
+      [ID_NIVEL, institucionId],
     );
   }
 
   // Grado
   const [gradoExistente] = await manager.query<{ id: string }[]>(
     `SELECT id FROM grados_educativos WHERE id_nivel_educativo = $1 AND codigo_normalizado = '1ERO' LIMIT 1`,
-    [nivelId]
+    [nivelId],
   );
   const gradoId = gradoExistente ? gradoExistente.id : ID_GRADO;
   if (!gradoExistente) {
@@ -201,7 +232,7 @@ async function sembrarEstructuraAcademica(
          (id, id_institucion_educativa, id_nivel_educativo, codigo, codigo_normalizado,
           nombre, orden, estado, fecha_creacion, fecha_modificacion)
        VALUES ($1, $2, $3, '1ERO', '1ERO', 'Primer Grado', 1, 'ACTIVO', now(), now())`,
-      [ID_GRADO, institucionId, nivelId]
+      [ID_GRADO, institucionId, nivelId],
     );
   }
 
@@ -209,7 +240,7 @@ async function sembrarEstructuraAcademica(
   const anioActual = new Date().getFullYear();
   const [anioExistente] = await manager.query<{ id: string }[]>(
     `SELECT id FROM anios_academicos WHERE id_institucion_educativa = $1 AND anio = $2 LIMIT 1`,
-    [institucionId, anioActual]
+    [institucionId, anioActual],
   );
   const anioId = anioExistente ? anioExistente.id : ID_ANIO;
   if (!anioExistente) {
@@ -226,14 +257,14 @@ async function sembrarEstructuraAcademica(
         `Año Académico ${anioActual}`,
         `${anioActual}-03-01`,
         `${anioActual}-12-20`,
-      ]
+      ],
     );
   }
 
   // Periodo
   const [periodoExistente] = await manager.query<{ id: string }[]>(
     `SELECT id FROM periodos_academicos WHERE id_anio_academico = $1 AND codigo_normalizado = 'B1' LIMIT 1`,
-    [anioId]
+    [anioId],
   );
   if (!periodoExistente) {
     await manager.query(
@@ -242,14 +273,20 @@ async function sembrarEstructuraAcademica(
           orden, fecha_inicio, fecha_fin, estado, fecha_creacion, fecha_modificacion)
        VALUES ($1, $2, $3, 'B1', 'B1', 'Primer Bimestre', 'BIMESTRE',
                1, $4, $5, 'ACTIVO', now(), now())`,
-      [ID_PERIODO, institucionId, anioId, `${anioActual}-03-01`, `${anioActual}-04-30`]
+      [
+        ID_PERIODO,
+        institucionId,
+        anioId,
+        `${anioActual}-03-01`,
+        `${anioActual}-04-30`,
+      ],
     );
   }
 
   // Oferta
   const [ofertaExistente] = await manager.query<{ id: string }[]>(
     `SELECT id FROM ofertas_grado_sede WHERE id_sede = $1 AND id_grado_educativo = $2 AND id_anio_academico = $3 LIMIT 1`,
-    [sedeId, gradoId, anioId]
+    [sedeId, gradoId, anioId],
   );
   const ofertaId = ofertaExistente ? ofertaExistente.id : ID_OFERTA_1;
   if (!ofertaExistente) {
@@ -258,14 +295,14 @@ async function sembrarEstructuraAcademica(
          (id, id_institucion_educativa, id_sede, id_grado_educativo, id_anio_academico,
           capacidad_referencial, estado, fecha_creacion, fecha_modificacion)
        VALUES ($1, $2, $3, $4, $5, 30, 'ACTIVA', now(), now())`,
-      [ID_OFERTA_1, institucionId, sedeId, gradoId, anioId]
+      [ID_OFERTA_1, institucionId, sedeId, gradoId, anioId],
     );
   }
 
   // Secciones
   const [seccionAExistente] = await manager.query<{ id: string }[]>(
     `SELECT id FROM secciones_academicas WHERE id_oferta_grado_sede = $1 AND codigo_normalizado = 'A' LIMIT 1`,
-    [ofertaId]
+    [ofertaId],
   );
   if (!seccionAExistente) {
     await manager.query(
@@ -273,13 +310,13 @@ async function sembrarEstructuraAcademica(
          (id, id_institucion_educativa, id_oferta_grado_sede, codigo, codigo_normalizado, nombre, turno,
           capacidad_maxima, estado, fecha_creacion, fecha_modificacion)
        VALUES ($1, $2, $3, 'A', 'A', 'A', 'MANANA', 25, 'ACTIVA', now(), now())`,
-      [ID_SECCION_A, institucionId, ofertaId]
+      [ID_SECCION_A, institucionId, ofertaId],
     );
   }
 
   const [seccionBExistente] = await manager.query<{ id: string }[]>(
     `SELECT id FROM secciones_academicas WHERE id_oferta_grado_sede = $1 AND codigo_normalizado = 'B' LIMIT 1`,
-    [ofertaId]
+    [ofertaId],
   );
   if (!seccionBExistente) {
     await manager.query(
@@ -287,14 +324,14 @@ async function sembrarEstructuraAcademica(
          (id, id_institucion_educativa, id_oferta_grado_sede, codigo, codigo_normalizado, nombre, turno,
           capacidad_maxima, estado, fecha_creacion, fecha_modificacion)
        VALUES ($1, $2, $3, 'B', 'B', 'B', 'MANANA', 1, 'ACTIVA', now(), now())`,
-      [ID_SECCION_B, institucionId, ofertaId]
+      [ID_SECCION_B, institucionId, ofertaId],
     );
   }
 
   // Curriculo
   const [areaExistente] = await manager.query<{ id: string }[]>(
     `SELECT id FROM areas_curriculares WHERE id_institucion_educativa = $1 AND codigo_normalizado = 'MATEMATICA' LIMIT 1`,
-    [institucionId]
+    [institucionId],
   );
   const areaId = areaExistente ? areaExistente.id : ID_AREA;
   if (!areaExistente) {
@@ -302,27 +339,29 @@ async function sembrarEstructuraAcademica(
       `INSERT INTO areas_curriculares
          (id, id_institucion_educativa, codigo, codigo_normalizado, nombre, nombre_normalizado, descripcion, orden, estado, fecha_creacion, fecha_modificacion)
        VALUES ($1, $2, 'MATEMATICA', 'MATEMATICA', 'Matemática', 'MATEMATICA', 'Área de matemática', 1, 'ACTIVA', now(), now())`,
-      [ID_AREA, institucionId]
+      [ID_AREA, institucionId],
     );
   }
 
   const [asignaturaExistente] = await manager.query<{ id: string }[]>(
     `SELECT id FROM asignaturas WHERE id_area_curricular = $1 AND codigo_normalizado = 'ALGEBRA' LIMIT 1`,
-    [areaId]
+    [areaId],
   );
-  const asignaturaId = asignaturaExistente ? asignaturaExistente.id : ID_ASIGNATURA;
+  const asignaturaId = asignaturaExistente
+    ? asignaturaExistente.id
+    : ID_ASIGNATURA;
   if (!asignaturaExistente) {
     await manager.query(
       `INSERT INTO asignaturas
          (id, id_institucion_educativa, id_area_curricular, codigo, codigo_normalizado, nombre, nombre_corto, descripcion, orden, estado, fecha_creacion, fecha_modificacion)
        VALUES ($1, $2, $3, 'ALGEBRA', 'ALGEBRA', 'Álgebra', 'Álgebra', 'Curso de álgebra', 1, 'ACTIVA', now(), now())`,
-      [ID_ASIGNATURA, institucionId, areaId]
+      [ID_ASIGNATURA, institucionId, areaId],
     );
   }
 
   const [planExistente] = await manager.query<{ id: string }[]>(
     `SELECT id FROM planes_estudio WHERE id_institucion_educativa = $1 AND codigo_normalizado = 'PLAN-1ERO-MAT' LIMIT 1`,
-    [institucionId]
+    [institucionId],
   );
   const planId = planExistente ? planExistente.id : ID_PLAN;
   if (!planExistente) {
@@ -330,20 +369,20 @@ async function sembrarEstructuraAcademica(
       `INSERT INTO planes_estudio
          (id, id_institucion_educativa, id_anio_academico, id_grado_educativo, codigo, codigo_normalizado, nombre, version, estado, observacion, fecha_creacion, fecha_modificacion)
        VALUES ($1, $2, $3, $4, 'PLAN-1ERO-MAT', 'PLAN-1ERO-MAT', 'Plan Primer Grado Matemática', 1, 'BORRADOR', 'Plan demo', now(), now())`,
-      [ID_PLAN, institucionId, anioId, gradoId]
+      [ID_PLAN, institucionId, anioId, gradoId],
     );
   }
 
   const [detalleExistente] = await manager.query<{ id: string }[]>(
     `SELECT id FROM detalles_plan_estudio WHERE id_plan_estudio = $1 AND id_asignatura = $2 LIMIT 1`,
-    [planId, asignaturaId]
+    [planId, asignaturaId],
   );
   if (!detalleExistente) {
     await manager.query(
       `INSERT INTO detalles_plan_estudio
          (id, id_institucion_educativa, id_plan_estudio, id_asignatura, tipo, horas_semanales, horas_anuales, orden, estado, observacion, fecha_creacion, fecha_modificacion)
        VALUES ($1, $2, $3, $4, 'OBLIGATORIA', 4, 160, 1, 'ACTIVO', 'Detalle demo', now(), now())`,
-      [ID_PLAN_DETALLE, institucionId, planId, asignaturaId]
+      [ID_PLAN_DETALLE, institucionId, planId, asignaturaId],
     );
   }
 }
@@ -363,7 +402,9 @@ async function ejecutarDemo(): Promise<void> {
 
   const passwordSeed = process.env.DEMO_PASSWORD;
   if (!passwordSeed) {
-    throw new Error('La variable de entorno DEMO_PASSWORD debe estar configurada.');
+    throw new Error(
+      'La variable de entorno DEMO_PASSWORD debe estar configurada.',
+    );
   }
 
   const hashClave = await argon2.hash(passwordSeed, {
@@ -372,102 +413,197 @@ async function ejecutarDemo(): Promise<void> {
 
   await fuenteDatos.transaction(async (manager) => {
     // 1. Institución principal demo
-    const instId = await obtenerOInsertarInstitucion(manager, ID_INST_1, 'DEMO', 'Institución Demo');
+    const instId = await obtenerOInsertarInstitucion(
+      manager,
+      ID_INST_1,
+      'DEMO',
+      'Institución Demo',
+    );
 
     // 2. Dos sedes
-    const sedeId1 = await obtenerOInsertarSede(manager, ID_SEDE_1, instId, 'DEMO-001', 'Sede Principal Demo', true);
-    const sedeId2 = await obtenerOInsertarSede(manager, ID_SEDE_2, instId, 'DEMO-002', 'Sede Secundaria Demo', false);
+    const sedeId1 = await obtenerOInsertarSede(
+      manager,
+      ID_SEDE_1,
+      instId,
+      'DEMO-001',
+      'Sede Principal Demo',
+      true,
+    );
+    const sedeId2 = await obtenerOInsertarSede(
+      manager,
+      ID_SEDE_2,
+      instId,
+      'DEMO-002',
+      'Sede Secundaria Demo',
+      false,
+    );
 
     // 3. Un director diferente para cada sede
     // Director Sede 1
-    const pDir1 = await obtenerOInsertarPersona(manager, ID_DIR_1_PERSONA, instId, 'Director Sede 1', 'Perez', 'Garcia');
-    const uDir1 = await obtenerOInsertarUsuario(manager, ID_DIR_1_USER, 'director1@edura.local', 'Dir Uno', hashClave);
-    const mDir1 = await obtenerOInsertarMembresia(manager, ID_DIR_1_MEMBRESIA, uDir1, instId, pDir1);
+    const pDir1 = await obtenerOInsertarPersona(
+      manager,
+      ID_DIR_1_PERSONA,
+      instId,
+      'Director Sede 1',
+      'Perez',
+      'Garcia',
+    );
+    const uDir1 = await obtenerOInsertarUsuario(
+      manager,
+      ID_DIR_1_USER,
+      'director1@edura.local',
+      'Dir Uno',
+      hashClave,
+    );
+    const mDir1 = await obtenerOInsertarMembresia(
+      manager,
+      ID_DIR_1_MEMBRESIA,
+      uDir1,
+      instId,
+      pDir1,
+    );
 
     const [rolDir] = await manager.query<{ id: string }[]>(
-      `SELECT id FROM roles WHERE codigo = 'DIRECTOR_SEDE' LIMIT 1`
+      `SELECT id FROM roles WHERE codigo = 'DIRECTOR_SEDE' LIMIT 1`,
     );
     if (rolDir) {
       const [asigExist] = await manager.query<{ id: string }[]>(
         `SELECT id FROM asignaciones_rol_usuario WHERE id_usuario = $1 AND id_rol = $2 AND id_sede = $3 LIMIT 1`,
-        [uDir1, rolDir.id, sedeId1]
+        [uDir1, rolDir.id, sedeId1],
       );
       if (!asigExist) {
         await manager.query(
           `INSERT INTO asignaciones_rol_usuario
              (id, id_usuario, id_rol, id_membresia_institucion, id_sede, estado, fecha_inicio, fecha_creacion)
            VALUES (gen_random_uuid(), $1, $2, $3, $4, 'ACTIVA', CURRENT_DATE, now())`,
-          [uDir1, rolDir.id, mDir1, sedeId1]
+          [uDir1, rolDir.id, mDir1, sedeId1],
         );
       }
     }
 
     // Director Sede 2
-    const pDir2 = await obtenerOInsertarPersona(manager, ID_DIR_2_PERSONA, instId, 'Director Sede 2', 'Rodriguez', 'Flores');
-    const uDir2 = await obtenerOInsertarUsuario(manager, ID_DIR_2_USER, 'director2@edura.local', 'Dir Dos', hashClave);
-    const mDir2 = await obtenerOInsertarMembresia(manager, ID_DIR_2_MEMBRESIA, uDir2, instId, pDir2);
+    const pDir2 = await obtenerOInsertarPersona(
+      manager,
+      ID_DIR_2_PERSONA,
+      instId,
+      'Director Sede 2',
+      'Rodriguez',
+      'Flores',
+    );
+    const uDir2 = await obtenerOInsertarUsuario(
+      manager,
+      ID_DIR_2_USER,
+      'director2@edura.local',
+      'Dir Dos',
+      hashClave,
+    );
+    const mDir2 = await obtenerOInsertarMembresia(
+      manager,
+      ID_DIR_2_MEMBRESIA,
+      uDir2,
+      instId,
+      pDir2,
+    );
     if (rolDir) {
       const [asigExist] = await manager.query<{ id: string }[]>(
         `SELECT id FROM asignaciones_rol_usuario WHERE id_usuario = $1 AND id_rol = $2 AND id_sede = $3 LIMIT 1`,
-        [uDir2, rolDir.id, sedeId2]
+        [uDir2, rolDir.id, sedeId2],
       );
       if (!asigExist) {
         await manager.query(
           `INSERT INTO asignaciones_rol_usuario
              (id, id_usuario, id_rol, id_membresia_institucion, id_sede, estado, fecha_inicio, fecha_creacion)
            VALUES (gen_random_uuid(), $1, $2, $3, $4, 'ACTIVA', CURRENT_DATE, now())`,
-          [uDir2, rolDir.id, mDir2, sedeId2]
+          [uDir2, rolDir.id, mDir2, sedeId2],
         );
       }
     }
 
     // 4. Administrador institucional
-    const pAdmin = await obtenerOInsertarPersona(manager, ID_ADMIN_PERSONA, instId, 'Admin Demo', 'Lopez', 'Soto');
-    const uAdmin = await obtenerOInsertarUsuario(manager, ID_ADMIN_USER, 'admin.demo@institucion.local', 'Admin Demo', hashClave);
-    const mAdmin = await obtenerOInsertarMembresia(manager, ID_ADMIN_MEMBRESIA, uAdmin, instId, pAdmin);
+    const pAdmin = await obtenerOInsertarPersona(
+      manager,
+      ID_ADMIN_PERSONA,
+      instId,
+      'Admin Demo',
+      'Lopez',
+      'Soto',
+    );
+    const uAdmin = await obtenerOInsertarUsuario(
+      manager,
+      ID_ADMIN_USER,
+      'admin.demo@institucion.local',
+      'Admin Demo',
+      hashClave,
+    );
+    const mAdmin = await obtenerOInsertarMembresia(
+      manager,
+      ID_ADMIN_MEMBRESIA,
+      uAdmin,
+      instId,
+      pAdmin,
+    );
     const [rolAdmin] = await manager.query<{ id: string }[]>(
-      `SELECT id FROM roles WHERE codigo = 'ADMINISTRADOR_INSTITUCION' LIMIT 1`
+      `SELECT id FROM roles WHERE codigo = 'ADMINISTRADOR_INSTITUCION' LIMIT 1`,
     );
     if (rolAdmin) {
       const [asigExist] = await manager.query<{ id: string }[]>(
         `SELECT id FROM asignaciones_rol_usuario WHERE id_usuario = $1 AND id_rol = $2 AND id_sede IS NULL LIMIT 1`,
-        [uAdmin, rolAdmin.id]
+        [uAdmin, rolAdmin.id],
       );
       if (!asigExist) {
         await manager.query(
           `INSERT INTO asignaciones_rol_usuario
              (id, id_usuario, id_rol, id_membresia_institucion, id_sede, estado, fecha_inicio, fecha_creacion)
            VALUES (gen_random_uuid(), $1, $2, $3, NULL, 'ACTIVA', CURRENT_DATE, now())`,
-          [uAdmin, rolAdmin.id, mAdmin]
+          [uAdmin, rolAdmin.id, mAdmin],
         );
       }
     }
 
     // 5. Docente
-    const pDoc = await obtenerOInsertarPersona(manager, ID_DOCENTE_PERSONA, instId, 'Docente Demo', 'Gomez', 'Ruiz');
-    const uDoc = await obtenerOInsertarUsuario(manager, ID_DOCENTE_USER, 'docente@edura.local', 'Docente Demo', hashClave);
-    const mDoc = await obtenerOInsertarMembresia(manager, ID_DOCENTE_MEMBRESIA, uDoc, instId, pDoc);
+    const pDoc = await obtenerOInsertarPersona(
+      manager,
+      ID_DOCENTE_PERSONA,
+      instId,
+      'Docente Demo',
+      'Gomez',
+      'Ruiz',
+    );
+    const uDoc = await obtenerOInsertarUsuario(
+      manager,
+      ID_DOCENTE_USER,
+      'docente@edura.local',
+      'Docente Demo',
+      hashClave,
+    );
+    const mDoc = await obtenerOInsertarMembresia(
+      manager,
+      ID_DOCENTE_MEMBRESIA,
+      uDoc,
+      instId,
+      pDoc,
+    );
     const [rolDoc] = await manager.query<{ id: string }[]>(
-      `SELECT id FROM roles WHERE codigo = 'DOCENTE' LIMIT 1`
+      `SELECT id FROM roles WHERE codigo = 'DOCENTE' LIMIT 1`,
     );
     if (rolDoc) {
       const [asigExist] = await manager.query<{ id: string }[]>(
         `SELECT id FROM asignaciones_rol_usuario WHERE id_usuario = $1 AND id_rol = $2 AND id_sede = $3 LIMIT 1`,
-        [uDoc, rolDoc.id, sedeId1]
+        [uDoc, rolDoc.id, sedeId1],
       );
       if (!asigExist) {
         await manager.query(
           `INSERT INTO asignaciones_rol_usuario
              (id, id_usuario, id_rol, id_membresia_institucion, id_sede, estado, fecha_inicio, fecha_creacion)
            VALUES (gen_random_uuid(), $1, $2, $3, $4, 'ACTIVA', CURRENT_DATE, now())`,
-          [uDoc, rolDoc.id, mDoc, sedeId1]
+          [uDoc, rolDoc.id, mDoc, sedeId1],
         );
       }
     }
 
     const [docenteRegExist] = await manager.query<{ id: string }[]>(
       `SELECT id FROM docentes WHERE id_institucion_educativa = $1 AND codigo_normalizado = 'DOC-001' LIMIT 1`,
-      [instId]
+      [instId],
     );
     const docenteRegId = docenteRegExist ? docenteRegExist.id : ID_DOCENTE_REG;
     if (!docenteRegExist) {
@@ -475,50 +611,96 @@ async function ejecutarDemo(): Promise<void> {
         `INSERT INTO docentes
            (id, id_institucion_educativa, id_persona, codigo, codigo_normalizado, estado, fecha_ingreso, fecha_creacion, fecha_modificacion)
          VALUES ($1, $2, $3, 'DOC-001', 'DOC-001', 'ACTIVO', CURRENT_DATE, now(), now())`,
-        [ID_DOCENTE_REG, instId, pDoc]
+        [ID_DOCENTE_REG, instId, pDoc],
       );
       await manager.query(
         `INSERT INTO asignaciones_docente_sede
            (id, id_institucion_educativa, id_docente, id_sede, es_principal, estado, fecha_inicio, fecha_creacion, fecha_modificacion)
          VALUES (gen_random_uuid(), $1, $2, $3, true, 'ACTIVA', CURRENT_DATE, now(), now())`,
-        [instId, ID_DOCENTE_REG, sedeId1]
+        [instId, ID_DOCENTE_REG, sedeId1],
       );
     }
 
     // 6. Tres estudiantes
     const estudiantesData = [
-      { idUser: ID_EST_1_USER, idPersona: ID_EST_1_PERSONA, idMemb: ID_EST_1_MEMBRESIA, idEst: ID_EST_1_REG, correo: 'estudiante1@edura.local', nombres: 'Ana', ap: 'Perez', code: 'EST-001' },
-      { idUser: ID_EST_2_USER, idPersona: ID_EST_2_PERSONA, idMemb: ID_EST_2_MEMBRESIA, idEst: ID_EST_2_REG, correo: 'estudiante2@edura.local', nombres: 'Bruno', ap: 'Diaz', code: 'EST-002' },
-      { idUser: ID_EST_3_USER, idPersona: ID_EST_3_PERSONA, idMemb: ID_EST_3_MEMBRESIA, idEst: ID_EST_3_REG, correo: 'estudiante3@edura.local', nombres: 'Camila', ap: 'Cruz', code: 'EST-003' },
+      {
+        idUser: ID_EST_1_USER,
+        idPersona: ID_EST_1_PERSONA,
+        idMemb: ID_EST_1_MEMBRESIA,
+        idEst: ID_EST_1_REG,
+        correo: 'estudiante1@edura.local',
+        nombres: 'Ana',
+        ap: 'Perez',
+        code: 'EST-001',
+      },
+      {
+        idUser: ID_EST_2_USER,
+        idPersona: ID_EST_2_PERSONA,
+        idMemb: ID_EST_2_MEMBRESIA,
+        idEst: ID_EST_2_REG,
+        correo: 'estudiante2@edura.local',
+        nombres: 'Bruno',
+        ap: 'Diaz',
+        code: 'EST-002',
+      },
+      {
+        idUser: ID_EST_3_USER,
+        idPersona: ID_EST_3_PERSONA,
+        idMemb: ID_EST_3_MEMBRESIA,
+        idEst: ID_EST_3_REG,
+        correo: 'estudiante3@edura.local',
+        nombres: 'Camila',
+        ap: 'Cruz',
+        code: 'EST-003',
+      },
     ];
 
     const [rolEst] = await manager.query<{ id: string }[]>(
-      `SELECT id FROM roles WHERE codigo = 'ESTUDIANTE' LIMIT 1`
+      `SELECT id FROM roles WHERE codigo = 'ESTUDIANTE' LIMIT 1`,
     );
 
     const estRegIds: string[] = [];
     for (const est of estudiantesData) {
-      const pEst = await obtenerOInsertarPersona(manager, est.idPersona, instId, est.nombres, est.ap, 'Demo');
-      const uEst = await obtenerOInsertarUsuario(manager, est.idUser, est.correo, `${est.nombres} ${est.ap}`, hashClave);
-      const mEst = await obtenerOInsertarMembresia(manager, est.idMemb, uEst, instId, pEst);
+      const pEst = await obtenerOInsertarPersona(
+        manager,
+        est.idPersona,
+        instId,
+        est.nombres,
+        est.ap,
+        'Demo',
+      );
+      const uEst = await obtenerOInsertarUsuario(
+        manager,
+        est.idUser,
+        est.correo,
+        `${est.nombres} ${est.ap}`,
+        hashClave,
+      );
+      const mEst = await obtenerOInsertarMembresia(
+        manager,
+        est.idMemb,
+        uEst,
+        instId,
+        pEst,
+      );
       if (rolEst) {
         const [asigExist] = await manager.query<{ id: string }[]>(
           `SELECT id FROM asignaciones_rol_usuario WHERE id_usuario = $1 AND id_rol = $2 LIMIT 1`,
-          [uEst, rolEst.id]
+          [uEst, rolEst.id],
         );
         if (!asigExist) {
           await manager.query(
             `INSERT INTO asignaciones_rol_usuario
                (id, id_usuario, id_rol, id_membresia_institucion, id_sede, estado, fecha_inicio, fecha_creacion)
              VALUES (gen_random_uuid(), $1, $2, $3, $4, 'ACTIVA', CURRENT_DATE, now())`,
-            [uEst, rolEst.id, mEst, sedeId1]
+            [uEst, rolEst.id, mEst, sedeId1],
           );
         }
       }
 
       const [estExist] = await manager.query<{ id: string }[]>(
         `SELECT id FROM estudiantes WHERE id_institucion_educativa = $1 AND codigo = $2 LIMIT 1`,
-        [instId, est.code]
+        [instId, est.code],
       );
       const estRegId = estExist ? estExist.id : est.idEst;
       if (!estExist) {
@@ -526,44 +708,63 @@ async function ejecutarDemo(): Promise<void> {
           `INSERT INTO estudiantes
              (id, id_institucion_educativa, id_sede, id_persona, codigo, estado, fecha_ingreso, fecha_creacion, fecha_modificacion)
            VALUES ($1, $2, $3, $4, $5, 'ACTIVO', CURRENT_DATE, now(), now())`,
-          [est.idEst, instId, sedeId1, pEst, est.code]
+          [est.idEst, instId, sedeId1, pEst, est.code],
         );
       }
       estRegIds.push(estRegId);
     }
 
     // 7. Apoderado
-    const pApod = await obtenerOInsertarPersona(manager, ID_APODERADO_PERSONA, instId, 'Apoderado Demo', 'Fernandez', 'Vega');
-    const uApod = await obtenerOInsertarUsuario(manager, ID_APODERADO_USER, 'apoderado@edura.local', 'Apoderado Demo', hashClave);
-    const mApod = await obtenerOInsertarMembresia(manager, ID_APODERADO_MEMBRESIA, uApod, instId, pApod);
+    const pApod = await obtenerOInsertarPersona(
+      manager,
+      ID_APODERADO_PERSONA,
+      instId,
+      'Apoderado Demo',
+      'Fernandez',
+      'Vega',
+    );
+    const uApod = await obtenerOInsertarUsuario(
+      manager,
+      ID_APODERADO_USER,
+      'apoderado@edura.local',
+      'Apoderado Demo',
+      hashClave,
+    );
+    const mApod = await obtenerOInsertarMembresia(
+      manager,
+      ID_APODERADO_MEMBRESIA,
+      uApod,
+      instId,
+      pApod,
+    );
     const [rolApod] = await manager.query<{ id: string }[]>(
-      `SELECT id FROM roles WHERE codigo = 'APODERADO' LIMIT 1`
+      `SELECT id FROM roles WHERE codigo = 'APODERADO' LIMIT 1`,
     );
     if (rolApod) {
       const [asigExist] = await manager.query<{ id: string }[]>(
         `SELECT id FROM asignaciones_rol_usuario WHERE id_usuario = $1 AND id_rol = $2 LIMIT 1`,
-        [uApod, rolApod.id]
+        [uApod, rolApod.id],
       );
       if (!asigExist) {
         await manager.query(
           `INSERT INTO asignaciones_rol_usuario
              (id, id_usuario, id_rol, id_membresia_institucion, id_sede, estado, fecha_inicio, fecha_creacion)
            VALUES (gen_random_uuid(), $1, $2, $3, NULL, 'ACTIVA', CURRENT_DATE, now())`,
-          [uApod, rolApod.id, mApod]
+          [uApod, rolApod.id, mApod],
         );
       }
     }
     // Relación
     const [relExist] = await manager.query<{ id: string }[]>(
       `SELECT id FROM apoderados_estudiante WHERE id_estudiante = $1 LIMIT 1`,
-      [estRegIds[0]]
+      [estRegIds[0]],
     );
     if (!relExist) {
       await manager.query(
         `INSERT INTO apoderados_estudiante
            (id, id_institucion_educativa, id_estudiante, id_persona, parentesco, es_principal, puede_recoger, recibe_comunicaciones, estado, fecha_creacion, fecha_modificacion)
          VALUES ($1, $2, $3, $4, 'MADRE', true, true, true, 'ACTIVO', now(), now())`,
-        [ID_APODERADO_REL, instId, estRegIds[0], pApod]
+        [ID_APODERADO_REL, instId, estRegIds[0], pApod],
       );
     }
 
@@ -571,35 +772,66 @@ async function ejecutarDemo(): Promise<void> {
     if (rolDir) {
       const [asigExist2] = await manager.query<{ id: string }[]>(
         `SELECT id FROM asignaciones_rol_usuario WHERE id_usuario = $1 AND id_rol = $2 AND id_sede = $3 LIMIT 1`,
-        [uDir1, rolDir.id, sedeId2]
+        [uDir1, rolDir.id, sedeId2],
       );
       if (!asigExist2) {
         await manager.query(
           `INSERT INTO asignaciones_rol_usuario
              (id, id_usuario, id_rol, id_membresia_institucion, id_sede, estado, fecha_inicio, fecha_creacion)
            VALUES (gen_random_uuid(), $1, $2, $3, $4, 'ACTIVA', CURRENT_DATE, now())`,
-          [uDir1, rolDir.id, mDir1, sedeId2]
+          [uDir1, rolDir.id, mDir1, sedeId2],
         );
       }
     }
 
     // 9. Segundo tenant mínimo
-    const instId2 = await obtenerOInsertarInstitucion(manager, ID_INST_2, 'TENANT2', 'Tenant Dos S.A.');
-    await obtenerOInsertarSede(manager, ID_SEDE_T2, instId2, 'T2-001', 'Sede Principal Tenant 2', true);
-    const pAdminT2 = await obtenerOInsertarPersona(manager, ID_ADMIN_T2_PERSONA, instId2, 'Admin Tenant2', 'Soto', 'Gomez');
-    const uAdminT2 = await obtenerOInsertarUsuario(manager, ID_ADMIN_T2_USER, 'admin@tenant2.local', 'Admin Tenant2', hashClave);
-    const mAdminT2 = await obtenerOInsertarMembresia(manager, ID_ADMIN_T2_MEMBRESIA, uAdminT2, instId2, pAdminT2);
+    const instId2 = await obtenerOInsertarInstitucion(
+      manager,
+      ID_INST_2,
+      'TENANT2',
+      'Tenant Dos S.A.',
+    );
+    await obtenerOInsertarSede(
+      manager,
+      ID_SEDE_T2,
+      instId2,
+      'T2-001',
+      'Sede Principal Tenant 2',
+      true,
+    );
+    const pAdminT2 = await obtenerOInsertarPersona(
+      manager,
+      ID_ADMIN_T2_PERSONA,
+      instId2,
+      'Admin Tenant2',
+      'Soto',
+      'Gomez',
+    );
+    const uAdminT2 = await obtenerOInsertarUsuario(
+      manager,
+      ID_ADMIN_T2_USER,
+      'admin@tenant2.local',
+      'Admin Tenant2',
+      hashClave,
+    );
+    const mAdminT2 = await obtenerOInsertarMembresia(
+      manager,
+      ID_ADMIN_T2_MEMBRESIA,
+      uAdminT2,
+      instId2,
+      pAdminT2,
+    );
     if (rolAdmin) {
       const [asigExist] = await manager.query<{ id: string }[]>(
         `SELECT id FROM asignaciones_rol_usuario WHERE id_usuario = $1 AND id_rol = $2 LIMIT 1`,
-        [uAdminT2, rolAdmin.id]
+        [uAdminT2, rolAdmin.id],
       );
       if (!asigExist) {
         await manager.query(
           `INSERT INTO asignaciones_rol_usuario
              (id, id_usuario, id_rol, id_membresia_institucion, id_sede, estado, fecha_inicio, fecha_creacion)
            VALUES (gen_random_uuid(), $1, $2, $3, NULL, 'ACTIVA', CURRENT_DATE, now())`,
-          [uAdminT2, rolAdmin.id, mAdminT2]
+          [uAdminT2, rolAdmin.id, mAdminT2],
         );
       }
     }
@@ -608,15 +840,36 @@ async function ejecutarDemo(): Promise<void> {
     await sembrarEstructuraAcademica(manager, instId, sedeId1);
 
     // Obtener los ids reales de los grados, periodos y ofertas/secciones
-    const [nivelRow] = await manager.query<{ id: string }[]>(`SELECT id FROM niveles_educativos WHERE id_institucion_educativa = $1 LIMIT 1`, [instId]);
-    const [gradoRow] = await manager.query<{ id: string }[]>(`SELECT id FROM grados_educativos WHERE id_institucion_educativa = $1 LIMIT 1`, [instId]);
-    const [anioRow] = await manager.query<{ id: string }[]>(`SELECT id FROM anios_academicos WHERE id_institucion_educativa = $1 LIMIT 1`, [instId]);
-    const [ofertaRow] = await manager.query<{ id: string }[]>(`SELECT id FROM ofertas_grado_sede WHERE id_institucion_educativa = $1 LIMIT 1`, [instId]);
-    const [seccionARow] = await manager.query<{ id: string }[]>(`SELECT id FROM secciones_academicas WHERE id_oferta_grado_sede = $1 AND codigo_normalizado = 'A' LIMIT 1`, [ofertaRow.id]);
-    const [seccionBRow] = await manager.query<{ id: string }[]>(`SELECT id FROM secciones_academicas WHERE id_oferta_grado_sede = $1 AND codigo_normalizado = 'B' LIMIT 1`, [ofertaRow.id]);
+    const [nivelRow] = await manager.query<{ id: string }[]>(
+      `SELECT id FROM niveles_educativos WHERE id_institucion_educativa = $1 LIMIT 1`,
+      [instId],
+    );
+    const [gradoRow] = await manager.query<{ id: string }[]>(
+      `SELECT id FROM grados_educativos WHERE id_institucion_educativa = $1 LIMIT 1`,
+      [instId],
+    );
+    const [anioRow] = await manager.query<{ id: string }[]>(
+      `SELECT id FROM anios_academicos WHERE id_institucion_educativa = $1 LIMIT 1`,
+      [instId],
+    );
+    const [ofertaRow] = await manager.query<{ id: string }[]>(
+      `SELECT id FROM ofertas_grado_sede WHERE id_institucion_educativa = $1 LIMIT 1`,
+      [instId],
+    );
+    const [seccionARow] = await manager.query<{ id: string }[]>(
+      `SELECT id FROM secciones_academicas WHERE id_oferta_grado_sede = $1 AND codigo_normalizado = 'A' LIMIT 1`,
+      [ofertaRow.id],
+    );
+    const [seccionBRow] = await manager.query<{ id: string }[]>(
+      `SELECT id FROM secciones_academicas WHERE id_oferta_grado_sede = $1 AND codigo_normalizado = 'B' LIMIT 1`,
+      [ofertaRow.id],
+    );
 
     // 10. Matrícula activa en sección A (con vacantes)
-    const [mat1Exist] = await manager.query<{ id: string }[]>(`SELECT id FROM matriculas WHERE id_estudiante = $1 LIMIT 1`, [estRegIds[0]]);
+    const [mat1Exist] = await manager.query<{ id: string }[]>(
+      `SELECT id FROM matriculas WHERE id_estudiante = $1 LIMIT 1`,
+      [estRegIds[0]],
+    );
     if (!mat1Exist) {
       await manager.query(
         `INSERT INTO matriculas (
@@ -627,12 +880,26 @@ async function ejecutarDemo(): Promise<void> {
         ) VALUES (
           $1, $2, $3, $4, $5, $6, $7, $8, $9, 'MAT-DEMO-001', CURRENT_DATE, 'ACTIVA', 'Matrícula activa en Sección A', $10, $10, now(), now(), now()
         )`,
-        [ID_MATRICULA_1, instId, sedeId1, estRegIds[0], anioRow.id, nivelRow.id, gradoRow.id, ofertaRow.id, seccionARow.id, uAdmin],
+        [
+          ID_MATRICULA_1,
+          instId,
+          sedeId1,
+          estRegIds[0],
+          anioRow.id,
+          nivelRow.id,
+          gradoRow.id,
+          ofertaRow.id,
+          seccionARow.id,
+          uAdmin,
+        ],
       );
     }
 
     // 11. Matrícula en borrador
-    const [mat2Exist] = await manager.query<{ id: string }[]>(`SELECT id FROM matriculas WHERE id_estudiante = $1 LIMIT 1`, [estRegIds[1]]);
+    const [mat2Exist] = await manager.query<{ id: string }[]>(
+      `SELECT id FROM matriculas WHERE id_estudiante = $1 LIMIT 1`,
+      [estRegIds[1]],
+    );
     if (!mat2Exist) {
       await manager.query(
         `INSERT INTO matriculas (
@@ -643,12 +910,25 @@ async function ejecutarDemo(): Promise<void> {
         ) VALUES (
           $1, $2, $3, $4, $5, $6, $7, $8, NULL, 'MAT-DEMO-002', CURRENT_DATE, 'BORRADOR', 'Matrícula en borrador', $9, now(), now()
         )`,
-        [ID_MATRICULA_2, instId, sedeId1, estRegIds[1], anioRow.id, nivelRow.id, gradoRow.id, ofertaRow.id, uAdmin],
+        [
+          ID_MATRICULA_2,
+          instId,
+          sedeId1,
+          estRegIds[1],
+          anioRow.id,
+          nivelRow.id,
+          gradoRow.id,
+          ofertaRow.id,
+          uAdmin,
+        ],
       );
     }
 
     // 13. Sección realmente llena (Sección B tiene capacidad 1)
-    const [mat3Exist] = await manager.query<{ id: string }[]>(`SELECT id FROM matriculas WHERE id_estudiante = $1 LIMIT 1`, [estRegIds[2]]);
+    const [mat3Exist] = await manager.query<{ id: string }[]>(
+      `SELECT id FROM matriculas WHERE id_estudiante = $1 LIMIT 1`,
+      [estRegIds[2]],
+    );
     if (!mat3Exist) {
       await manager.query(
         `INSERT INTO matriculas (
@@ -659,11 +939,24 @@ async function ejecutarDemo(): Promise<void> {
         ) VALUES (
           $1, $2, $3, $4, $5, $6, $7, $8, $9, 'MAT-DEMO-003', CURRENT_DATE, 'ACTIVA', 'Matrícula activa en Sección B (Llena)', $10, $10, now(), now(), now()
         )`,
-        [ID_MATRICULA_3, instId, sedeId1, estRegIds[2], anioRow.id, nivelRow.id, gradoRow.id, ofertaRow.id, seccionBRow.id, uAdmin],
+        [
+          ID_MATRICULA_3,
+          instId,
+          sedeId1,
+          estRegIds[2],
+          anioRow.id,
+          nivelRow.id,
+          gradoRow.id,
+          ofertaRow.id,
+          seccionBRow.id,
+          uAdmin,
+        ],
       );
     }
 
-    console.log('Semilla demo aplicada de manera determinista e idempotente sin duplicados.');
+    console.log(
+      'Semilla demo aplicada de manera determinista e idempotente sin duplicados.',
+    );
   });
 }
 

@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node scripts/ai/*)",
+      "Bash(node --check *)",
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git show*)",
+      "Bash(npm --prefix back run lint*)",
+      "Bash(npm --prefix back run typecheck*)",
+      "Bash(npm --prefix back run test:unit*)",
+      "Bash(npm --prefix front run lint*)",
+      "Bash(npm --prefix front run typecheck*)",
+      "Bash(npm --prefix front run test*)",
+      "Bash(npm --prefix back run db:migration:show*)",
+      "Bash(pnpm ai:*)"
+    ],
+    "deny": [
+      "Bash(npm --prefix back run db:migration:run*)",
+      "Bash(npm --prefix back run db:migration:revert*)",
+      "Bash(npm --prefix back run db:seed:demo*)",
+      "Bash(*production*)",
+      "Bash(*--force*)",
+      "Bash(git push*)",
+      "Bash(rm -rf*)",
+      "Bash(*DROP TABLE*)",
+      "Bash(*DELETE FROM*)"
+    ]
+  }
+}

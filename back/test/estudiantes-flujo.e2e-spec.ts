@@ -193,7 +193,7 @@ describeE2E('Flujo estudiantes E2E (requiere BD)', () => {
       imports: [AppModule],
     }).compile();
     app = modulo.createNestApplication();
-    configurarAplicacion(app, true);
+    configurarAplicacion(app, { swaggerHabilitado: false } as any);
     await app.init();
     ds = modulo.get(DataSource);
 

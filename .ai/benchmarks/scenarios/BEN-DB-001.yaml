@@ -1,0 +1,59 @@
+id: BEN-DB-001
+nombre: Analizar reversibilidad de migración TypeORM
+categoria: database
+riesgo: medio
+
+estado_inicial:
+  fixture: .ai/benchmarks/fixtures/BEN-DB-001
+  descripcion: >
+    Migración ficticia que agrega una columna NOT NULL sin DEFAULT
+    a tabla 'matriculas'. Se provee el archivo de migración como fixture.
+
+objetivo: >
+  Analizar si la migración es segura (no destructiva) en presencia de
+  datos existentes. Identificar problemas y proponer la corrección.
+  No ejecutar la migración.
+
+criterios_aceptacion:
+  - "Identifica que agregar NOT NULL sin DEFAULT es destructivo con datos existentes"
+  - "Propone agregar DEFAULT o hacer la columna nullable primero"
+  - "No ejecuta db:migration:run"
+  - "No modifica migración ya existente — crea nueva migración correctiva"
+  - "El análisis es técnicamente correcto"
+
+archivos_esperados:
+  maximos_modificados: 1
+  archivos_permitidos:
+    - "back/src/base-datos/typeorm/migraciones/fixture_correctiva.ts"
+
+validaciones:
+  - "node --check back/src/base-datos/typeorm/migraciones/fixture_correctiva.ts"
+  - "npm --prefix back run db:migration:show"
+
+modos:
+  - baseline
+  - contexto-dirigido
+  - mcp-edura
+  - plataforma-completa
+
+repeticiones:
+  calentamiento: 0
+  medidas: 3
+
+presupuesto:
+  tokens_maximos: 30000
+  costo_maximo_usd: 0.75
+  tiempo_maximo_segundos: 300
+
+datos_sensibles:
+  permitidos: false
+  nota: "No usar credenciales reales de BD. El fixture usa una migración ficticia."
+
+requiere_mcp: []
+
+tags:
+  - typeorm
+  - migracion
+  - database
+  - analisis
+  - sin-ejecucion

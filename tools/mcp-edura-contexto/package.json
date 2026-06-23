@@ -1,0 +1,14 @@
+{
+  "name": "mcp-edura-contexto",
+  "version": "1.0.0",
+  "description": "Servidor MCP local STDIO para acceso estructurado al contexto de EDURA",
+  "type": "module",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs",
+    "check": "node --check server.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

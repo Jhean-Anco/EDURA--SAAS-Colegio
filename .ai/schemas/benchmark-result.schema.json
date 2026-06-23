@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "benchmark-result",
+  "title": "EDURA Benchmark Aggregated Result",
+  "type": "object",
+  "required": ["scenario_id", "plataforma", "modo", "estadisticas", "generado"],
+  "properties": {
+    "scenario_id": { "type": "string" },
+    "plataforma": { "type": "string" },
+    "modo": { "type": "string" },
+    "generado": { "type": "string", "format": "date-time" },
+    "repeticiones_totales": { "type": "integer" },
+    "repeticiones_aceptadas": { "type": "integer" },
+    "estadisticas": {
+      "type": "object",
+      "description": "Estadísticas por métrica clave. Valor puede ser número o 'no_disponible'.",
+      "properties": {
+        "tokens_totales": { "$ref": "#/definitions/estadistica" },
+        "tokens_no_cacheados": { "$ref": "#/definitions/estadistica" },
+        "costo_total_usd": { "$ref": "#/definitions/estadistica" },
+        "archivos_abiertos": { "$ref": "#/definitions/estadistica" },
+        "lineas_leidas": { "$ref": "#/definitions/estadistica" },
+        "llamadas_herramientas": { "$ref": "#/definitions/estadistica" },
+        "llamadas_mcp": { "$ref": "#/definitions/estadistica" },
+        "skills_cargadas": { "$ref": "#/definitions/estadistica" },
+        "duracion_ms": { "$ref": "#/definitions/estadistica" },
+        "calidad_total": { "$ref": "#/definitions/estadistica" }
+      }
+    },
+    "metricas_derivadas": {
+      "type": "object",
+      "properties": {
+        "eficiencia_contexto": { "type": ["number", "string"] },
+        "precision_lectura": { "type": ["number", "string"] },
+        "eficiencia_herramientas": { "type": ["number", "string"] },
+        "eficiencia_skills": { "type": ["number", "string"] },
+        "costo_por_tarea_aceptada": { "type": ["number", "string"] },
+        "tokens_por_archivo_modificado": { "type": ["number", "string"] },
+        "tokens_por_criterio_cumplido": { "type": ["number", "string"] },
+        "desperdicio_contexto": { "type": ["number", "string"] },
+        "sobrecarga_mcp": { "type": ["number", "string"] },
+        "eficiencia_global": { "type": ["number", "string"] }
+      }
+    },
+    "run_ids": { "type": "array", "items": { "type": "string" } }
+  },
+  "definitions": {
+    "estadistica": {
+      "type": "object",
+      "properties": {
+        "min": { "type": ["number", "string"] },
+        "max": { "type": ["number", "string"] },
+        "media": { "type": ["number", "string"] },
+        "mediana": { "type": ["number", "string"] },
+        "desviacion": { "type": ["number", "string"] },
+        "p95": { "type": ["number", "string"] },
+        "disponible": { "type": "boolean" },
+        "nota": { "type": "string" }
+      }
+    }
+  }
+}

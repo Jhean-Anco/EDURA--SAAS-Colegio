@@ -34,7 +34,7 @@ async function crearContextoCompleto(
   const membresiaId = randomUUID();
   const personaId = randomUUID();
   const personaBId = randomUUID();
-  const correo = `doc-e2e-${sufijo}@test.edura.local`;
+  const correo = `doc-e2e-${sufijo}-${randomUUID().slice(0, 8)}@test.edura.local`;
   const clave = `Clave${sufijo}@2025!`;
   const codigo = `IE-DOC-${sufijo}-${Date.now().toString(36)}`.slice(0, 40);
 
@@ -126,7 +126,7 @@ async function crearContextoDocente(
   idPersonaDocente: string,
   sufijo: string,
 ): Promise<{ correo: string; clave: string; usuarioId: string }> {
-  const correo = `doc-miperfil-${sufijo}@test.edura.local`;
+  const correo = `doc-miperfil-${sufijo}-${randomUUID().slice(0, 8)}@test.edura.local`;
   const clave = `ClaveDoc${sufijo}@2025!`;
   const usuarioId = randomUUID();
   const membresiaId = randomUUID();
@@ -284,7 +284,7 @@ describeE2E('Flujo docentes E2E (requiere BD)', () => {
       imports: [AppModule],
     }).compile();
     app = modulo.createNestApplication();
-    configurarAplicacion(app, true);
+    configurarAplicacion(app, { swaggerHabilitado: false } as any);
     await app.init();
     ds = modulo.get(DataSource);
 

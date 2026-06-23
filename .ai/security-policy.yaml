@@ -1,0 +1,96 @@
+version: "1.0"
+descripcion: "Política de seguridad para la plataforma de agentes EDURA"
+
+prohibiciones_absolutas:
+  lectura:
+    - "Archivos .env, .env.*, *.env"
+    - "Archivos de secretos: *.pem, *.key, *.p12, *.pfx"
+    - "Archivos con 'secret', 'credential', 'password' en el nombre"
+    - "Volcados de base de datos con datos reales"
+    - "Logs con información personal identificable"
+    - "Expedientes de estudiantes o familias"
+  escritura:
+    - "Commits de secretos o credenciales"
+    - "Modificación de historial Git"
+    - "Escritura en base de datos de producción"
+    - "Modificación de infraestructura externa"
+  ejecucion:
+    - "db:migration:run sin aprobación explícita"
+    - "db:seed:demo con ENTORNO=produccion"
+    - "push --force a main"
+    - "Comandos de instalación global (npm install -g, pip install --global)"
+    - "Comandos destructivos sin confirmación (rm -rf, DROP TABLE)"
+
+skills:
+  instalacion_autonoma_permitida_cuando:
+    - "instalacion dentro del repositorio"
+    - "fuente identificable y verificable"
+    - "licencia compatible (MIT, Apache 2.0, ISC)"
+    - "version o commit fijado"
+    - "checksum registrado en skills.lock.yaml"
+    - "SKILL.md inspeccionado"
+    - "scripts inspeccionados manualmente"
+    - "sin comandos destructivos"
+    - "sin lectura de secretos"
+    - "sin instalacion global"
+    - "sin acceso irrestricto a red"
+    - "sin dependencia de produccion"
+    - "riesgo bajo"
+    - "proposito directamente relacionado con la tarea"
+    - "presupuesto de contexto aceptable"
+  requiere_aprobacion_manual_cuando:
+    - "acceso a credenciales"
+    - "instalacion de software global"
+    - "cambio de configuracion del sistema"
+    - "acceso a produccion"
+    - "comandos destructivos"
+    - "carga de documentos externos"
+    - "envio de datos a servicios externos"
+    - "permisos administrativos"
+    - "origen no verificable"
+    - "binarios opacos"
+    - "modificacion de historial Git"
+    - "excede presupuesto establecido"
+
+mcp:
+  instalacion_autonoma_permitida_cuando:
+    - "fuente verificable"
+    - "version fijada"
+    - "codigo o paquete inspeccionado"
+    - "licencia verificada"
+    - "checksum registrado"
+    - "no requiere secretos para instalacion"
+    - "queda deshabilitado por defecto"
+    - "limitado a un perfil"
+    - "datos enviados documentados"
+    - "sin acceso a produccion"
+    - "sin privilegios globales"
+  autenticacion_externa: "siempre paso manual"
+
+validaciones_automaticas:
+  detectar:
+    - "Skills modificadas sin actualizar lockfile"
+    - "MCP modificados sin actualizar lockfile"
+    - "Scripts con comandos peligrosos (rm -rf, DROP, DELETE FROM)"
+    - "Configuraciones con secretos hardcoded"
+    - "Rutas de produccion en configuracion"
+    - "Permisos mas amplios de lo declarado"
+  herramienta: "pnpm ai:doctor"
+
+separacion_de_configuracion:
+  local_gitignored:
+    - ".ai/logs/"
+    - ".ai/cache/"
+    - ".ai/runtime/"
+    - ".env.local"
+    - "config/agents/*/local.*"
+  versionado:
+    - ".ai/budgets.yaml"
+    - ".ai/skills.catalog.yaml"
+    - ".ai/skills.lock.yaml"
+    - ".ai/mcp.registry.yaml"
+    - ".ai/mcp.lock.yaml"
+    - ".ai/security-policy.yaml"
+  ejemplo_sin_valores:
+    - ".env.example"
+    - "config/agents/*/env.example"

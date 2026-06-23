@@ -1,0 +1,92 @@
+version: "1.0"
+descripcion: "Roles de subagentes para tareas EDURA"
+
+roles:
+
+  planificador:
+    mision: "Descomponer tareas complejas en subtareas con alcance definido"
+    herramientas: [lectura, busqueda, indice]
+    rutas: ["tasks/", "docs/ai/", "AGENTS.md"]
+    escritura: false
+    esfuerzo: normal
+    presupuesto: normal
+    entradas: ["descripción de tarea", "restricciones"]
+    salida: "tasks/active/EDURA-XXX.md con subtareas"
+    delegar_cuando: "tarea con más de 3 módulos afectados"
+
+  explorador:
+    mision: "Localizar símbolos, archivos y dependencias relevantes"
+    herramientas: [busqueda_dirigida, indice_ast, git]
+    rutas: ["back/src/", "front/src/", "docs/ai/generated/"]
+    escritura: false
+    esfuerzo: mecanico
+    presupuesto: mecanico
+    entradas: ["patrón de búsqueda", "ruta raíz"]
+    salida: "lista de archivos y líneas relevantes"
+    delegar_cuando: "exploración que generaría más de 500 líneas de contexto"
+
+  implementador:
+    mision: "Escribir código siguiendo las convenciones EDURA"
+    herramientas: [lectura, escritura, ejecucion_limitada]
+    rutas: ["back/src/modulos/", "front/src/features/", "front/src/app/"]
+    escritura: true
+    esfuerzo: normal
+    presupuesto: normal
+    entradas: ["tarea", "contexto compilado", "archivos de referencia"]
+    salida: "código implementado + pruebas"
+    delegar_cuando: "nunca delegar tarea única de modificación mecánica"
+
+  revisor:
+    mision: "Revisar diff en busca de errores, convenciones y riesgos"
+    herramientas: [lectura, git_diff, busqueda]
+    rutas: ["todos los modificados"]
+    escritura: false
+    esfuerzo: normal
+    presupuesto: normal
+    entradas: ["diff de la tarea"]
+    salida: "lista de hallazgos con severidad"
+    delegar_cuando: "PR con más de 20 archivos"
+
+  probador:
+    mision: "Ejecutar y analizar pruebas afectadas"
+    herramientas: [ejecucion_pruebas, lectura_cobertura]
+    rutas: ["back/test/", "back/src/**/*.spec.ts", "front/src/tests/"]
+    escritura: false
+    esfuerzo: normal
+    presupuesto: normal
+    entradas: ["lista de archivos modificados"]
+    salida: "resultado de pruebas comprimido"
+    delegar_cuando: "suite > 100 pruebas afectadas"
+
+  documentador:
+    mision: "Mantener documentación técnica actualizada"
+    herramientas: [lectura, escritura_docs]
+    rutas: ["docs/", "docs/ai/"]
+    escritura: true
+    esfuerzo: normal
+    presupuesto: normal
+    entradas: ["código implementado", "ADR aplicables"]
+    salida: "documentación actualizada"
+    delegar_cuando: "generación de documentación extensa de módulo nuevo"
+
+  auditor_seguridad:
+    mision: "Revisar cambios en busca de vulnerabilidades de seguridad"
+    herramientas: [lectura, busqueda, git_diff]
+    rutas: ["back/src/", "front/src/", ".env.example"]
+    escritura: false
+    esfuerzo: critico
+    presupuesto: critico
+    entradas: ["diff de la tarea", "contexto de seguridad"]
+    salida: "informe de seguridad en docs/ai/research/"
+    delegar_cuando: "cambio en identidad-acceso, guards o dependencias"
+
+  investigador_documental:
+    mision: "Analizar y sintetizar documentación con NotebookLM"
+    herramientas: [lectura_docs, notebooklm]
+    rutas: ["docs/", "docs/notebooklm/staging/"]
+    escritura: false
+    esfuerzo: normal
+    presupuesto: normal
+    entradas: ["tema de investigación", "cuaderno destino"]
+    salida: "resultado estructurado en docs/ai/research/"
+    delegar_cuando: "síntesis de más de 5 documentos extensos"

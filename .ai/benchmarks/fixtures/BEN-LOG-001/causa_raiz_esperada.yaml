@@ -1,0 +1,9 @@
+causa_raiz: "Foreign Key constraint violation — estudiante_id no existe en tabla estudiantes"
+tabla_afectada: "matriculas"
+columna_afectada: "estudiante_id"
+constraint: "FK_matriculas_estudiante_id"
+tabla_referenciada: "estudiantes"
+archivo_origen: "back/src/modulos/matriculas/infraestructura/repositorios/matriculas.repository.ts"
+linea_origen: 45
+siguiente_paso: "Verificar que el estudiante_id enviado existe antes de intentar la inserción (validación en servicio o FK lookup previo)"
+nota: "Fixture sintético. IDs ficticios 99946-99999. Sin datos reales."

@@ -1,0 +1,46 @@
+version: "1.0"
+descripcion: "Política de construcción de contexto para tareas EDURA"
+
+principios:
+  - divulgacion_progresiva: "Cargar solo lo necesario para la tarea declarada"
+  - fuente_unica: "Cada dato tiene una fuente canónica; no duplicar"
+  - contexto_dirigido: "Construir desde la tarea, no desde el repositorio completo"
+
+fuentes_de_contexto:
+  orden_de_carga:
+    1: "tasks/active/EDURA-XXX.md — manifiesto de la tarea"
+    2: "tasks/context/EDURA-XXX.context.yaml — cápsula generada"
+    3: "docs/ai/generated/symbols.json — símbolos relevantes"
+    4: "back/src/modulos/<nombre>/<nombre>.module.ts — si módulo NestJS"
+    5: "docs/ai/decisions/ — ADR aplicables"
+    6: "front/src/features/<nombre>/ — si tarea de frontend"
+    7: "back/src/base-datos/typeorm/migraciones/ — si tarea de BD"
+
+exclusiones_absolutas:
+  - "**/node_modules/**"
+  - "**/dist/**"
+  - "**/coverage/**"
+  - "**/.next/**"
+  - "**/*.env*"
+  - "**/*.pem"
+  - "**/*.key"
+  - "**/*.p12"
+  - "**/*secret*"
+  - "**/*credential*"
+  - ".ai/logs/**"
+  - ".ai/cache/**"
+
+limites_de_lectura:
+  lineas_por_archivo: 300
+  archivos_por_busqueda: 15
+  resultados_por_busqueda: 20
+  profundidad_maxima_dependencias: 2
+
+regla_de_no_descubrimiento:
+  descripcion: "No recorrer el repositorio completo. Siempre buscar con patrón dirigido."
+  herramienta_preferida: "pnpm ai:search -- '<patrón>' o pnpm ai:context -- EDURA-XXX"
+
+cache:
+  ruta: ".ai/cache/"
+  ttl_horas: 24
+  invalidar_cuando: "git diff HEAD tiene cambios en archivos cacheados"

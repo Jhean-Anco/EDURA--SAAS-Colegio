@@ -1,0 +1,74 @@
+{
+  "cuaderno": "general",
+  "generado": "2026-06-23T02:02:42.701Z",
+  "fuentes": [
+    {
+      "original": "docs/ARQUITECTURA.md",
+      "staging": "docs_ARQUITECTURA.md",
+      "hash": "de5789984aa9",
+      "tamano_bytes": 2134,
+      "cuadernos": [
+        "arquitectura",
+        "general"
+      ]
+    },
+    {
+      "original": "docs/ESTADO-MAESTRO.md",
+      "staging": "docs_ESTADO-MAESTRO.md",
+      "hash": "f10ac4c58cc5",
+      "tamano_bytes": 1774,
+      "cuadernos": [
+        "arquitectura",
+        "general"
+      ]
+    },
+    {
+      "original": "docs/DICCIONARIO-DATOS.md",
+      "staging": "docs_DICCIONARIO-DATOS.md",
+      "hash": "20be34d6092e",
+      "tamano_bytes": 2081,
+      "cuadernos": [
+        "base-datos",
+        "general"
+      ]
+    },
+    {
+      "original": "docs/ai/architecture.md",
+      "staging": "docs_ai_architecture.md",
+      "hash": "ed2d88c29ddf",
+      "tamano_bytes": 2190,
+      "cuadernos": [
+        "arquitectura",
+        "general"
+      ]
+    },
+    {
+      "original": "docs/ai/api-map.md",
+      "staging": "docs_ai_api-map.md",
+      "hash": "96715830c386",
+      "tamano_bytes": 1589,
+      "cuadernos": [
+        "api",
+        "general"
+      ]
+    },
+    {
+      "original": "docs/ai/conventions.md",
+      "staging": "docs_ai_conventions.md",
+      "hash": "88ca0348280f",
+      "tamano_bytes": 1655,
+      "cuadernos": [
+        "general"
+      ]
+    },
+    {
+      "original": "AGENTS.md",
+      "staging": "AGENTS.md",
+      "hash": "f2aa5a854fac",
+      "tamano_bytes": 5911,
+      "cuadernos": [
+        "general"
+      ]
+    }
+  ]
+}

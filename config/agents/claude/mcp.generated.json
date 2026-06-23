@@ -1,0 +1,37 @@
+{
+  "_nota": "Configuración generada por mcp-manager. La config activa está en .mcp.json en la raíz del proyecto.",
+  "_generado": "2026-06-23",
+  "mcpServers": {
+    "edura-contexto": {
+      "command": "node",
+      "args": [
+        "tools/mcp-edura-contexto/server.mjs"
+      ],
+      "description": "Servidor MCP local EDURA — sin secretos, solo ROOT del proyecto."
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@0.0.76",
+        "--headless"
+      ],
+      "description": "Browser automation para frontend-ui. Solo localhost.",
+      "_perfil": "frontend-ui",
+      "_estado": "instalado_pendiente_aprobacion"
+    },
+    "postgres-local-readonly": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "${POSTGRES_MCP_URL}"
+      ],
+      "env": {
+        "POSTGRES_MCP_URL": "${POSTGRES_MCP_URL}"
+      },
+      "description": "PostgreSQL local solo lectura para database-review.",
+      "_perfil": "database-review",
+      "_estado": "configurado_pendiente_autenticacion"
+    }
+  }
+}

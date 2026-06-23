@@ -1,0 +1,46 @@
+[2026-06-22 10:00:01] INFO: Servidor NestJS iniciando en puerto 3000
+[2026-06-22 10:00:02] INFO: Módulo MatriculasModule cargado
+[2026-06-22 10:00:03] INFO: Conexión a base de datos establecida
+[2026-06-22 10:01:15] INFO: POST /api/matriculas - usuario: usuario_ficticio@test.com
+[2026-06-22 10:01:15] DEBUG: Validando DTO CrearMatriculaDto
+[2026-06-22 10:01:15] DEBUG: DTO válido, procediendo a guardar
+[2026-06-22 10:01:15] DEBUG: Iniciando transacción
+[2026-06-22 10:01:15] ERROR: QueryFailedError: insert or update on table "matriculas" violates foreign key constraint "FK_matriculas_estudiante_id"
+    at QueryFailedError (/app/node_modules/typeorm/error/QueryFailedError.js:11:28)
+    at PostgresQueryRunner.query (/app/node_modules/typeorm/driver/postgres/PostgresQueryRunner.js:211:20)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at MatriculasRepository.crear (/app/src/modulos/matriculas/infraestructura/repositorios/matriculas.repository.ts:45:14)
+    at MatriculasService.crearMatricula (/app/src/modulos/matriculas/aplicacion/servicios/matriculas.service.ts:67:22)
+    at MatriculasController.crear (/app/src/modulos/matriculas/presentacion/matriculas.controller.ts:34:18)
+[2026-06-22 10:01:15] DEBUG: Detalle: Key (estudiante_id)=(99999) is not present in table "estudiantes"
+[2026-06-22 10:01:15] DEBUG: Rollback de transacción ejecutado
+[2026-06-22 10:01:15] INFO: Respuesta 400 enviada al cliente
+[2026-06-22 10:01:16] INFO: POST /api/matriculas - usuario: otro_usuario@test.com
+[2026-06-22 10:01:16] DEBUG: Validando DTO CrearMatriculaDto
+[2026-06-22 10:01:16] DEBUG: DTO válido, procediendo a guardar
+[2026-06-22 10:01:16] DEBUG: Iniciando transacción
+[2026-06-22 10:01:16] ERROR: QueryFailedError: insert or update on table "matriculas" violates foreign key constraint "FK_matriculas_estudiante_id"
+    at QueryFailedError (/app/node_modules/typeorm/error/QueryFailedError.js:11:28)
+    at PostgresQueryRunner.query (/app/node_modules/typeorm/driver/postgres/PostgresQueryRunner.js:211:20)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at MatriculasRepository.crear (/app/src/modulos/matriculas/infraestructura/repositorios/matriculas.repository.ts:45:14)
+    at MatriculasService.crearMatricula (/app/src/modulos/matriculas/aplicacion/servicios/matriculas.service.ts:67:22)
+    at MatriculasController.crear (/app/src/modulos/matriculas/presentacion/matriculas.controller.ts:34:18)
+[2026-06-22 10:01:16] DEBUG: Detalle: Key (estudiante_id)=(99998) is not present in table "estudiantes"
+[2026-06-22 10:01:16] DEBUG: Rollback de transacción ejecutado
+[2026-06-22 10:01:17] INFO: POST /api/matriculas - usuario: tercer_usuario@test.com
+[2026-06-22 10:01:17] ERROR: QueryFailedError: insert or update on table "matriculas" violates foreign key constraint "FK_matriculas_estudiante_id"
+    at QueryFailedError (/app/node_modules/typeorm/error/QueryFailedError.js:11:28)
+    at PostgresQueryRunner.query (/app/node_modules/typeorm/driver/postgres/PostgresQueryRunner.js:211:20)
+    at MatriculasRepository.crear (/app/src/modulos/matriculas/infraestructura/repositorios/matriculas.repository.ts:45:14)
+    at MatriculasService.crearMatricula (/app/src/modulos/matriculas/aplicacion/servicios/matriculas.service.ts:67:22)
+[2026-06-22 10:01:17] DEBUG: Key (estudiante_id)=(99997) is not present in table "estudiantes"
+[2026-06-22 10:02:00] INFO: GET /api/salud - 200 OK
+[2026-06-22 10:02:15] INFO: POST /api/matriculas
+[2026-06-22 10:02:15] ERROR: QueryFailedError: insert or update on table "matriculas" violates foreign key constraint "FK_matriculas_estudiante_id"
+    at QueryFailedError (/app/node_modules/typeorm/error/QueryFailedError.js:11:28)
+    at PostgresQueryRunner.query (/app/node_modules/typeorm/driver/postgres/PostgresQueryRunner.js:211:20)
+    at MatriculasRepository.crear (/app/src/modulos/matriculas/infraestructura/repositorios/matriculas.repository.ts:45:14)
+[2026-06-22 10:02:15] DEBUG: Key (estudiante_id)=(99996) is not present in table "estudiantes"
+[FIXTURE: Este patrón se repite 50 veces más con distintos IDs ficticios 99950-99995]
+[2026-06-22 10:30:00] INFO: Servidor en funcionamiento normal post-errores

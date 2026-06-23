@@ -1,0 +1,80 @@
+version: "1.0"
+descripcion: "Definición de cuadernos NotebookLM para EDURA"
+
+cuadernos:
+
+  vision-alcance:
+    id: vision-alcance
+    nombre: "Visión y Alcance EDURA"
+    propietario: workspace@personalclass.edu.pe
+    proposito: "Documentación de visión, objetivos estratégicos y alcance del sistema"
+    fuentes_permitidas:
+      - "docs/README.md"
+      - "docs/ESTADO-MAESTRO.md"
+    fuentes_excluidas:
+      - "**/*.env*"
+      - "**/datos-reales/**"
+    consultas_recomendadas:
+      - resumir-modulo
+      - detectar-contradicciones
+    politica_retencion: "12 meses"
+    estado: pendiente_autenticacion
+
+  arquitectura:
+    id: arquitectura
+    nombre: "Arquitectura EDURA"
+    propietario: workspace@personalclass.edu.pe
+    proposito: "Decisiones arquitectónicas, patrones, tecnologías y estructura del sistema"
+    fuentes_permitidas:
+      - "docs/ARQUITECTURA.md"
+      - "docs/ai/architecture.md"
+      - "docs/ai/conventions.md"
+      - "AGENTS.md"
+      - "docs/ai/decisions/"
+    fuentes_excluidas:
+      - "**/*.env*"
+    consultas_recomendadas:
+      - resumir-modulo
+      - detectar-contradicciones
+    politica_retencion: "24 meses"
+    estado: pendiente_autenticacion
+
+  gestion-academica:
+    id: gestion-academica
+    nombre: "Gestión Académica EDURA"
+    propietario: workspace@personalclass.edu.pe
+    proposito: "Módulos académicos: currículo, matrículas, docentes, estudiantes"
+    fuentes_permitidas:
+      - "docs/ESTADO-MAESTRO.md"
+      - "docs/ai/api-map.md"
+    fuentes_excluidas:
+      - "**/*.env*"
+      - "**/semillas/**"
+    consultas_recomendadas:
+      - relacionar-actor-proceso-modulo
+      - resumir-modulo
+      - detectar-contradicciones
+    politica_retencion: "12 meses"
+    estado: pendiente_autenticacion
+
+  base-datos:
+    id: base-datos
+    nombre: "Base de Datos EDURA"
+    propietario: workspace@personalclass.edu.pe
+    proposito: "Esquema, entidades, migraciones y diccionario de datos"
+    fuentes_permitidas:
+      - "docs/DICCIONARIO-DATOS.md"
+      - "docs/ai/database-map.md"
+    fuentes_excluidas:
+      - "**/*.env*"
+      - "**/semillas/**"
+      - "**/datos-demo/**"
+    consultas_recomendadas:
+      - detectar-contradicciones
+    politica_retencion: "24 meses"
+    estado: pendiente_autenticacion
+
+nota_global: |
+  La autenticación con NotebookLM es un paso manual.
+  Ver docs/ai/guias/notebooklm.md para instrucciones.
+  Usar pnpm ai:notebooklm:prepare para preparar fuentes antes de cargar.

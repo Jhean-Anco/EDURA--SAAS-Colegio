@@ -1,0 +1,56 @@
+id: BEN-DOC-001
+nombre: Actualizar ADR con decisión de migración de esquema
+categoria: documentacion
+riesgo: bajo
+
+estado_inicial:
+  fixture: .ai/benchmarks/fixtures/BEN-DOC-001
+  descripcion: >
+    ADR ficticio docs/ai/decisions/ADR-0010-fixture.md desactualizado.
+    Hace referencia a una estrategia de migración que cambió.
+    Se provee el contexto del cambio como texto en el fixture.
+
+objetivo: >
+  Actualizar el ADR para reflejar la decisión actual. Mantener
+  el historial de decisiones anteriores. No crear nuevo ADR innecesariamente.
+
+criterios_aceptacion:
+  - "El ADR tiene sección 'Decisión' actualizada"
+  - "Conserva el historial de la decisión anterior"
+  - "La fecha de actualización es correcta"
+  - "El formato sigue la convención de docs/ai/decisions/"
+  - "Solo se modifica el ADR especificado, no otros documentos"
+  - "No inventa información técnica no provista en el fixture"
+
+archivos_esperados:
+  maximos_modificados: 1
+  archivos_permitidos:
+    - "docs/ai/decisions/ADR-0010-fixture.md"
+
+validaciones:
+  - "Archivo existe y tiene sección ## Decisión"
+  - "Contiene fecha de actualización"
+
+modos:
+  - baseline
+  - contexto-dirigido
+  - mcp-edura
+  - plataforma-completa
+
+repeticiones:
+  calentamiento: 0
+  medidas: 3
+
+presupuesto:
+  tokens_maximos: 20000
+  costo_maximo_usd: 0.40
+  tiempo_maximo_segundos: 180
+
+datos_sensibles:
+  permitidos: false
+
+tags:
+  - documentacion
+  - adr
+  - arquitectura
+  - baja-complejidad

@@ -1,0 +1,24 @@
+# Log comprimido por ai:errors — FIXTURE BEN-LOG-001
+# Original: ~2000 líneas | Comprimido: ~25 líneas | Ratio: ~80:1
+# Fecha: 2026-06-22 10:01:15 — 10:02:15
+
+## Error principal (54 ocurrencias)
+QueryFailedError: insert or update on table "matriculas" violates foreign key constraint "FK_matriculas_estudiante_id"
+
+## Ubicación (primera ocurrencia)
+  at MatriculasRepository.crear (matriculas.repository.ts:45)
+  at MatriculasService.crearMatricula (matriculas.service.ts:67)
+  at MatriculasController.crear (matriculas.controller.ts:34)
+
+## Detalle
+Key (estudiante_id)=(99999..99946) is not present in table "estudiantes"
+
+## Patrón
+POST /api/matriculas con estudiante_id ficticio → FK violation → rollback → 400
+
+## Archivos afectados
+- back/src/modulos/matriculas/infraestructura/repositorios/matriculas.repository.ts:45
+- back/src/modulos/matriculas/aplicacion/servicios/matriculas.service.ts:67
+
+## Log completo
+.ai/benchmarks/fixtures/BEN-LOG-001/log_completo.txt

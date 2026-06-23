@@ -12,7 +12,8 @@ export class AuditoriaTypeorm implements ServicioAuditoria {
   constructor(@InjectDataSource() private readonly ds: DataSource) {}
 
   private esUuidValido(uuid: string): boolean {
-    const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const regex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     return regex.test(uuid);
   }
 

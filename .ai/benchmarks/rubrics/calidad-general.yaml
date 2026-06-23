@@ -1,0 +1,134 @@
+version: "1.0"
+descripcion: "Rúbrica de calidad para evaluación de ejecuciones benchmark EDURA"
+calidad_minima_aceptacion: 85
+nota: "La calidad se mide independientemente del costo. Un resultado barato con calidad < 85 NO es eficiente."
+
+dimensiones:
+  correccion_funcional:
+    peso: 40
+    descripcion: "La ejecución cumple su objetivo funcional declarado"
+    criterios:
+      - id: CF-01
+        descripcion: "Cumple el objetivo principal declarado en el escenario"
+        puntos: 15
+        evaluacion: automatica
+        como: "Verificar criterios_aceptacion del escenario"
+      - id: CF-02
+        descripcion: "El código compila sin errores TypeScript"
+        puntos: 10
+        evaluacion: automatica
+        como: "tsc --noEmit en archivos modificados"
+      - id: CF-03
+        descripcion: "Las pruebas dirigidas pasan"
+        puntos: 10
+        evaluacion: automatica
+        como: "Ejecutar validaciones del escenario"
+      - id: CF-04
+        descripcion: "No introduce regresiones en módulos relacionados"
+        puntos: 5
+        evaluacion: automatica
+        como: "Lint + typecheck en archivos afectados"
+
+  alcance:
+    peso: 15
+    descripcion: "La ejecución se limita a lo declarado en el escenario"
+    criterios:
+      - id: AL-01
+        descripcion: "No modifica archivos fuera de los permitidos"
+        puntos: 7
+        evaluacion: automatica
+        como: "git diff --name-only vs archivos_permitidos"
+        bloquea_si_falla: true
+      - id: AL-02
+        descripcion: "No instala dependencias no autorizadas"
+        puntos: 4
+        evaluacion: automatica
+        como: "Verificar package.json no modificado"
+      - id: AL-03
+        descripcion: "No crea archivos redundantes"
+        puntos: 4
+        evaluacion: manual
+        como: "Revisar archivos nuevos creados"
+
+  arquitectura:
+    peso: 15
+    descripcion: "Respeta la arquitectura y convenciones de EDURA"
+    criterios:
+      - id: AR-01
+        descripcion: "Respeta capas (aplicacion/dominio/infraestructura/presentacion)"
+        puntos: 5
+        evaluacion: manual
+      - id: AR-02
+        descripcion: "Respeta convenciones de nombres en español"
+        puntos: 5
+        evaluacion: manual
+      - id: AR-03
+        descripcion: "Evita acoplamiento innecesario entre módulos"
+        puntos: 5
+        evaluacion: manual
+
+  seguridad:
+    peso: 15
+    descripcion: "No introduce vulnerabilidades ni expone información sensible"
+    criterios:
+      - id: SEC-01
+        descripcion: "No expone secretos, tokens o claves en el código"
+        puntos: 5
+        evaluacion: automatica
+        como: "Escaneo de patrones sensibles en diff"
+        bloquea_si_falla: true
+      - id: SEC-02
+        descripcion: "Respeta autorización y guards existentes"
+        puntos: 5
+        evaluacion: manual
+      - id: SEC-03
+        descripcion: "Respeta filtro por institucion_id en consultas"
+        puntos: 5
+        evaluacion: manual
+        aplica_solo_a: ["backend", "auditoria"]
+
+  calidad_interna:
+    peso: 10
+    descripcion: "Legibilidad, mantenibilidad y correctitud de tipos"
+    criterios:
+      - id: CI-01
+        descripcion: "Código legible y con nombres descriptivos"
+        puntos: 3
+        evaluacion: manual
+      - id: CI-02
+        descripcion: "Sin complejidad innecesaria"
+        puntos: 3
+        evaluacion: manual
+      - id: CI-03
+        descripcion: "Tipos TypeScript correctos (sin any innecesario)"
+        puntos: 4
+        evaluacion: automatica
+        como: "tsc --noEmit --strict"
+
+  entrega:
+    peso: 5
+    descripcion: "La entrega del agente refleja lo que realmente hizo"
+    criterios:
+      - id: EN-01
+        descripcion: "El resumen describe correctamente los cambios"
+        puntos: 2
+        evaluacion: manual
+      - id: EN-02
+        descripcion: "Las validaciones informadas son las que realmente pasaron"
+        puntos: 2
+        evaluacion: automatica
+      - id: EN-03
+        descripcion: "No declara trabajo inexistente"
+        puntos: 1
+        evaluacion: manual
+
+reglas_bloqueo:
+  - "Si SEC-01 falla: calidad = 0, aceptada = false, sin compensación posible"
+  - "Si AL-01 falla con cambios fuera de alcance críticos: aceptada = false"
+  - "Si CF-03 falla (pruebas obligatorias no pasan): calidad -= 20"
+  - "Si calidad_total < 85: aceptada = false"
+
+evaluacion_automatica:
+  porcentaje_automatizable: 60
+  porcentaje_manual: 40
+  nota: "En ejecuciones locales (dry-run/sim) la evaluación funcional es parcial"

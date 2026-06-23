@@ -1,0 +1,57 @@
+id: BEN-BCK-001
+nombre: Agregar validación a DTO de backend NestJS
+categoria: backend
+riesgo: bajo
+
+estado_inicial:
+  fixture: .ai/benchmarks/fixtures/BEN-BCK-001
+  descripcion: >
+    Módulo 'personas' existente. DTO CrearPersonaDto sin validaciones
+    de longitud en campo 'nombre'. Test unitario vacío pendiente.
+
+objetivo: >
+  Agregar decoradores class-validator (MinLength, MaxLength, IsNotEmpty)
+  al campo 'nombre' del DTO CrearPersonaDto y el test unitario correspondiente.
+
+criterios_aceptacion:
+  - "DTO tiene decoradores MinLength(2) y MaxLength(120) en campo nombre"
+  - "DTO tiene decorador IsNotEmpty en campo nombre"
+  - "Test unitario valida el DTO con datos válidos e inválidos"
+  - "Compila sin error TypeScript"
+  - "No se modifica el servicio, controlador ni migración"
+  - "El test pasa"
+
+archivos_esperados:
+  maximos_modificados: 2
+  archivos_permitidos:
+    - "back/src/modulos/personas/aplicacion/dtos/crear-persona.dto.ts"
+    - "back/src/modulos/personas/aplicacion/dtos/crear-persona.dto.spec.ts"
+
+validaciones:
+  - "npm --prefix back run typecheck"
+  - "npm --prefix back run test:unit -- --testPathPattern=crear-persona.dto"
+
+modos:
+  - baseline
+  - contexto-dirigido
+  - mcp-edura
+  - plataforma-completa
+
+repeticiones:
+  calentamiento: 1
+  medidas: 3
+
+presupuesto:
+  tokens_maximos: 40000
+  costo_maximo_usd: 1.00
+  tiempo_maximo_segundos: 360
+
+datos_sensibles:
+  permitidos: false
+
+tags:
+  - nestjs
+  - dto
+  - validacion
+  - class-validator
+  - backend

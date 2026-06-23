@@ -21,7 +21,7 @@ describeE2E('Seguridad OWASP / ASVS E2E (requiere BD)', () => {
     }).compile();
 
     app = modulo.createNestApplication();
-    configurarAplicacion(app, true);
+    configurarAplicacion(app, { swaggerHabilitado: false } as any);
     await app.init();
     ds = modulo.get(DataSource);
   });
@@ -44,12 +44,12 @@ describeE2E('Seguridad OWASP / ASVS E2E (requiere BD)', () => {
         await manager.query(
           `INSERT INTO usuarios (id, correo, correo_normalizado, nombre_mostrado, estado, correo_verificado, version_seguridad, fecha_creacion, fecha_modificacion)
            VALUES ($1, $2, $3, $4, 'ACTIVO', true, 1, now(), now())`,
-          [userId, email, email.toLowerCase(), 'Lockout User']
+          [userId, email, email.toLowerCase(), 'Lockout User'],
         );
         await manager.query(
           `INSERT INTO credenciales_usuario (id_usuario, hash_clave, algoritmo, requiere_cambio, intentos_fallidos, fecha_cambio_clave, fecha_modificacion)
            VALUES ($1, $2, 'ARGON2ID', false, 0, now(), now())`,
-          [userId, hash]
+          [userId, hash],
         );
       });
 
@@ -63,15 +63,17 @@ describeE2E('Seguridad OWASP / ASVS E2E (requiere BD)', () => {
         }
 
         // Verify database state: intentos_fallidos should be 5, and bloqueado_hasta should be set
-        const [cred] = await ds.query(
+        const [cred] = (await ds.query(
           `SELECT intentos_fallidos as "intentosFallidos", bloqueado_hasta as "bloqueadoHasta" 
            FROM credenciales_usuario WHERE id_usuario = $1`,
-          [userId]
-        );
+          [userId],
+        )) as { intentosFallidos: number; bloqueadoHasta: string | null }[];
 
         expect(cred.intentosFallidos).toBe(5);
         expect(cred.bloqueadoHasta).not.toBeNull();
-        expect(new Date(cred.bloqueadoHasta).getTime()).toBeGreaterThan(Date.now());
+        expect(
+          new Date(cred.bloqueadoHasta as string).getTime(),
+        ).toBeGreaterThan(Date.now());
       } finally {
         // No deletion to avoid foreign key violations with append-only audit log
       }
@@ -81,7 +83,8 @@ describeE2E('Seguridad OWASP / ASVS E2E (requiere BD)', () => {
   describe('Mitigación de manipulación de JWT', () => {
     it('debe rechazar tokens con firmas manipuladas o inválidas', async () => {
       // Send request with an invalid signature token
-      const malformedToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.invalid_signature';
+      const malformedToken =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.invalid_signature';
       await request(app.getHttpServer())
         .get('/api/v1/personas')
         .set('Authorization', `Bearer ${malformedToken}`)
@@ -101,12 +104,12 @@ describeE2E('Seguridad OWASP / ASVS E2E (requiere BD)', () => {
         await manager.query(
           `INSERT INTO usuarios (id, correo, correo_normalizado, nombre_mostrado, estado, correo_verificado, version_seguridad, fecha_creacion, fecha_modificacion)
            VALUES ($1, $2, $3, $4, 'ACTIVO', true, 1, now(), now())`,
-          [userId, email, email.toLowerCase(), 'Refresh User']
+          [userId, email, email.toLowerCase(), 'Refresh User'],
         );
         await manager.query(
           `INSERT INTO credenciales_usuario (id_usuario, hash_clave, algoritmo, requiere_cambio, intentos_fallidos, fecha_cambio_clave, fecha_modificacion)
            VALUES ($1, $2, 'ARGON2ID', false, 0, now(), now())`,
-          [userId, hash]
+          [userId, hash],
         );
       });
 
@@ -117,7 +120,7 @@ describeE2E('Seguridad OWASP / ASVS E2E (requiere BD)', () => {
           .send({ correo: email, clave: pass })
           .expect(200);
 
-        const r1 = loginRes.body.refreshToken;
+        const r1 = (loginRes.body as { refreshToken?: string }).refreshToken;
         expect(r1).toBeDefined();
 
         // 2. Rotate once
@@ -126,7 +129,7 @@ describeE2E('Seguridad OWASP / ASVS E2E (requiere BD)', () => {
           .send({ refreshToken: r1 })
           .expect(200);
 
-        const r2 = rotRes.body.refreshToken;
+        const r2 = (rotRes.body as { refreshToken?: string }).refreshToken;
         expect(r2).toBeDefined();
         expect(r2).not.toBe(r1);
 

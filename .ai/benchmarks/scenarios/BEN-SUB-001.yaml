@@ -1,0 +1,66 @@
+id: BEN-SUB-001
+nombre: Impacto de subagentes en tarea de exploración y revisión
+categoria: subagentes
+riesgo: bajo
+
+estado_inicial:
+  fixture: .ai/benchmarks/fixtures/BEN-MCP-EDURA-001
+  descripcion: "Tarea de localización y análisis de módulo matriculas"
+
+objetivo: >
+  Comparar el consumo de tokens del agente principal y total
+  al usar subagentes vs agente único.
+
+criterios_aceptacion:
+  - "Mismos resultados funcionales en todas las variantes"
+  - "Se registra tokens del agente principal y total"
+  - "Se mide tamaño del handoff"
+  - "Se detecta trabajo duplicado"
+
+variantes:
+  - id: SUB-001-A
+    descripcion: "Agente único"
+    subagentes: 0
+  - id: SUB-001-B
+    descripcion: "Explorador separado"
+    subagentes: 1
+    roles: ["explorador"]
+  - id: SUB-001-C
+    descripcion: "Revisor separado"
+    subagentes: 1
+    roles: ["revisor"]
+  - id: SUB-001-D
+    descripcion: "Explorador + Revisor"
+    subagentes: 2
+    roles: ["explorador", "revisor"]
+
+metricas_clave:
+  - tokens_agente_principal
+  - tokens_subagentes
+  - tokens_totales
+  - tamanio_handoff_bytes
+  - trabajo_duplicado_detectado
+  - calidad_total
+  - duracion_ms
+
+modos:
+  - plataforma-completa
+
+repeticiones:
+  calentamiento: 0
+  medidas: 3
+
+presupuesto:
+  tokens_maximos: 80000
+  costo_maximo_usd: 2.00
+  tiempo_maximo_segundos: 600
+
+datos_sensibles:
+  permitidos: false
+
+tags:
+  - subagentes
+  - contexto
+  - handoff
+  - comparacion
+  - tokens

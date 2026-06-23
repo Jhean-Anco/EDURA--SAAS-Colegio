@@ -1,0 +1,81 @@
+version: "1.0"
+descripcion: "Configuración central del sistema de benchmarks EDURA AI Efficiency Governance"
+creado: "2026-06-22"
+
+benchmark:
+  nombre: "EDURA AI Efficiency Governance"
+  version: "1.0.0"
+  directorio_runs: ".ai/benchmarks/runs"
+  directorio_baselines: ".ai/benchmarks/baselines"
+  directorio_reportes: ".ai/benchmarks/reports"
+  directorio_fixtures: ".ai/benchmarks/fixtures"
+  directorio_cache: ".ai/benchmarks/cache"
+
+modos:
+  baseline:
+    descripcion: "Sin Skills, sin MCP, sin contexto dirigido — agente descubre el repositorio"
+    skills: []
+    mcp: []
+    contexto_precompilado: false
+    indice_estructural: false
+    agentes_locales: true
+  contexto-dirigido:
+    descripcion: "AGENTS.md + contexto por tarea + índice + búsqueda limitada"
+    skills: []
+    mcp: []
+    contexto_precompilado: true
+    indice_estructural: true
+    agentes_locales: true
+  mcp-edura:
+    descripcion: "Contexto dirigido + servidor edura-contexto"
+    skills: []
+    mcp: ["edura-contexto"]
+    contexto_precompilado: true
+    indice_estructural: true
+    agentes_locales: true
+  plataforma-completa:
+    descripcion: "Todas las capacidades EDURA activas"
+    skills: "segun_tarea"
+    mcp: ["edura-contexto"]
+    contexto_precompilado: true
+    indice_estructural: true
+    agentes_locales: true
+    validacion_dirigida: true
+    compresion_errores: true
+
+seguridad:
+  redactar_antes_de_persistir: true
+  patrones_sensibles:
+    - "password"
+    - "secret"
+    - "token"
+    - "apikey"
+    - "api_key"
+    - "private_key"
+    - "connectionstring"
+    - "postgres://"
+    - "postgresql://"
+    - "ghp_"
+    - "sk-"
+  no_registrar:
+    - "contenido_completo_de_prompts"
+    - "valores_de_env"
+    - "razonamiento_privado"
+    - "conversaciones_completas"
+    - "datos_educativos_reales"
+
+ids:
+  formato_run: "BEN-RUN-{YYYY}-{MM}-{DD}-{XXXX}"
+  formato_scenario: "BEN-{CAT}-{NNN}"
+
+limites_globales:
+  tokens_maximos_por_suite: 500000
+  costo_maximo_suite_usd: 10
+  tiempo_maximo_suite_segundos: 3600
+  ejecuciones_maximas_por_dia: 20
+  requiere_paid_para_externo: true
+
+estadisticas:
+  metrica_principal: "mediana"
+  minimo_repeticiones_para_estadisticas: 3
+  no_presentar_como_conclusivo_si_varianza_alta: true

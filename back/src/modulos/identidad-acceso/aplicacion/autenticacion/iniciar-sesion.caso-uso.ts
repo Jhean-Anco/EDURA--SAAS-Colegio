@@ -29,7 +29,8 @@ export interface IniciarSesionSalida {
 }
 
 export class IniciarSesionCasoUso {
-  private readonly DUMMY_HASH = '$argon2id$v=19$m=65536,t=3,p=4$dummyhashdummyhashdummyhash$L3pPzXGz/aGvS1x3K6sWb5dEwW1Z3E5W6Z8E9W0Z1E4';
+  private readonly DUMMY_HASH =
+    '$argon2id$v=19$m=65536,t=3,p=4$dummyhashdummyhashdummyhash$L3pPzXGz/aGvS1x3K6sWb5dEwW1Z3E5W6Z8E9W0Z1E4';
 
   constructor(
     private readonly usuarios: RepositorioUsuarios,
@@ -45,8 +46,12 @@ export class IniciarSesionCasoUso {
 
   async ejecutar(entrada: IniciarSesionEntrada): Promise<IniciarSesionSalida> {
     const correo = CorreoElectronico.crear(entrada.correo);
-    const usuario = await this.usuarios.buscarPorCorreoNormalizado(correo.valor);
-    const credencial = usuario ? await this.credenciales.obtenerPorUsuario(usuario.id) : null;
+    const usuario = await this.usuarios.buscarPorCorreoNormalizado(
+      correo.valor,
+    );
+    const credencial = usuario
+      ? await this.credenciales.obtenerPorUsuario(usuario.id)
+      : null;
 
     if (!usuario || !credencial) {
       await this.hashClave.verificar(this.DUMMY_HASH, entrada.clave);
@@ -72,7 +77,10 @@ export class IniciarSesionCasoUso {
       throw new UnauthorizedException('CREDENCIALES_INVALIDAS');
     }
 
-    const valida = await this.hashClave.verificar(credencial.hashClave, entrada.clave);
+    const valida = await this.hashClave.verificar(
+      credencial.hashClave,
+      entrada.clave,
+    );
 
     if (!valida) {
       const nuevosIntentos = credencial.intentosFallidos + 1;
@@ -82,7 +90,11 @@ export class IniciarSesionCasoUso {
       } else if (nuevosIntentos >= 5) {
         bloqueadoHasta = new Date(Date.now() + 15 * 60 * 1000);
       }
-      await this.credenciales.actualizarIntentosFallidos(usuario.id, nuevosIntentos, bloqueadoHasta);
+      await this.credenciales.actualizarIntentosFallidos(
+        usuario.id,
+        nuevosIntentos,
+        bloqueadoHasta,
+      );
       await this.auditoria.registrar(
         new EventoAuditoria(randomUUID(), 'LOGIN_FALLO', 'usuario', 'FALLO'),
       );
@@ -127,7 +139,7 @@ export class IniciarSesionCasoUso {
     return {
       usuarioId: usuario.id,
       nombreMostrado: usuario.nombreMostrado,
-      correo: usuario.correo,
+      correo: usuario.correo.valor,
       requiereCambioClave: credencial.requiereCambio,
       accessToken,
       refreshToken: refresh.token,

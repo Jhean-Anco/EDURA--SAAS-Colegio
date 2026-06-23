@@ -97,10 +97,10 @@ describe('Decoradores de seguridad', () => {
       metodo(): void {}
     }
 
-    const metodo: unknown = Object.getOwnPropertyDescriptor(
+    const metodo = Object.getOwnPropertyDescriptor(
       ControladorPrueba.prototype,
       'metodo',
-    )?.value;
+    )?.value as object;
     expect(Reflect.getMetadata(ES_PUBLICO, metodo)).toBe(true);
   });
 
@@ -110,10 +110,10 @@ describe('Decoradores de seguridad', () => {
       metodo(): void {}
     }
 
-    const metodo: unknown = Object.getOwnPropertyDescriptor(
+    const metodo = Object.getOwnPropertyDescriptor(
       ControladorPrueba.prototype,
       'metodo',
-    )?.value;
+    )?.value as object;
     expect(Reflect.getMetadata(PERMISOS_REQUERIDOS, metodo)).toEqual([
       'PERSONAS.LEER',
       'PERSONAS.CREAR',

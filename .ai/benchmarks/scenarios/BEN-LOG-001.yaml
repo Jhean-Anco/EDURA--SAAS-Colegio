@@ -1,0 +1,61 @@
+id: BEN-LOG-001
+nombre: Diagnóstico de causa raíz con log largo vs log comprimido
+categoria: log
+riesgo: bajo
+
+estado_inicial:
+  fixture: .ai/benchmarks/fixtures/BEN-LOG-001
+  descripcion: >
+    Dos versiones del mismo log de error NestJS:
+    - log_completo.txt: 2000 líneas, incluye stack traces repetidos
+    - log_comprimido.txt: versión procesada por ai:errors
+    La causa raíz es una excepción de FK constraint en la BD.
+
+objetivo: >
+  Diagnosticar la causa raíz del error usando cada versión del log.
+  Comparar tokens consumidos y precisión del diagnóstico.
+
+criterios_aceptacion:
+  - "Identifica correctamente el FK constraint violation como causa raíz"
+  - "Nombra la tabla y columna afectada (según fixture)"
+  - "Propone los próximos pasos de resolución"
+  - "No expone información de conexión de BD"
+  - "El diagnóstico con log comprimido es igualmente preciso"
+
+archivos_esperados:
+  maximos_modificados: 0
+
+validaciones:
+  - "La causa raíz identificada coincide con la provista en el fixture"
+
+variantes:
+  - id: LOG-001-A
+    descripcion: "Con log_completo.txt (2000 líneas)"
+    archivo: .ai/benchmarks/fixtures/BEN-LOG-001/log_completo.txt
+  - id: LOG-001-B
+    descripcion: "Con log_comprimido.txt (~50 líneas)"
+    archivo: .ai/benchmarks/fixtures/BEN-LOG-001/log_comprimido.txt
+
+modos:
+  - baseline
+  - plataforma-completa
+
+repeticiones:
+  calentamiento: 0
+  medidas: 3
+
+presupuesto:
+  tokens_maximos: 30000
+  costo_maximo_usd: 0.50
+  tiempo_maximo_segundos: 240
+
+datos_sensibles:
+  permitidos: false
+  nota: "Los logs usan datos ficticios. Sin cadenas de conexión reales."
+
+tags:
+  - log
+  - compresion
+  - diagnostico
+  - causa-raiz
+  - comparacion

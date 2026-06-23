@@ -64,13 +64,14 @@ import { GuardiaPermisos } from './compartido/presentacion/http/guardias/guardia
     { provide: APP_GUARD, useExisting: GuardiaPermisos },
     {
       provide: APP_GUARD,
-      useClass: process.env.NODE_ENV === 'test'
-        ? class SkipThrottlerGuard extends ThrottlerGuard {
-            protected override async shouldSkip(): Promise<boolean> {
-              return true;
+      useClass:
+        process.env.NODE_ENV === 'test'
+          ? class SkipThrottlerGuard extends ThrottlerGuard {
+              protected override async shouldSkip(): Promise<boolean> {
+                return true;
+              }
             }
-          }
-        : ThrottlerGuard,
+          : ThrottlerGuard,
     },
   ],
 })

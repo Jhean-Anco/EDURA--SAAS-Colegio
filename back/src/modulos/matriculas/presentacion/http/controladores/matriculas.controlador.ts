@@ -92,7 +92,11 @@ export class MatriculasControlador {
       JOIN membresias_institucion m ON a.id_membresia_institucion = m.id
       WHERE a.id_usuario = $1 AND m.id_institucion_educativa = $2 AND a.id_rol = $3
     `;
-    const res = await this.dataSource.query(query, [c.usuarioId, c.institucionId, rolId]);
+    const res = await this.dataSource.query(query, [
+      c.usuarioId,
+      c.institucionId,
+      rolId,
+    ]);
     if (!res || res.length === 0) {
       throw new ForbiddenException('CONTEXTO_NO_AUTORIZADO');
     }
@@ -104,7 +108,7 @@ export class MatriculasControlador {
          FROM matriculas m
          JOIN estudiantes e ON m.id_estudiante = e.id
          WHERE e.id_persona = $1 AND m.id = $2 AND m.id_institucion_educativa = $3`,
-        [personaId, matriculaId, c.institucionId]
+        [personaId, matriculaId, c.institucionId],
       );
       if (!matriculaRes || matriculaRes.length === 0) {
         throw new ForbiddenException('ACCESO_DENEGADO');
@@ -115,7 +119,7 @@ export class MatriculasControlador {
          FROM matriculas m
          JOIN apoderados_estudiante ae ON m.id_estudiante = ae.id_estudiante
          WHERE ae.id_persona = $1 AND m.id = $2 AND m.id_institucion_educativa = $3`,
-        [personaId, matriculaId, c.institucionId]
+        [personaId, matriculaId, c.institucionId],
       );
       if (!matriculaRes || matriculaRes.length === 0) {
         throw new ForbiddenException('ACCESO_DENEGADO');
@@ -123,7 +127,11 @@ export class MatriculasControlador {
     }
   }
 
-  @Permisos('MATRICULAS.LEER', 'MATRICULAS.MI_MATRICULA.LEER', 'APODERADOS.MATRICULAS_ASOCIADAS.LEER')
+  @Permisos(
+    'MATRICULAS.LEER',
+    'MATRICULAS.MI_MATRICULA.LEER',
+    'APODERADOS.MATRICULAS_ASOCIADAS.LEER',
+  )
   @Get()
   async listar(
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
@@ -140,7 +148,7 @@ export class MatriculasControlador {
        JOIN roles r ON a.id_rol = r.id
        JOIN membresias_institucion m ON a.id_membresia_institucion = m.id
        WHERE a.id_usuario = $1 AND m.id_institucion_educativa = $2 AND a.id_rol = $3`,
-      [ctx.usuarioId, c.institucionId, ctx.rolId]
+      [ctx.usuarioId, c.institucionId, ctx.rolId],
     );
     if (!checkRes || checkRes.length === 0) {
       throw new ForbiddenException('CONTEXTO_NO_AUTORIZADO');
@@ -150,31 +158,30 @@ export class MatriculasControlador {
     if (rolCodigo === 'ESTUDIANTE') {
       const studentRes = await this.dataSource.query(
         `SELECT id FROM estudiantes WHERE id_persona = $1 AND id_institucion_educativa = $2`,
-        [personaId, c.institucionId]
+        [personaId, c.institucionId],
       );
       if (!studentRes || studentRes.length === 0) {
-        return { total: 0, paginas: 0, pagina: 1, limite: 20, data: [] };
+        return { total: 0, paginas: 0, pagina: 1, limite: 20, datos: [] };
       }
       query.idEstudiante = studentRes[0].id;
     } else if (rolCodigo === 'APODERADO') {
       const parentRes = await this.dataSource.query(
         `SELECT id_estudiante as "id" FROM apoderados_estudiante WHERE id_persona = $1 AND id_institucion_educativa = $2`,
-        [personaId, c.institucionId]
+        [personaId, c.institucionId],
       );
       if (!parentRes || parentRes.length === 0) {
-        return { total: 0, paginas: 0, pagina: 1, limite: 20, data: [] };
+        return { total: 0, paginas: 0, pagina: 1, limite: 20, datos: [] };
       }
       const studentIds = parentRes.map((r: any) => r.id);
       const result = await this.listarMatriculasConsulta.ejecutar(query, c);
-      result.data = result.data.filter((mat: any) => studentIds.includes(mat.idEstudiante));
-      result.total = result.data.length;
+      result.datos = result.datos.filter((mat: any) =>
+        studentIds.includes(mat.idEstudiante),
+      );
+      result.total = result.datos.length;
       return result;
     }
 
-    return this.listarMatriculasConsulta.ejecutar(
-      query,
-      c,
-    );
+    return this.listarMatriculasConsulta.ejecutar(query, c);
   }
 
   @Permisos('MATRICULAS.LEER')
@@ -189,7 +196,11 @@ export class MatriculasControlador {
     );
   }
 
-  @Permisos('MATRICULAS.LEER', 'MATRICULAS.MI_MATRICULA.LEER', 'APODERADOS.MATRICULAS_ASOCIADAS.LEER')
+  @Permisos(
+    'MATRICULAS.LEER',
+    'MATRICULAS.MI_MATRICULA.LEER',
+    'APODERADOS.MATRICULAS_ASOCIADAS.LEER',
+  )
   @Get(':id')
   async obtener(
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
@@ -199,11 +210,8 @@ export class MatriculasControlador {
     if (!ctx) {
       throw new ForbiddenException('CONTEXTO_NO_AUTORIZADO');
     }
-    await this.validarPropiedadMatricula(c, ctx.rolId, id);
-    return this.obtenerMatriculaConsulta.ejecutar(
-      id,
-      c,
-    );
+    await this.validarPropiedadMatricula(c, ctx.rolId ?? '', id);
+    return this.obtenerMatriculaConsulta.ejecutar(id, c);
   }
 
   @Permisos('MATRICULAS.GESTIONAR')
@@ -309,7 +317,11 @@ export class MatriculasControlador {
     );
   }
 
-  @Permisos('MATRICULAS.LEER', 'MATRICULAS.MI_MATRICULA.LEER', 'APODERADOS.MATRICULAS_ASOCIADAS.LEER')
+  @Permisos(
+    'MATRICULAS.LEER',
+    'MATRICULAS.MI_MATRICULA.LEER',
+    'APODERADOS.MATRICULAS_ASOCIADAS.LEER',
+  )
   @Get(':id/historial-estados')
   async obtenerHistorialEstados(
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
@@ -319,14 +331,15 @@ export class MatriculasControlador {
     if (!ctx) {
       throw new ForbiddenException('CONTEXTO_NO_AUTORIZADO');
     }
-    await this.validarPropiedadMatricula(c, ctx.rolId, id);
-    return this.listarHistorialEstadosConsulta.ejecutar(
-      id,
-      c,
-    );
+    await this.validarPropiedadMatricula(c, ctx.rolId ?? '', id);
+    return this.listarHistorialEstadosConsulta.ejecutar(id, c);
   }
 
-  @Permisos('MATRICULAS.LEER', 'MATRICULAS.MI_MATRICULA.LEER', 'APODERADOS.MATRICULAS_ASOCIADAS.LEER')
+  @Permisos(
+    'MATRICULAS.LEER',
+    'MATRICULAS.MI_MATRICULA.LEER',
+    'APODERADOS.MATRICULAS_ASOCIADAS.LEER',
+  )
   @Get(':id/historial-secciones')
   async obtenerHistorialSecciones(
     @ContextoActual() ctx: ContextoSolicitudAutenticada | undefined,
@@ -336,10 +349,7 @@ export class MatriculasControlador {
     if (!ctx) {
       throw new ForbiddenException('CONTEXTO_NO_AUTORIZADO');
     }
-    await this.validarPropiedadMatricula(c, ctx.rolId, id);
-    return this.listarCambiosSeccionConsulta.ejecutar(
-      id,
-      c,
-    );
+    await this.validarPropiedadMatricula(c, ctx.rolId ?? '', id);
+    return this.listarCambiosSeccionConsulta.ejecutar(id, c);
   }
 }

@@ -1,22 +1,13 @@
-import {
-  ConflictException,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
 import { CrearAreaCurricularCasoUso } from '../../src/modulos/curriculo/aplicacion/areas/crear-area-curricular.caso-uso';
 import { ActualizarAreaCurricularCasoUso } from '../../src/modulos/curriculo/aplicacion/areas/actualizar-area-curricular.caso-uso';
 import { CambiarEstadoAreaCurricularCasoUso } from '../../src/modulos/curriculo/aplicacion/areas/cambiar-estado-area-curricular.caso-uso';
 import { CrearAsignaturaCasoUso } from '../../src/modulos/curriculo/aplicacion/asignaturas/crear-asignatura.caso-uso';
-import { ActualizarAsignaturaCasoUso } from '../../src/modulos/curriculo/aplicacion/asignaturas/actualizar-asignatura.caso-uso';
 import { CambiarEstadoAsignaturaCasoUso } from '../../src/modulos/curriculo/aplicacion/asignaturas/cambiar-estado-asignatura.caso-uso';
 import { CrearPlanEstudioCasoUso } from '../../src/modulos/curriculo/aplicacion/planes-estudio/crear-plan-estudio.caso-uso';
-import { ActualizarPlanEstudioCasoUso } from '../../src/modulos/curriculo/aplicacion/planes-estudio/actualizar-plan-estudio.caso-uso';
 import { CambiarEstadoPlanEstudioCasoUso } from '../../src/modulos/curriculo/aplicacion/planes-estudio/cambiar-estado-plan-estudio.caso-uso';
 import { DuplicarPlanEstudioCasoUso } from '../../src/modulos/curriculo/aplicacion/planes-estudio/duplicar-plan-estudio.caso-uso';
 import { AprobarPlanEstudioCasoUso } from '../../src/modulos/curriculo/aplicacion/planes-estudio/aprobar-plan-estudio.caso-uso';
 import { AgregarDetallePlanEstudioCasoUso } from '../../src/modulos/curriculo/aplicacion/planes-estudio/agregar-detalle-plan-estudio.caso-uso';
-import { ActualizarDetallePlanEstudioCasoUso } from '../../src/modulos/curriculo/aplicacion/planes-estudio/actualizar-detalle-plan-estudio.caso-uso';
-import { CambiarEstadoDetallePlanEstudioCasoUso } from '../../src/modulos/curriculo/aplicacion/planes-estudio/cambiar-estado-detalle-plan-estudio.caso-uso';
 
 import {
   AreaCodigoDuplicadoError,
